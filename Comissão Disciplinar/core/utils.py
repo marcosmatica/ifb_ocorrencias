@@ -1,6 +1,6 @@
 from django.core.mail import send_mail
 from django.conf import settings
-from celery import shared_task
+#from celery import shared_task
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from io import BytesIO
@@ -47,7 +47,7 @@ def gerar_documento_pdf(ocorrencia, tipo_documento):
     return buffer
 
 
-@shared_task
+#@shared_task
 def enviar_notificacao_email(notificacao_id):
     """Task assíncrona para enviar notificações por e-mail"""
     from .models import NotificacaoOficial

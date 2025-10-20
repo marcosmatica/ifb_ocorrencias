@@ -1,0 +1,38 @@
+# Arquivo .env com senhas e configurações sensíveis
+.env
+.env.local
+.env.*.local
+
+# Arquivos Python
+*.py[cod]
+*$py.class
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+/static/
+/media/
+
+# Ambientes virtuais
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sistema operacional
+.DS_Store
+Thumbs.db

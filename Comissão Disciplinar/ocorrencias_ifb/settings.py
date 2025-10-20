@@ -4,8 +4,14 @@ from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='change-me-in-production')
-DEBUG = config('DEBUG', default=False, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+DEBUG = config('DEBUG', default=True, cast=bool)
+#ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+#ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com']
+
+if DEBUG:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+else:
+    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='marcosmatica.pythonanywhere.com').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -14,13 +20,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'viewflow.fsm',
+    #'viewflow.fsm',
     'auditlog',
-    'import_export',
+    #'import_export',
     'crispy_forms',
     'crispy_tailwind',
     'core',
-    'wagtail'
+    #'wagtail',
 ]
 
 MIDDLEWARE = [
@@ -94,7 +100,7 @@ LOGIN_URL = '/login/'      # Login page URL
 LOGOUT_REDIRECT_URL = '/'  # Where to redirect after logout
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [BASE_DIR / 'staticfiles']
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = 'media/'
@@ -120,9 +126,11 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+else:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 
-ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com']
+
 
 # Configurações de Email para recuperação de senha
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

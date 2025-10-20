@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models.query import QuerySet
 from django.contrib import messages
-from wagtail.models import Page
+#from wagtail.models import Page
 from django.conf import settings
 from django.contrib.auth.views import LoginView
 from django.db.models import Q, Count
