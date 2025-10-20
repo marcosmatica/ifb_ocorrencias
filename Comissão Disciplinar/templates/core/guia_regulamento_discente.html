@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia Regulamento Discente - IFB</title>
+    <style>
+        /* Estilos específicos para impressão do guia */
+        @media print {
+            body {
+                font-family: "Times New Roman", Times, serif;
+                font-size: 12pt;
+                line-height: 1.4;
+                color: #000;
+                margin: 0;
+                padding: 1cm;
+            }
+
+            .print-header {
+                text-align: center;
+                margin-bottom: 2cm;
+                border-bottom: 2px solid #000;
+                padding-bottom: 0.5cm;
+            }
+
+            .print-title {
+                font-size: 16pt;
+                font-weight: bold;
+                margin-bottom: 0.5cm;
+            }
+
+            .print-subtitle {
+                font-size: 14pt;
+                margin-bottom: 0.5cm;
+            }
+
+            .print-section {
+                margin-bottom: 1cm;
+                page-break-inside: avoid;
+            }
+
+            .print-section-title {
+                font-size: 14pt;
+                font-weight: bold;
+                margin-bottom: 0.5cm;
+                border-bottom: 1px solid #ccc;
+                padding-bottom: 0.2cm;
+            }
+
+            .print-subsection {
+                margin-bottom: 0.5cm;
+                margin-left: 1cm;
+            }
+
+            .print-subsection-title {
+                font-weight: bold;
+                margin-bottom: 0.2cm;
+            }
+
+            .print-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 0.5cm 0;
+                font-size: 10pt;
+            }
+
+            .print-table th,
+            .print-table td {
+                border: 1px solid #000;
+                padding: 0.3cm;
+                text-align: left;
+                vertical-align: top;
+            }
+
+            .print-table th {
+                background: #f0f0f0;
+                font-weight: bold;
+            }
+
+            .print-signature {
+                margin-top: 2cm;
+                border-top: 1px solid #000;
+                padding-top: 1cm;
+            }
+
+            .print-footer {
+                margin-top: 1cm;
+                font-size: 10pt;
+                text-align: center;
+                color: #666;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        /* Estilos para visualização na tela */
+        @media screen {
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 21cm;
+                margin: 0 auto;
+                padding: 2rem;
+                background: white;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+
+            .print-header {
+                text-align: center;
+                margin-bottom: 2rem;
+                border-bottom: 2px solid var(--ifb-verde);
+                padding-bottom: 1rem;
+            }
+
+            .print-title {
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: var(--ifb-verde);
+                margin-bottom: 0.5rem;
+            }
+
+            .print-controls {
+                text-align: center;
+                margin-bottom: 2rem;
+                padding: 1rem;
+                background: var(--gray-50);
+                border-radius: var(--radius-md);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Controles para impressão (somente na tela) -->
+    <div class="no-print print-controls">
+        <button onclick="window.print()" class="btn btn-primary">
+            🖨️ Imprimir Documento
+        </button>
+        <a href="javascript:history.back()" class="btn btn-outline">
+            ← Voltar
+        </a>
+    </div>
+
+    <!-- Cabeçalho do documento -->
+    <div class="print-header">
+        <div class="print-title">
+            GUIA DO REGULAMENTO DISCENTE
+        </div>
+        <div class="print-subtitle">
+            INSTITUTO FEDERAL DE BRASÍLIA
+        </div>
+        <div>
+            Campus Recanto das Emas
+        </div>
+        <div style="margin-top: 0.5cm; font-size: 10pt;">
+            Resolução nº 000/2025 - Aprova o Regulamento Discente do IFB
+        </div>
+    </div>
+
+    <!-- Seção 1: Apresentação -->
+    <div class="print-section">
+        <div class="print-section-title">1. APRESENTAÇÃO</div>
+        <p>
+            O presente Guia do Regulamento Discente tem por objetivo orientar estudantes,
+            servidores e comunidade acadêmica sobre os direitos, deveres e procedimentos
+            disciplinares no âmbito do Instituto Federal de Brasília - Campus Recanto das Emas.
+        </p>
+    </div>
+
+    <!-- Seção 2: Direitos dos Estudantes -->
+    <div class="print-section">
+        <div class="print-section-title">2. DIREITOS DOS ESTUDANTES</div>
+
+        <div class="print-subsection">
+            <div class="print-subsection-title">2.1 Direitos Acadêmicos</div>
+            <ul>
+                <li>Participar das atividades de ensino, pesquisa e extensão</li>
+                <li>Utilizar as dependências e equipamentos do campus</li>
+                <li>Receher atendimento educacional adequado</li>
+                <li>Participar dos órgãos colegiados</li>
+            </ul>
+        </div>
+
+        <div class="print-subsection">
+            <div class="print-subsection-title">2.2 Direitos Disciplinares</div>
+            <ul>
+                <li>Ampla defesa e contraditório</li>
+                <li>Conhecimento prévio das acusações</li>
+                <li>Prazo para apresentação de defesa</li>
+                <li>Recurso das decisões</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Seção 3: Deveres e Obrigações -->
+    <div class="print-section">
+        <div class="print-section-title">3. DEVERES E OBRIGAÇÕES</div>
+
+        <div class="print-subsection">
+            <div class="print-subsection-title">3.1 Deveres Gerais</div>
+            <ul>
+                <li>Comparecer pontualmente às atividades acadêmicas</li>
+                <li>Manter comportamento adequado nas dependências do IFB</li>
+                <li>Respeitar servidores, colegas e comunidade</li>
+                <li>Zelar pelo patrimônio público</li>
+                <li>Cumprir as normas regimentais</li>
+            </ul>
+        </div>
+
+        <div class="print-subsection">
+            <div class="print-subsection-title">3.2 Proibições Expressas</div>
+            <ul>
+                <li>Praticar atos de violência ou discriminação</li>
+                <li>Utilizar substâncias ilícitas</li>
+                <li>Praticar atos de assédio moral ou sexual</li>
+                <li>Falsificar documentos ou assinaturas</li>
+                <li>Danificar o patrimônio público</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Seção 4: Infrações Disciplinares -->
+    <div class="print-section">
+        <div class="print-section-title">4. INFRAÇÕES DISCIPLINARES</div>
+
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th>Gravidade</th>
+                    <th>Exemplos de Infrações</th>
+                    <th>Sanções Possíveis</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>LEVE</strong></td>
+                    <td>
+                        - Atrasos frequentes<br>
+                        - Uso inadequado de uniforme<br>
+                        - Comportamento inadequado em sala
+                    </td>
+                    <td>
+                        - Advertência verbal<br>
+                        - Advertência por escrito<br>
+                        - Suspensão por até 3 dias
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>MÉDIA</strong></td>
+                    <td>
+                        - Reincidência em infrações leves<br>
+                        - Desacato a servidores<br>
+                        - Dano ao patrimônio
+                    </td>
+                    <td>
+                        - Suspensão de 4 a 15 dias<br>
+                        - Atividades educativas<br>
+                        - Reparação de danos
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>GRAVE</strong></td>
+                    <td>
+                        - Agressão física<br>
+                        - Ameaças<br>
+                        - Falsificação documental
+                    </td>
+                    <td>
+                        - Suspensão de 16 a 30 dias<br>
+                        - Transferência compulsória<br>
+                        - Processo disciplinar
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>GRAVÍSSIMA</strong></td>
+                    <td>
+                        - Reincidência em infrações graves<br>
+                        - Crimes contra a vida<br>
+                        - Tráfico de entorpecentes
+                    </td>
+                    <td>
+                        - Expulsão<br>
+                        - Cancelamento de matrícula<br>
+                        - Encaminhamento às autoridades
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Seção 5: Processo Disciplinar -->
+    <div class="print-section">
+        <div class="print-section-title">5. PROCESSO DISCIPLINAR</div>
+
+        <div class="print-subsection">
+            <div class="print-subsection-title">5.1 Etapas do Processo</div>
+            <ol>
+                <li><strong>Registro da Ocorrência:</strong> Formalização dos fatos</li>
+                <li><strong>Notificação:</strong> Comunicação ao estudante</li>
+                <li><strong>Defesa:</strong> Prazo de 5 dias úteis</li>
+                <li><strong>Análise da Comissão:</strong> Apuração dos fatos</li>
+                <li><strong>Julgamento:</strong> Aplicação de sanção</li>
+                <li><strong>Recurso:</strong> Prazo de 10 dias úteis</li>
+            </ol>
+        </div>
+
+        <div class="print-subsection">
+            <div class="print-subsection-title">5.2 Prazos Processuais</div>
+            <table class="print-table">
+                <thead>
+                    <tr>
+                        <th>Etapa</th>
+                        <th>Prazo</th>
+                        <th>Observações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Notificação</td>
+                        <td>48 horas</td>
+                        <td>Após registro da ocorrência</td>
+                    </tr>
+                    <tr>
+                        <td>Apresentação de Defesa</td>
+                        <td>5 dias úteis</td>
+                        <td>Contados da notificação</td>
+                    </tr>
+                    <tr>
+                        <td>Análise da Comissão</td>
+                        <td>15 dias úteis</td>
+                        <td>Prorrogável por igual período</td>
+                    </tr>
+                    <tr>
+                        <td>Interposição de Recurso</td>
+                        <td>10 dias úteis</td>
+                        <td>Da ciência da decisão</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Seção 6: Comissão Disciplinar -->
+    <div class="print-section">
+        <div class="print-section-title">6. COMISSÃO DISCIPLINAR</div>
+
+        <p>
+            A Comissão Disciplinar é órgão colegiado responsável pela análise e julgamento
+            dos processos disciplinares, composta por servidores docentes e técnico-administrativos.
+        </p>
+
+        <div class="print-subsection">
+            <div class="print-subsection-title">6.1 Competências</div>
+            <ul>
+                <li>Instaurar processos disciplinares</li>
+                <li>Ouvir as partes envolvidas</li>
+                <li>Coletar provas e evidências</li>
+                <li>Aplicar sanções disciplinares</li>
+                <li>Encaminhar recursos</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Assinaturas -->
+    <div class="print-section print-signature">
+        <div style="text-align: center; margin-bottom: 1cm;">
+            <strong>INSTITUTO FEDERAL DE BRASÍLIA</strong><br>
+            Campus Recanto das Emas<br>
+            Comissão Disciplinar
+        </div>
+
+        <div style="display: flex; justify-content: space-around; margin-top: 2cm;">
+            <div style="text-align: center;">
+                _________________________<br>
+                <strong>Coordenador da Comissão</strong><br>
+                Dr. Nome do Coordenador
+            </div>
+
+            <div style="text-align: center;">
+                _________________________<br>
+                <strong>Presidente do IFB</strong><br>
+                Dr. Nome do Presidente
+            </div>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <div class="print-footer">
+        Documento gerado em {% now "d/m/Y H:i" %} - Sistema de Ocorrências IFB - Página <span id="page-number">1</span>
+    </div>
+
+    <script>
+        // Numeração de páginas para impressão
+        if (window.print) {
+            window.onbeforeprint = function() {
+                var pages = document.querySelectorAll('.print-section');
+                pages.forEach(function(page, index) {
+                    var pageNumber = index + 1;
+                    page.setAttribute('data-page', pageNumber);
+                });
+            };
+        }
+    </script>
+</body>
+</html>

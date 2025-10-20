@@ -1,0 +1,291 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Histórico - {{ estudante.nome }}{% endblock %}
+
+{% block header_title %}Histórico Disciplinar{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho do Estudante -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <!-- Avatar/Foto -->
+                <div>
+                    {% if estudante.foto %}
+                        <img src="{{ estudante.foto.url }}" alt="{{ estudante.nome }}" 
+                             style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid var(--ifb-verde);">
+                    {% else %}
+                        <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--ifb-verde); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700;">
+                            {{ estudante.nome|slice:":1" }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Informações -->
+                <div style="flex: 1;">
+                    <h1 style="font-size: 1.875rem; font-weight: 700; margin-bottom: 0.5rem;">
+                        {{ estudante.nome }}
+                    </h1>
+                    <div style="display: flex; gap: 2rem; flex-wrap: wrap; color: var(--gray-600);">
+                        <div>
+                            <strong>Matrícula:</strong> {{ estudante.matricula_sga }}
+                        </div>
+                        <div>
+                            <strong>Curso:</strong> {{ estudante.curso.nome }}
+                        </div>
+                        <div>
+                            <strong>Turma:</strong> {{ estudante.turma.nome }}
+                        </div>
+                        <div>
+                            <strong>Situação:</strong> 
+                            <span class="badge badge-{% if estudante.situacao == 'ATIVO' %}finalizada{% else %}arquivada{% endif %}">
+                                {{ estudante.get_situacao_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.75rem;">
+                        <strong style="color: var(--gray-600);">E-mail:</strong> {{ estudante.email }}
+                    </div>
+                </div>
+                
+                <!-- Botões -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <button class="btn btn-outline btn-sm" onclick="window.print()">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        </svg>
+                        Imprimir
+                    </button>
+                    <button class="btn btn-outline btn-sm">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Exportar PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estatísticas -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card" style="border-color: #3b82f6;">
+            <div class="stat-label">Total de Ocorrências</div>
+            <div class="stat-value">{{ total_ocorrencias }}</div>
+            <div class="stat-change">Histórico completo</div>
+        </div>
+        
+        <div class="stat-card" style="border-color: #10b981;">
+            <div class="stat-label">Leves</div>
+            <div class="stat-value">
+                {% for item in por_gravidade %}
+                    {% if item.infracao__gravidade == 'LEVE' %}{{ item.total }}{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="stat-card" style="border-color: #eab308;">
+            <div class="stat-label">Médias/Graves</div>
+            <div class="stat-value">
+                {% for item in por_gravidade %}
+                    {% if item.infracao__gravidade == 'MEDIA' or item.infracao__gravidade == 'GRAVE' %}{{ item.total }}{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="stat-card" style="border-color: #ef4444;">
+            <div class="stat-label">Gravíssimas</div>
+            <div class="stat-value">
+                {% for item in por_gravidade %}
+                    {% if item.infracao__gravidade == 'GRAVISSIMA' %}{{ item.total }}{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráfico de Ocorrências por Gravidade -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="card-title">Distribuição por Gravidade</h2>
+        </div>
+        <div class="card-body">
+            <canvas id="gravidadeChart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+    
+    <!-- Histórico de Ocorrências -->
+    <div class="card">
+        <div class="card-header flex-between">
+            <h2 class="card-title">Histórico de Ocorrências</h2>
+            <div style="font-size: 0.875rem; color: var(--gray-600);">
+                Total: {{ ocorrencias.count }} ocorrências
+            </div>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            {% if ocorrencias %}
+            <div class="timeline" style="padding: 2rem;">
+                {% for ocorrencia in ocorrencias %}
+                <div class="timeline-item">
+                    <div class="timeline-marker" style="background: 
+                        {% if ocorrencia.infracao.gravidade == 'LEVE' %}#10b981
+                        {% elif ocorrencia.infracao.gravidade == 'MEDIA' %}#eab308
+                        {% elif ocorrencia.infracao.gravidade == 'GRAVE' %}#f97316
+                        {% else %}#ef4444{% endif %};"></div>
+                    <div class="timeline-content">
+                        <div class="flex-between" style="margin-bottom: 0.5rem;">
+                            <div class="timeline-date">
+                                {{ ocorrencia.data|date:"d/m/Y" }} às {{ ocorrencia.horario|time:"H:i" }}
+                            </div>
+                            <div>
+                                {% include 'core/components/status_badge.html' with status=ocorrencia.status %}
+                                {% if ocorrencia.infracao %}
+                                    <span class="badge badge-{{ ocorrencia.infracao.gravidade|lower }}">
+                                        {{ ocorrencia.infracao.get_gravidade_display }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong style="font-size: 1rem;">Ocorrência #{{ ocorrencia.id }}</strong>
+                        </div>
+                        
+                        {% if ocorrencia.infracao %}
+                        <div style="margin-bottom: 0.75rem; padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md);">
+                            <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.25rem;">
+                                {{ ocorrencia.infracao.codigo }}
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                {{ ocorrencia.infracao.descricao }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div style="margin-bottom: 0.75rem; color: var(--gray-700);">
+                            {{ ocorrencia.descricao|truncatewords:30 }}
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem; font-size: 0.875rem; color: var(--gray-600);">
+                            <div>
+                                <strong>Turma:</strong> {{ ocorrencia.turma.nome }}
+                            </div>
+                            <div>
+                                <strong>Registrado por:</strong> {{ ocorrencia.responsavel_registro.nome }}
+                            </div>
+                        </div>
+                        
+                        {% if ocorrencia.sancao %}
+                        <div style="margin-top: 0.75rem; padding: 0.75rem; background: #fee2e2; border-radius: var(--radius-md); border-left: 4px solid #ef4444;">
+                            <strong style="color: #991b1b;">Sanção Aplicada:</strong>
+                            <div style="margin-top: 0.25rem; color: #991b1b;">
+                                {{ ocorrencia.sancao.get_tipo_display }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div style="margin-top: 0.75rem;">
+                            <a href="{% url 'ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline btn-sm">
+                                Ver Detalhes Completos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="padding: 3rem; text-align: center; color: var(--gray-500);">
+                <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                    Nenhuma ocorrência registrada
+                </div>
+                <div>Este estudante não possui histórico de ocorrências disciplinares.</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Informações Adicionais -->
+    {% if estudante.responsavel %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h2 class="card-title">Responsável</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid-2">
+                <div>
+                    <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Nome</label>
+                    <p style="margin-top: 0.25rem;">{{ estudante.responsavel.nome }}</p>
+                </div>
+                <div>
+                    <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Vínculo</label>
+                    <p style="margin-top: 0.25rem;">{{ estudante.responsavel.get_tipo_vinculo_display }}</p>
+                </div>
+                <div>
+                    <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">E-mail</label>
+                    <p style="margin-top: 0.25rem;">{{ estudante.responsavel.email }}</p>
+                </div>
+                <div>
+                    <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Celular</label>
+                    <p style="margin-top: 0.25rem;">{{ estudante.responsavel.celular }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Gráfico de Gravidade
+const ctx = document.getElementById('gravidadeChart');
+const data = {
+    labels: [
+        {% for item in por_gravidade %}
+            '{{ item.infracao__gravidade|default:"Não classificado" }}'{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ],
+    datasets: [{
+        label: 'Ocorrências',
+        data: [
+            {% for item in por_gravidade %}
+                {{ item.total }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        backgroundColor: [
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(234, 179, 8, 0.8)',
+            'rgba(249, 115, 22, 0.8)',
+            'rgba(239, 68, 68, 0.8)'
+        ],
+        borderWidth: 0
+    }]
+};
+
+new Chart(ctx, {
+    type: 'bar',
+    data: data,
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

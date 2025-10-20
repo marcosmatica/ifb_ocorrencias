@@ -1,0 +1,344 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Sistema de Ocorrências - IFB Recanto das Emas{% endblock %}
+
+{% block body_class %}home-page{% endblock %}
+
+{% block breadcrumb %}{% endblock %}
+
+{% block content %}
+<div class="home-hero">
+    <div class="home-container">
+        <div class="home-card">
+            <!-- Header -->
+            <div class="home-header">
+                <div class="home-logo">
+                    <svg width="60" height="60" fill="#006633" viewBox="0 0 20 20">
+                        <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                    </svg>
+                </div>
+                <h1 class="home-title">Sistema de Ocorrências</h1>
+                <p class="home-subtitle">
+                    Instituto Federal de Brasília - Campus Recanto das Emas
+                </p>
+            </div>
+
+            <!-- Cards de Ação -->
+            <div class="home-grid">
+                <!-- Registrar Ocorrência Rápida -->
+                <a href="{% url 'ocorrencia_rapida_create' %}" class="action-card">
+                    <div class="action-card-icon">
+                        <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <h3 class="action-card-title">Registro Rápido</h3>
+                    <p class="action-card-description">
+                        Registre ocorrências simples de forma ágil e prática para situações frequentes do dia a dia.
+                    </p>
+                </a>
+
+                <!-- Registrar Ocorrência -->
+                <a href="{% url 'ocorrencia_create' %}" class="action-card">
+                    <div class="action-card-icon">
+                        <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </div>
+                    <h3 class="action-card-title">Registrar Ocorrência</h3>
+                    <p class="action-card-description">
+                        Registre ocorrências completas com todos os detalhes, infrações e evidências necessárias.
+                    </p>
+                </a>
+
+                <!-- Acessar Dashboard -->
+                {% if is_servidor_autenticado %}
+                <a href="{% url 'dashboard' %}" class="action-card action-card-comissao">
+                    <div class="action-card-icon" style="background: rgba(255,255,255,0.2);">
+                        <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                    </div>
+                    <h3 class="action-card-title">Acessar Dashboard</h3>
+                    <p class="action-card-description">
+                        Acesse o painel administrativo com relatórios, estatísticas e gestão de ocorrências.
+                    </p>
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}" class="action-card action-card-restrito">
+                    <div class="action-card-icon">
+                        <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="action-card-title">Acesso Restrito</h3>
+                    <p class="action-card-description">
+                        Esta área é restrita a servidores autorizados. Faça login para acessar o dashboard.
+                    </p>
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Informações Adicionais -->
+            <div class="home-footer">
+                <p class="home-footer-text">
+                    Sistema de Gestão de Ocorrências Disciplinares - Comissão Disciplinar
+                </p>
+                <div class="home-footer-links">
+                    <a href="{% url 'login' %}">Área do Servidor</a>
+                    <span>•</span>
+                    <a href="{% url 'guia_regulamento_discente' %}">Guia do Regulamento</a>
+                    <span>•</span>
+                    <a href="mailto:comissao.disciplinar@ifb.edu.br">Contato</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Reset para página home */
+    .home-page .layout-wrapper {
+        display: block;
+        min-height: 100vh;
+    }
+
+    .home-page .sidebar,
+    .home-page .header,
+    .home-page .footer,
+    .home-page .breadcrumb {
+        display: none !important;
+    }
+
+    .home-page .main-content {
+        margin-left: 0 !important;
+        min-height: 100vh;
+    }
+
+    .home-page .content {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Garantir que o body tenha fundo verde */
+    .home-page body {
+        background: linear-gradient(135deg, #006633 0%, #00994d 100%) !important;
+    }
+
+    /* Estilos específicos para a nova home */
+    .home-hero {
+        background: linear-gradient(135deg, #006633 0%, #00994d 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .home-container {
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .home-card {
+        background: white;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-xl);
+        padding: 3rem;
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .home-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .home-logo {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 1.5rem;
+        background: var(--gray-50);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+    }
+
+    .home-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--gray-900);
+    }
+
+    .home-subtitle {
+        font-size: 1.125rem;
+        color: var(--gray-600);
+    }
+
+    .home-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+    }
+
+    .action-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+        border: 1px solid var(--gray-200);
+        box-shadow: var(--shadow-sm);
+        display: block;
+    }
+
+    .action-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--ifb-verde);
+        box-shadow: var(--shadow-lg);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .action-card-icon {
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 1.5rem;
+        background: var(--ifb-verde);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .action-card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--gray-900);
+    }
+
+    .action-card-description {
+        color: var(--gray-600);
+        line-height: 1.6;
+        font-size: 0.9375rem;
+    }
+
+    .action-card-comissao {
+        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+        color: white;
+    }
+
+    .action-card-comissao .action-card-title,
+    .action-card-comissao .action-card-description {
+        color: white;
+    }
+
+    .action-card-restrito {
+        background: var(--gray-50);
+    }
+
+    .action-card-restrito .action-card-icon {
+        background: var(--gray-500);
+    }
+
+    .home-footer {
+        text-align: center;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--gray-200);
+    }
+
+    .home-footer-text {
+        margin-bottom: 1rem;
+        color: var(--gray-600);
+    }
+
+    .home-footer-links {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .home-footer-links a {
+        color: var(--ifb-verde);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .home-footer-links a:hover {
+        text-decoration: underline;
+    }
+
+    .home-footer-links span {
+        color: var(--gray-400);
+    }
+
+    /* === Responsive Home === */
+    @media (max-width: 768px) {
+        .home-hero {
+            padding: 1rem;
+            align-items: flex-start;
+            padding-top: 2rem;
+        }
+
+        .home-card {
+            padding: 2rem 1.5rem;
+        }
+
+        .home-title {
+            font-size: 2rem;
+        }
+
+        .home-subtitle {
+            font-size: 1rem;
+        }
+
+        .home-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .action-card {
+            padding: 1.5rem;
+        }
+
+        .home-footer-links {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .home-footer-links span {
+            display: none;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .home-card {
+            padding: 1.5rem 1rem;
+        }
+
+        .home-title {
+            font-size: 1.75rem;
+        }
+
+        .action-card {
+            padding: 1.25rem;
+        }
+    }
+</style>
+{% endblock %}

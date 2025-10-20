@@ -1,0 +1,200 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Ocorrências{% endblock %}
+
+{% block header_title %}Gerenciar Ocorrências{% endblock %}
+
+{% block breadcrumb %}
+    {% include 'core/components/breadcrumb.html' with breadcrumbs=breadcrumbs_list %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Filtros e Busca -->
+    <div class="card mb-4">
+        <div class="card-header flex-between">
+            <h2 class="card-title">Filtros</h2>
+            <div class="flex gap-2">
+                <a href="{% url 'ocorrencia_create' %}" class="btn btn-primary btn-sm">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Nova Ocorrência
+                </a>
+                <a href="{% url 'ocorrencia_rapida_create' %}" class="btn btn-outline btn-sm">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    Registro Rápido
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" action="{% url 'ocorrencia_list' %}" class="grid-2">
+                <!-- Busca Textual -->
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label">Buscar</label>
+                    <input type="search" 
+                           name="q" 
+                           class="form-control" 
+                           placeholder="Buscar por descrição, nome do estudante ou matrícula..."
+                           value="{{ busca }}"
+                           hx-get="{% url 'ocorrencia_list' %}"
+                           hx-trigger="keyup changed delay:500ms"
+                           hx-target="#results"
+                           hx-include="[name='status'], [name='curso'], [name='turma'], [name='gravidade'], [name='data_inicio'], [name='data_fim']">
+                </div>
+                
+                <!-- Filtros -->
+                <div class="form-group">
+                    <label class="form-label">Data Início</label>
+                    {{ filtro_form.data_inicio }}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Data Fim</label>
+                    {{ filtro_form.data_fim }}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    {{ filtro_form.status }}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Curso</label>
+                    {{ filtro_form.curso }}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Turma</label>
+                    {{ filtro_form.turma }}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Gravidade</label>
+                    {{ filtro_form.gravidade }}
+                </div>
+                
+                <div class="form-group" style="grid-column: 1 / -1; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                        </svg>
+                        Filtrar
+                    </button>
+                    <a href="{% url 'ocorrencia_list' %}" class="btn btn-outline">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Resultados -->
+    <div id="results">
+        <div class="card">
+            <div class="card-header flex-between">
+                <h2 class="card-title">
+                    Ocorrências Encontradas
+                    <span style="color: var(--gray-500); font-weight: normal; font-size: 0.875rem;">
+                        ({{ ocorrencias.paginator.count }} total)
+                    </span>
+                </h2>
+                <div class="flex gap-2">
+                    <button class="btn btn-outline btn-sm">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Exportar
+                    </button>
+                </div>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Data/Hora</th>
+                                <th>Estudante(s)</th>
+                                <th>Curso/Turma</th>
+                                <th>Infração</th>
+                                <th>Status</th>
+                                <th>Gravidade</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ocorrencia in ocorrencias %}
+                            <tr>
+                                <td><strong>#{{ ocorrencia.id }}</strong></td>
+                                <td>
+                                    {{ ocorrencia.data|date:"d/m/Y" }}<br>
+                                    <small style="color: var(--gray-600);">{{ ocorrencia.horario|time:"H:i" }}</small>
+                                </td>
+                                <td>
+                                    {% for estudante in ocorrencia.estudantes.all %}
+                                        <div>{{ estudante.nome }}</div>
+                                        <small style="color: var(--gray-600);">{{ estudante.matricula_sga }}</small>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {{ ocorrencia.curso.nome|truncatewords:3 }}<br>
+                                    <small style="color: var(--gray-600);">{{ ocorrencia.turma.nome }}</small>
+                                </td>
+                                <td>
+                                    {% if ocorrencia.infracao %}
+                                        <div style="max-width: 200px;">
+                                            {{ ocorrencia.infracao.descricao|truncatewords:5 }}
+                                        </div>
+                                    {% else %}
+                                        <span style="color: var(--gray-500);">Não classificado</span>
+                                    {% endif %}
+                                </td>
+                                <td>{% include 'core/components/status_badge.html' with status=ocorrencia.status %}</td>
+                                <td>
+                                    {% if ocorrencia.infracao %}
+                                        <span class="badge badge-{{ ocorrencia.infracao.gravidade|lower }}">
+                                            {{ ocorrencia.infracao.get_gravidade_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-arquivada">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="flex gap-1">
+                                        <a href="{% url 'ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline btn-sm" title="Ver Detalhes">
+                                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center" style="padding: 3rem; color: var(--gray-500);">
+                                    <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    <div style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                        Nenhuma ocorrência encontrada
+                                    </div>
+                                    <div>Tente ajustar os filtros ou criar uma nova ocorrência.</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paginação -->
+        {% if ocorrencias.has_other_pages %}
+            {% include 'core/components/pagination.html' with page_obj=ocorrencias %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

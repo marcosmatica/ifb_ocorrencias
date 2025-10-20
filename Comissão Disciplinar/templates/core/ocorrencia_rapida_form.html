@@ -1,0 +1,190 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Registro Rápido{% endblock %}
+
+{% block header_title %}Registro Rápido de Ocorrência{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px;">
+    <div class="card">
+        <div class="card-header" style="background: linear-gradient(135deg, #006633 0%, #00994d 100%); color: white;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <div>
+                    <h2 class="card-title" style="color: white; margin: 0;">Registro Rápido</h2>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; opacity: 0.9;">
+                        Para ocorrências simples e frequentes
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <strong>💡 Dica:</strong> Use este formulário para registrar rapidamente ocorrências comuns como atrasos, uso indevido de celular, etc. Para casos mais complexos, use o formulário completo.
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+                
+                <!-- Tipo de Ocorrência -->
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 1rem; font-weight: 600;">
+                        Tipo de Ocorrência *
+                    </label>
+                    <div style="display: grid; gap: 0.75rem; margin-top: 0.5rem;">
+                        {% for value, label in form.fields.tipo_rapido.choices %}
+                        <label style="display: flex; align-items: center; padding: 1rem; border: 2px solid var(--gray-200); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;" 
+                               class="tipo-opcao"
+                               onmouseover="this.style.borderColor='var(--ifb-verde)'; this.style.background='var(--gray-50)'"
+                               onmouseout="this.style.borderColor='var(--gray-200)'; this.style.background='white'">
+                            <input type="radio" name="tipo_rapido" value="{{ value }}" 
+                                   style="width: 20px; height: 20px; margin-right: 1rem;"
+                                   onchange="document.querySelectorAll('.tipo-opcao').forEach(el => {el.style.borderColor='var(--gray-200)'; el.style.background='white';}); this.parentElement.style.borderColor='var(--ifb-verde)'; this.parentElement.style.background='#f0fdf4';">
+                            <div>
+                                <div style="font-weight: 600;">{{ label }}</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.25rem;">
+                                    {% if value == 'ATRASO' %}
+                                        Estudante chegou atrasado à aula
+                                    {% elif value == 'CELULAR' %}
+                                        Uso de celular durante a aula sem autorização
+                                    {% elif value == 'UNIFORME' %}
+                                        Estudante sem uniforme escolar
+                                    {% elif value == 'RECUSA' %}
+                                        Recusa em participar das atividades propostas
+                                    {% elif value == 'AUSENCIA' %}
+                                        Saída da sala sem autorização
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% if form.tipo_rapido.errors %}
+                        <div class="form-error">{{ form.tipo_rapido.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Data e Horário -->
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Data *</label>
+                        {{ form.data }}
+                        {% if form.data.errors %}
+                            <div class="form-error">{{ form.data.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Horário *</label>
+                        {{ form.horario }}
+                        {% if form.horario.errors %}
+                            <div class="form-error">{{ form.horario.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Turma -->
+                <div class="form-group">
+                    <label class="form-label">Turma *</label>
+                    {{ form.turma }}
+                    {% if form.turma.errors %}
+                        <div class="form-error">{{ form.turma.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Estudantes -->
+                <div class="form-group">
+                    <label class="form-label">Estudantes Envolvidos *</label>
+                    <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--gray-300); border-radius: var(--radius-md); padding: 1rem; background: white;">
+                        {{ form.estudantes }}
+                    </div>
+                    {% if form.estudantes.errors %}
+                        <div class="form-error">{{ form.estudantes.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">Selecione um ou mais estudantes</div>
+                </div>
+                
+                <!-- Botões -->
+                <div class="flex gap-2" style="justify-content: space-between; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-200);">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Voltar
+                    </a>
+                    <div class="flex gap-2">
+                        <a href="{% url 'ocorrencia_create' %}" class="btn btn-outline">
+                            Formulário Completo
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Registrar Rapidamente
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Card de Ajuda -->
+    <div class="card mt-4" style="border-left: 4px solid #3b82f6;">
+        <div class="card-body">
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #1e40af;">
+                ℹ️ Quando usar o Registro Rápido?
+            </h3>
+            <ul style="margin: 0; padding-left: 1.5rem; color: var(--gray-700); font-size: 0.875rem;">
+                <li style="margin-bottom: 0.5rem;">Ocorrências simples e recorrentes</li>
+                <li style="margin-bottom: 0.5rem;">Infrações leves que não requerem investigação detalhada</li>
+                <li style="margin-bottom: 0.5rem;">Quando você precisa documentar rapidamente durante a aula</li>
+            </ul>
+            <p style="margin: 1rem 0 0 0; font-size: 0.875rem; color: var(--gray-600);">
+                Para casos que envolvem evidências, testemunhas ou descrição detalhada, utilize o 
+                <a href="{% url 'ocorrencia_create' %}" style="color: var(--ifb-verde); font-weight: 600;">formulário completo</a>.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-control input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.5rem;
+}
+
+.form-control ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.form-control ul li {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.form-control ul li:last-child {
+    border-bottom: none;
+}
+
+.form-control ul li:hover {
+    background: var(--gray-50);
+}
+
+.form-control select,
+.form-control input[type="date"],
+.form-control input[type="time"] {
+    width: 100%;
+}
+</style>
+{% endblock %}

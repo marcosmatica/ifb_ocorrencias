@@ -1,0 +1,306 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Registrar Ocorrência{% endblock %}
+
+{% block header_title %}Registrar Nova Ocorrência{% endblock %}
+
+{% block breadcrumb %}
+    {% include 'core/components/breadcrumb.html' with breadcrumbs=breadcrumbs_list %}
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Formulário de Ocorrência</h2>
+            <p style="margin-top: 0.5rem; color: var(--gray-600); font-size: 0.875rem;">
+                Preencha todos os campos obrigatórios para registrar uma nova ocorrência.
+            </p>
+        </div>
+
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="ocorrencia-form">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- Filtro de Turma para Estudantes -->
+                <div class="form-filter-container">
+                    <div class="form-filter-title">Filtrar Estudantes por Turma</div>
+                    <div class="form-filter-grid">
+                        <div>
+                            <label class="form-label">Selecionar Turma</label>
+                            <select name="turma_filtro" id="turma-filtro" class="form-control">
+                                <option value="">Todas as Turmas</option>
+                                {% for turma in form.fields.turma_filtro.queryset %}
+                                <option value="{{ turma.id }}">{{ turma.nome }} - {{ turma.curso.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <button type="button" id="aplicar-filtro" class="btn btn-primary">Aplicar Filtro</button>
+                            <button type="button" id="limpar-filtro" class="btn btn-outline">Limpar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Informações Básicas -->
+                <div class="grid-2 mb-4">
+                    <div class="form-group">
+                        <label class="form-label">Data *</label>
+                        {{ form.data }}
+                        {% if form.data.errors %}
+                            <div class="form-error">{{ form.data.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Horário *</label>
+                        {{ form.horario }}
+                        {% if form.horario.errors %}
+                            <div class="form-error">{{ form.horario.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid-2 mb-4">
+                    <div class="form-group">
+                        <label class="form-label">Curso *</label>
+                        {{ form.curso }}
+                        {% if form.curso.errors %}
+                            <div class="form-error">{{ form.curso.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Turma *</label>
+                        {{ form.turma }}
+                        {% if form.turma.errors %}
+                            <div class="form-error">{{ form.turma.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Estudantes Envolvidos -->
+                <div class="form-group mb-4">
+                    <label class="form-label">Estudantes Envolvidos *</label>
+                    <div class="student-selection-container">
+                        <div class="student-checkbox-group" id="estudantes-container">
+                            {% for estudante in form.estudantes.field.queryset %}
+                            <label class="student-checkbox-item">
+                                <input type="checkbox" name="estudantes" value="{{ estudante.id }}"
+                                       {% if estudante.id in form.estudantes.value %}checked{% endif %}>
+                                <div class="student-info">
+                                    <div class="student-name">{{ estudante.nome }}</div>
+                                    <div class="student-details">
+                                        {{ estudante.matricula_sga }} | {{ estudante.turma.nome }}
+                                    </div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if form.estudantes.errors %}
+                        <div class="form-error">{{ form.estudantes.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Selecione um ou mais estudantes envolvidos na ocorrência.
+                    </div>
+                </div>
+
+                <!-- Descrição e Infração -->
+                <div class="form-group mb-4">
+                    <label class="form-label">Descrição do Fato *</label>
+                    {{ form.descricao }}
+                    {% if form.descricao.errors %}
+                        <div class="form-error">{{ form.descricao.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Descreva detalhadamente o ocorrido, incluindo local, circunstâncias e pessoas envolvidas.
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label">Infração Imputada</label>
+                    {{ form.infracao }}
+                    {% if form.infracao.errors %}
+                        <div class="form-error">{{ form.infracao.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Selecione a infração disciplinar correspondente ao fato descrito.
+                    </div>
+                </div>
+
+                <!-- Informações Adicionais -->
+                <div class="grid-2 mb-4">
+                    <div class="form-group">
+                        <label class="form-label">Testemunhas</label>
+                        {{ form.testemunhas }}
+                        {% if form.testemunhas.errors %}
+                            <div class="form-error">{{ form.testemunhas.errors }}</div>
+                        {% endif %}
+                        <div class="form-help">
+                            Informe o nome e contato das testemunhas, se houver.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Medida Preventiva Aplicada</label>
+                        {{ form.medida_preventiva }}
+                        {% if form.medida_preventiva.errors %}
+                            <div class="form-error">{{ form.medida_preventiva.errors }}</div>
+                        {% endif %}
+                        <div class="form-help">
+                            Descreva as medidas imediatas tomadas para conter a situação.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evidências -->
+                <div class="form-group mb-4">
+                    <label class="form-label">Evidências (Opcional)</label>
+                    <div style="padding: 1.5rem; border: 2px dashed var(--gray-300); border-radius: var(--radius-md); text-align: center; background: var(--gray-50);">
+                        {{ form.evidencias }}
+                        <div style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--gray-600);">
+                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 0.5rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            <div>Clique para selecionar um arquivo ou arraste aqui</div>
+                            <div style="margin-top: 0.25rem; color: var(--gray-500); font-size: 0.8125rem;">
+                                PDF, imagens, vídeos (máx. 10MB)
+                            </div>
+                        </div>
+                    </div>
+                    {% if form.evidencias.errors %}
+                        <div class="form-error">{{ form.evidencias.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Botões -->
+                <div class="flex gap-2" style="justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                    <a href="{% url 'home' %}" class="btn btn-outline">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Registrar Ocorrência
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const turmaFiltro = document.getElementById('turma-filtro');
+    const aplicarFiltro = document.getElementById('aplicar-filtro');
+    const limparFiltro = document.getElementById('limpar-filtro');
+    const estudantesContainer = document.getElementById('estudantes-container');
+    const form = document.getElementById('ocorrencia-form');
+
+    // Aplicar filtro
+    aplicarFiltro.addEventListener('click', function() {
+        const turmaId = turmaFiltro.value;
+        if (turmaId) {
+            // Recarregar a página com o filtro aplicado
+            const url = new URL(window.location.href);
+            url.searchParams.set('turma_filtro', turmaId);
+            window.location.href = url.toString();
+        }
+    });
+
+    // Limpar filtro
+    limparFiltro.addEventListener('click', function() {
+        turmaFiltro.value = '';
+        const url = new URL(window.location.href);
+        url.searchParams.delete('turma_filtro');
+        window.location.href = url.toString();
+    });
+
+    // Atualizar dinamicamente a lista de estudantes (opcional - para implementação futura com AJAX)
+    function filtrarEstudantes(turmaId) {
+        const checkboxes = estudantesContainer.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            const item = checkbox.closest('.student-checkbox-item');
+            if (!turmaId || item.querySelector('.student-details').textContent.includes(turmaId)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // Se já veio com filtro aplicado, mostrar apenas os estudantes da turma
+    const urlParams = new URLSearchParams(window.location.search);
+    const turmaFiltroParam = urlParams.get('turma_filtro');
+    if (turmaFiltroParam) {
+        turmaFiltro.value = turmaFiltroParam;
+        filtrarEstudantes(turmaFiltroParam);
+    }
+});
+</script>
+
+<style>
+.student-selection-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    background: var(--gray-50);
+}
+
+.student-checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 0.5rem;
+}
+
+.student-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.student-checkbox-item:hover {
+    background: var(--gray-100);
+}
+
+.student-checkbox-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.student-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-name {
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.student-details {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+}
+</style>
+{% endblock %}

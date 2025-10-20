@@ -1,0 +1,247 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Apresentar Defesa{% endblock %}
+
+{% block header_title %}Apresentar Defesa{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <!-- Informações da Ocorrência -->
+    <div class="card mb-4">
+        <div class="card-header" style="background: var(--ifb-verde); color: white;">
+            <h2 class="card-title" style="color: white; margin: 0;">Ocorrência #{{ ocorrencia.id }}</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid-2 mb-3">
+                <div>
+                    <label style="display: flex; align-items: start; gap: 0.75rem; cursor: pointer;">
+                        <input type="checkbox" required style="width: 20px; height: 20px; margin-top: 0.125rem;">
+                        <span style="font-size: 0.875rem; color: var(--gray-700);">
+                            Declaro que as informações prestadas são verdadeiras e estou ciente de que a falsidade 
+                            ideológica constitui crime previsto no Código Penal (Art. 299).
+                        </span>
+                    </label>
+                </div>
+                
+                <!-- Botões -->
+                <div class="flex gap-2" style="justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                    <a href="{% url 'ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Voltar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Protocolar Defesa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Informações Adicionais -->
+    <div class="card mt-4" style="border-left: 4px solid #10b981;">
+        <div class="card-body">
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #065f46;">
+                ✅ Próximos Passos
+            </h3>
+            <ol style="margin: 0; padding-left: 1.5rem; color: var(--gray-700); font-size: 0.875rem; line-height: 1.8;">
+                <li>Após protocolar sua defesa, você receberá uma confirmação por e-mail</li>
+                <li>A defesa será analisada pela comissão disciplinar</li>
+                <li>Você será notificado sobre a decisão dentro do prazo regulamentar</li>
+                <li>Caso necessário, você poderá apresentar recurso após a decisão</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-control textarea {
+    width: 100%;
+    min-height: 300px;
+    font-family: inherit;
+}
+
+.form-control input[type="file"] {
+    cursor: pointer;
+}
+</style>
+
+
+<label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Data</label>
+                    <p style="margin-top: 0.25rem;">{{ ocorrencia.data|date:"d/m/Y" }}</p>
+                </div>
+                <div>
+                    <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Horário</label>
+                    <p style="margin-top: 0.25rem;">{{ ocorrencia.horario|time:"H:i" }}</p>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Descrição do Fato</label>
+                <div style="margin-top: 0.5rem; padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md); white-space: pre-wrap;">{{ ocorrencia.descricao }}</div>
+            </div>
+            
+            {% if ocorrencia.infracao %}
+            <div>
+                <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Infração Imputada</label>
+                <div style="margin-top: 0.5rem; padding: 0.75rem; background: #fee2e2; border-radius: var(--radius-md); border-left: 4px solid #ef4444;">
+                    <div style="font-weight: 600;">{{ ocorrencia.infracao.codigo }}</div>
+                    <div style="margin-top: 0.25rem;">{{ ocorrencia.infracao.descricao }}</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Prazo -->
+    {% if ocorrencia.prazo_defesa %}
+    <div class="alert alert-warning mb-4">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <strong>Prazo para Apresentação de Defesa</strong>
+                <p style="margin-top: 0.25rem;">Você tem até <strong>{{ ocorrencia.prazo_defesa|date:"d/m/Y" }}</strong> para apresentar sua defesa.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Formulário de Defesa -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Formulário de Defesa</h2>
+            <p style="margin-top: 0.5rem; color: var(--gray-600); font-size: 0.875rem;">
+                Apresente seus argumentos de defesa de forma clara e objetiva.
+            </p>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+                
+                <!-- Orientações -->
+                <div style="padding: 1rem; background: #dbeafe; border-radius: var(--radius-md); border-left: 4px solid #3b82f6; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1rem; font-weight: 600; color: #1e40af; margin-bottom: 0.5rem;">
+                        📋 Orientações para a Defesa
+                    </h3>
+                    <ul style="margin: 0.5rem 0 0 1.5rem; color: #1e40af; font-size: 0.875rem; line-height: 1.6;">
+                        <li>Exponha os fatos de forma clara e objetiva</li>
+                        <li>Apresente testemunhas, se houver</li>
+                        <li>Anexe documentos que comprovem sua argumentação</li>
+                        <li>Mantenha um tom respeitoso</li>
+                        <li>Seja preciso nas informações</li>
+                    </ul>
+                </div>
+                
+                <!-- Argumentação -->
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 1rem; font-weight: 600;">
+                        Argumentação de Defesa *
+                    </label>
+                    {{ form.defesa_texto }}
+                    {% if form.defesa_texto.errors %}
+                        <div class="form-error">{{ form.defesa_texto.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Descreva detalhadamente sua versão dos fatos e seus argumentos de defesa.
+                        Seja claro e objetivo. Inclua informações sobre testemunhas, se houver.
+                    </div>
+                </div>
+                
+                <!-- Anexo -->
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 1rem; font-weight: 600;">
+                        Documento Anexo (Opcional)
+                    </label>
+                    <div style="padding: 1.5rem; border: 2px dashed var(--gray-300); border-radius: var(--radius-md); text-align: center; background: var(--gray-50);">
+                        {{ form.defesa_arquivo }}
+                        <div style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--gray-600);">
+                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 0.5rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            <div>Clique para selecionar um arquivo ou arraste aqui</div>
+                            <div style="margin-top: 0.25rem; color: var(--gray-500); font-size: 0.8125rem;">
+                                PDF, Word, imagens (máx. 10MB)
+                            </div>
+                        </div>
+                    </div>
+                    {% if form.defesa_arquivo.errors %}
+                        <div class="form-error">{{ form.defesa_arquivo.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Você pode anexar documentos, declarações, prints ou qualquer arquivo que comprove sua defesa.
+                    </div>
+                </div>
+                
+                <!-- Declaração -->
+                  <div class="form-group" style="padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+                    <label style="display: flex; align-items: start; gap: 0.75rem; cursor: pointer;">
+                        <input type="checkbox" name="declaracao" required class="form-control" style="width: 20px; height: 20px; margin-top: 0.125rem;">
+                        <span style="font-size: 0.875rem; color: var(--gray-700);">
+                            Declaro que as informações prestadas são verdadeiras e estou ciente de que a falsidade
+                            ideológica constitui crime previsto no Código Penal (Art. 299).
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Botões -->
+                <div class="flex gap-2" style="justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                    <a href="{% url 'ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Voltar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Protocolar Defesa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Informações Adicionais -->
+    <div class="card mt-4" style="border-left: 4px solid #10b981;">
+        <div class="card-body">
+            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #065f46;">
+                ✅ Próximos Passos
+            </h3>
+            <ol style="margin: 0; padding-left: 1.5rem; color: var(--gray-700); font-size: 0.875rem; line-height: 1.8;">
+                <li>Após protocolar sua defesa, você receberá uma confirmação por e-mail</li>
+                <li>A defesa será analisada pela comissão disciplinar</li>
+                <li>Você será notificado sobre a decisão dentro do prazo regulamentar</li>
+                <li>Caso necessário, você poderá apresentar recurso após a decisão</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-control textarea {
+    width: 100%;
+    min-height: 300px;
+    font-family: inherit;
+}
+
+.form-control input[type="file"] {
+    cursor: pointer;
+    width: 100%;
+    padding: 1rem;
+}
+</style>
+{% endblock %}

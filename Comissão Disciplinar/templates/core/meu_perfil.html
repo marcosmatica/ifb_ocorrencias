@@ -1,0 +1,168 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Meu Perfil{% endblock %}
+
+{% block header_title %}Meu Perfil{% endblock %}
+
+{% block breadcrumb %}
+    {% include 'core/components/breadcrumb.html' with breadcrumbs=breadcrumbs_list %}
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div class="grid-2">
+        <!-- Coluna Esquerda - Informações Pessoais -->
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title">Informações Pessoais</h2>
+                </div>
+                <div class="card-body">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <div style="width: 100px; height: 100px; margin: 0 auto 1rem; background: var(--ifb-verde); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 600;">
+                            {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
+                        </div>
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem;">
+                            {{ user.get_full_name|default:user.username }}
+                        </h3>
+                        <p style="color: var(--gray-600); font-size: 0.875rem;">
+                            {{ user.email }}
+                        </p>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Usuário</label>
+                            <p style="margin-top: 0.25rem;">{{ user.username }}</p>
+                        </div>
+                        
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">E-mail</label>
+                            <p style="margin-top: 0.25rem;">{{ user.email }}</p>
+                        </div>
+                        
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Data de Cadastro</label>
+                            <p style="margin-top: 0.25rem;">{{ user.date_joined|date:"d/m/Y" }}</p>
+                        </div>
+                        
+                        {% if user.servidor %}
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Cargo/Função</label>
+                            <p style="margin-top: 0.25rem;">
+                                {{ user.servidor.cargo|default:"Servidor" }}
+                                {% if user.servidor.membro_comissao_disciplinar %}
+                                <span class="badge badge-primary" style="margin-left: 0.5rem;">Comissão Disciplinar</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas Pessoais -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Minhas Estatísticas</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <span>Ocorrências Registradas</span>
+                            <span style="font-weight: 600;">{{ minhas_ocorrencias|default:0 }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <span>Notificações Não Lidas</span>
+                            <span style="font-weight: 600;">{{ notificacoes_nao_lidas|default:0 }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <span>Último Acesso</span>
+                            <span style="font-weight: 600;">{{ user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna Direita - Ações e Preferências -->
+        <div>
+            <!-- Ações Rápidas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title">Ações Rápidas</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <a href="{% url 'preferencias_notificacao' %}" class="btn btn-outline" style="justify-content: center;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.5 3.75a6 6 0 00-6 6v2.25l-2.47 2.47a.75.75 0 00.53 1.28h15.88a.75.75 0 00.53-1.28L16.5 12V9.75a6 6 0 00-6-6z"/>
+                            </svg>
+                            Preferências de Notificação
+                        </a>
+                        
+                        <a href="{% url 'password_reset' %}" class="btn btn-outline" style="justify-content: center;">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                            </svg>
+                            Alterar Senha
+                        </a>
+                        
+                        <a href="{% url 'guia_regulamento_discente' %}" class="btn btn-outline" style="justify-content: center;" target="_blank">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Guia do Regulamento
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Atividade Recente -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Atividade Recente</h2>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-date">{{ user.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</div>
+                                <strong>Último acesso ao sistema</strong>
+                            </div>
+                        </div>
+                        
+                        {% if user.servidor %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker" style="background: #10b981;"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-date">{% now "d/m/Y" %}</div>
+                                <strong>Perfil de servidor ativo</strong>
+                                <p style="margin-top: 0.25rem; color: var(--gray-600); font-size: 0.875rem;">
+                                    {% if user.servidor.membro_comissao_disciplinar %}
+                                    Membro da Comissão Disciplinar
+                                    {% else %}
+                                    Servidor com permissões básicas
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Aqui você pode adicionar mais atividades recentes do usuário -->
+                        <div class="timeline-item">
+                            <div class="timeline-marker" style="background: #3b82f6;"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-date">{% now "d/m/Y" %}</div>
+                                <strong>Perfil visualizado</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

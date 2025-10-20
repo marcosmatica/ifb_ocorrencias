@@ -1,0 +1,155 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Notificações{% endblock %}
+
+{% block header_title %}Minhas Notificações{% endblock %}
+
+{% block breadcrumb %}
+    {% include 'core/components/breadcrumb.html' with breadcrumbs=breadcrumbs_list %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header flex-between">
+            <h2 class="card-title">Notificações</h2>
+            <div class="flex gap-2">
+                <a href="{% url 'preferencias_notificacao' %}" class="btn btn-outline btn-sm">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    Preferências
+                </a>
+                <form method="post" action="{% url 'notificacao_marcar_todas_lidas' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        Marcar Todas como Lidas
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <!-- Filtros -->
+            <div class="flex gap-4 mb-4" style="flex-wrap: wrap;">
+                <div>
+                    <label class="form-label">Filtrar por Tipo:</label>
+                    <select onchange="window.location.href = this.value" class="form-control" style="width: auto;">
+                        <option value="{% url 'notificacoes_list' %}">Todos os Tipos</option>
+                        {% for tipo_val, tipo_nome in tipos_notificacao %}
+                        <option value="{% url 'notificacoes_list' %}?tipo={{ tipo_val }}" 
+                                {% if request.GET.tipo == tipo_val %}selected{% endif %}>
+                            {{ tipo_nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="form-label">Filtrar por Status:</label>
+                    <select onchange="window.location.href = this.value" class="form-control" style="width: auto;">
+                        <option value="{% url 'notificacoes_list' %}">Todas</option>
+                        <option value="{% url 'notificacoes_list' %}?lida=false" 
+                                {% if request.GET.lida == 'false' %}selected{% endif %}>
+                            Não Lidas
+                        </option>
+                        <option value="{% url 'notificacoes_list' %}?lida=true" 
+                                {% if request.GET.lida == 'true' %}selected{% endif %}>
+                            Lidas
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Lista de Notificações -->
+            <div class="space-y-3">
+                {% for notificacao in notificacoes %}
+                <div class="notification-item {% if not notificacao.lida %}notification-unread{% endif %} 
+                            priority-{{ notificacao.prioridade|lower }}"
+                     style="padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--gray-200);
+                            {% if not notificacao.lida %}background: var(--gray-50); border-left: 4px solid var(--ifb-verde);{% endif %}">
+                    
+                    <div class="flex-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 style="font-weight: 600; margin: 0; font-size: 1rem;">
+                                    {{ notificacao.titulo }}
+                                </h3>
+                                <span class="badge badge-{{ notificacao.prioridade|lower }}" 
+                                      style="font-size: 0.75rem;">
+                                    {{ notificacao.get_prioridade_display }}
+                                </span>
+                                <span class="badge" style="background: var(--gray-200); color: var(--gray-700); font-size: 0.75rem;">
+                                    {{ notificacao.get_tipo_display }}
+                                </span>
+                            </div>
+                            
+                            <p style="margin: 0.5rem 0; color: var(--gray-700);">
+                                {{ notificacao.mensagem }}
+                            </p>
+                            
+                            <div class="flex-between">
+                                <small style="color: var(--gray-500);">
+                                    {{ notificacao.criado_em|date:"d/m/Y H:i" }}
+                                </small>
+                                
+                                <div class="flex gap-2">
+                                    {% if notificacao.ocorrencia %}
+                                    <a href="{% url 'ocorrencia_detail' notificacao.ocorrencia.pk %}" 
+                                       class="btn btn-outline btn-sm">
+                                        Ver Ocorrência
+                                    </a>
+                                    {% endif %}
+                                    
+                                    {% if not notificacao.lida %}
+                                    <form method="post" action="{% url 'notificacao_marcar_lida' notificacao.pk %}" 
+                                          style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            Marcar como Lida
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="text-align: center; padding: 3rem; color: var(--gray-500);">
+                    <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.5 3.75a6 6 0 00-6 6v2.25l-2.47 2.47a.75.75 0 00.53 1.28h15.88a.75.75 0 00.53-1.28L16.5 12V9.75a6 6 0 00-6-6z"/>
+                    </svg>
+                    <p>Nenhuma notificação encontrada.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.notification-unread {
+    background: #f0f9ff !important;
+    border-left-color: #3b82f6 !important;
+}
+
+.priority-urgente {
+    border-left-color: #ef4444 !important;
+}
+
+.priority-alta {
+    border-left-color: #f97316 !important;
+}
+
+.priority-media {
+    border-left-color: #eab308 !important;
+}
+
+.priority-baixa {
+    border-left-color: #10b981 !important;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Relatórios e Estatísticas{% endblock %}
+
+{% block header_title %}Relatórios e Estatísticas{% endblock %}
+
+{% block breadcrumb %}
+    {% include 'core/components/breadcrumb.html' with breadcrumbs=breadcrumbs_list %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="card-title">Filtros do Relatório</h2>
+        </div>
+        <div class="card-body">
+            <form method="get" class="form-filter-grid">
+                <div>
+                    <label class="form-label">Data Início</label>
+                    <input type="date" name="data_inicio" class="form-control">
+                </div>
+                <div>
+                    <label class="form-label">Data Fim</label>
+                    <input type="date" name="data_fim" class="form-control">
+                </div>
+                <div>
+                    <label class="form-label">Curso</label>
+                    <select name="curso" class="form-control">
+                        <option value="">Todos os Cursos</option>
+                        <!-- Opções de cursos -->
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Turma</label>
+                    <select name="turma" class="form-control">
+                        <option value="">Todas as Turmas</option>
+                        <!-- Opções de turmas -->
+                    </select>
+                </div>
+                <div style="align-self: end;">
+                    <button type="submit" class="btn btn-primary">Aplicar Filtros</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <!-- Estatísticas Gerais -->
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title">Estatísticas Gerais</h2>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid" style="grid-template-columns: 1fr;">
+                        <div class="stat-card">
+                            <div class="stat-label">Total de Ocorrências</div>
+                            <div class="stat-value">{{ total_ocorrencias }}</div>
+                            <div class="stat-change positive">+12% este ano</div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div style="padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md);">
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">Ocorrências Abertas</div>
+                                <div style="font-size: 1.5rem; font-weight: 600;">24</div>
+                            </div>
+                            <div style="padding: 1rem; background: var(--gray-50); border-radius: var(--radius-md);">
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">Média Mensal</div>
+                                <div style="font-size: 1.5rem; font-weight: 600;">18</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Distribuição por Gravidade -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Distribuição por Gravidade</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="badge badge-leve" style="width: 12px; height: 12px; padding: 0;"></span>
+                                <span>Leves</span>
+                            </div>
+                            <div style="font-weight: 600;">45%</div>
+                        </div>
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="badge badge-media" style="width: 12px; height: 12px; padding: 0;"></span>
+                                <span>Médias</span>
+                            </div>
+                            <div style="font-weight: 600;">30%</div>
+                        </div>
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="badge badge-grave" style="width: 12px; height: 12px; padding: 0;"></span>
+                                <span>Graves</span>
+                            </div>
+                            <div style="font-weight: 600;">20%</div>
+                        </div>
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="badge badge-gravissima" style="width: 12px; height: 12px; padding: 0;"></span>
+                                <span>Gravíssimas</span>
+                            </div>
+                            <div style="font-weight: 600;">5%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Relatórios Disponíveis -->
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Relatórios Disponíveis</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div class="dashboard-card">
+                            <h3 class="dashboard-card-title">Relatório Mensal</h3>
+                            <p class="dashboard-card-content">
+                                Relatório completo com todas as ocorrências do mês, estatísticas e análises.
+                            </p>
+                            <button class="btn btn-primary btn-sm">Gerar Relatório</button>
+                        </div>
+                        
+                        <div class="dashboard-card">
+                            <h3 class="dashboard-card-title">Por Curso/Turma</h3>
+                            <p class="dashboard-card-content">
+                                Análise detalhada por curso e turma, com comparativos e tendências.
+                            </p>
+                            <button class="btn btn-primary btn-sm">Gerar Relatório</button>
+                        </div>
+                        
+                        <div class="dashboard-card">
+                            <h3 class="dashboard-card-title">Infrações Mais Comuns</h3>
+                            <p class="dashboard-card-content">
+                                Lista das infrações mais frequentes e recomendações para prevenção.
+                            </p>
+                            <button class="btn btn-primary btn-sm">Gerar Relatório</button>
+                        </div>
+                        
+                        <div class="dashboard-card">
+                            <h3 class="dashboard-card-title">Eficiência Processual</h3>
+                            <p class="dashboard-card-content">
+                                Análise de prazos e eficiência no processamento das ocorrências.
+                            </p>
+                            <button class="btn btn-primary btn-sm">Gerar Relatório</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

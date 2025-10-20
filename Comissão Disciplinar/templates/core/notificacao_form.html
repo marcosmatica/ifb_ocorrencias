@@ -1,0 +1,193 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Enviar Notificação{% endblock %}
+
+{% block header_title %}Enviar Notificação{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <!-- Info da Ocorrência -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="card-title">Ocorrência #{{ ocorrencia.id }}</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid-2">
+                <div>
+                    <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Data</label>
+                    <p style="margin-top: 0.25rem;">{{ ocorrencia.data|date:"d/m/Y" }}</p>
+                </div>
+                <div>
+                    <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Status</label>
+                    <div style="margin-top: 0.25rem;">
+                        {% include 'core/components/status_badge.html' with status=ocorrencia.status %}
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 1rem;">
+                <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">Estudantes</label>
+                <div style="margin-top: 0.5rem;">
+                    {% for estudante in ocorrencia.estudantes.all %}
+                        <div style="display: inline-block; margin-right: 0.5rem; margin-bottom: 0.5rem;">
+                            <span class="badge" style="background: var(--gray-100); color: var(--gray-800); padding: 0.5rem 0.75rem;">
+                                {{ estudante.nome }}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Formulário de Notificação -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Nova Notificação</h2>
+            <p style="margin-top: 0.5rem; color: var(--gray-600); font-size: 0.875rem;">
+                Envie notificação oficial aos estudantes e responsáveis
+            </p>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+                
+                <!-- Tipo de Notificação -->
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 1rem; font-weight: 600;">
+                        Tipo de Notificação *
+                    </label>
+                    <div style="display: grid; gap: 0.75rem; margin-top: 0.5rem;">
+                        {% for value, label in form.fields.tipo.choices %}
+                        <label style="display: flex; align-items: center; padding: 1rem; border: 2px solid var(--gray-200); border-radius: var(--radius-md); cursor: pointer;">
+                            <input type="radio" name="tipo" value="{{ value }}" 
+                                   style="width: 20px; height: 20px; margin-right: 1rem;"
+                                   {% if form.tipo.value == value %}checked{% endif %}>
+                            <div>
+                                <div style="font-weight: 600;">{{ label }}</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.25rem;">
+                                    {% if value == 'NOTIFICACAO' %}
+                                        Comunicação formal sobre a ocorrência
+                                    {% elif value == 'INTIMACAO' %}
+                                        Convocação formal para comparecer ou apresentar defesa
+                                    {% elif value == 'COMUNICADO' %}
+                                        Informação sobre andamento do processo
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% if form.tipo.errors %}
+                        <div class="form-error">{{ form.tipo.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Meio de Envio -->
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 1rem; font-weight: 600;">
+                        Meio de Envio *
+                    </label>
+                    {{ form.meio_envio }}
+                    {% if form.meio_envio.errors %}
+                        <div class="form-error">{{ form.meio_envio.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Selecione como a notificação será enviada
+                    </div>
+                </div>
+                
+                <!-- Destinatários -->
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 1rem; font-weight: 600;">
+                        Destinatários *
+                    </label>
+                    {{ form.destinatarios }}
+                    {% if form.destinatarios.errors %}
+                        <div class="form-error">{{ form.destinatarios.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        E-mails separados por vírgula. Os e-mails dos estudantes e responsáveis já foram pré-preenchidos.
+                    </div>
+                </div>
+                
+                <!-- Texto da Notificação -->
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 1rem; font-weight: 600;">
+                        Texto da Notificação *
+                    </label>
+                    {{ form.texto }}
+                    {% if form.texto.errors %}
+                        <div class="form-error">{{ form.texto.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Redija o texto da notificação de forma clara e formal
+                    </div>
+                </div>
+                
+                <!-- Template Sugerido -->
+                <div style="padding: 1rem; background: #dbeafe; border-radius: var(--radius-md); border-left: 4px solid #3b82f6; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.875rem; font-weight: 600; color: #1e40af; margin-bottom: 0.5rem;">
+                        💡 Template Sugerido
+                    </h3>
+                    <div style="font-size: 0.875rem; color: #1e40af; font-family: monospace; background: white; padding: 0.75rem; border-radius: var(--radius-md); white-space: pre-line;">
+Prezado(a) Estudante/Responsável,
+
+Notificamos que foi registrada uma ocorrência disciplinar em {{ ocorrencia.data|date:"d/m/Y" }}.
+
+Descrição: {{ ocorrencia.descricao|truncatewords:20 }}
+
+Você tem o prazo de 5 (cinco) dias úteis, a contar do recebimento desta notificação, para apresentar defesa prévia.
+
+A defesa deverá ser protocolada através do sistema de ocorrências.
+
+Atenciosamente,
+Coordenação Pedagógica
+Instituto Federal de Brasília
+                    </div>
+                    <button type="button" class="btn btn-outline btn-sm" style="margin-top: 0.75rem;"
+                            onclick="document.querySelector('[name=texto]').value = this.previousElementSibling.textContent.trim()">
+                        Usar Template
+                    </button>
+                </div>
+                
+                <!-- Botões -->
+                <div class="flex gap-2" style="justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                    <a href="{% url 'ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        Enviar Notificação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Aviso Legal -->
+    <div class="alert alert-warning mt-4">
+        <strong>⚠️ Importante:</strong> Esta notificação tem caráter oficial e será registrada no sistema. 
+        Certifique-se de que todas as informações estão corretas antes de enviar.
+    </div>
+</div>
+
+<style>
+.form-control select,
+.form-control textarea {
+    width: 100%;
+}
+
+.form-control textarea {
+    min-height: 200px;
+}
+</style>
+{% endblock %}

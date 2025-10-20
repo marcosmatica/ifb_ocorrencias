@@ -1,0 +1,100 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Preferências de Notificação{% endblock %}
+
+{% block header_title %}Preferências de Notificação{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Configurações de Notificação</h2>
+            <p style="margin-top: 0.5rem; color: var(--gray-600); font-size: 0.875rem;">
+                Gerencie como você deseja receber notificações do sistema.
+            </p>
+        </div>
+        
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <!-- Notificações por E-mail -->
+                    <div>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-900);">
+                            Notificações por E-mail
+                        </h3>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                                <input type="checkbox" name="receber_email_novas_ocorrencias" 
+                                       {% if preferencias.receber_email_novas_ocorrencias %}checked{% endif %}
+                                       style="width: 18px; height: 18px;">
+                                <div>
+                                    <div style="font-weight: 500;">Novas Ocorrências</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                        Receber e-mail quando novas ocorrências forem registradas
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                                <input type="checkbox" name="receber_email_atualizacoes" 
+                                       {% if preferencias.receber_email_atualizacoes %}checked{% endif %}
+                                       style="width: 18px; height: 18px;">
+                                <div>
+                                    <div style="font-weight: 500;">Atualizações de Status</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                        Receber e-mail quando ocorrências forem atualizadas
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                                <input type="checkbox" name="receber_email_prazos" 
+                                       {% if preferencias.receber_email_prazos %}checked{% endif %}
+                                       style="width: 18px; height: 18px;">
+                                <div>
+                                    <div style="font-weight: 500;">Lembretes de Prazo</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                        Receber e-mail sobre prazos próximos do vencimento
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Notificações Urgentes -->
+                    <div>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-900);">
+                            Notificações Urgentes
+                        </h3>
+                        
+                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                            <input type="checkbox" name="receber_notificacoes_urgentes" 
+                                   {% if preferencias.receber_notificacoes_urgentes %}checked{% endif %}
+                                   style="width: 18px; height: 18px;">
+                            <div>
+                                <div style="font-weight: 500;">Notificações Urgentes</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                    Receber notificações e e-mails para eventos urgentes e críticos
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="border-top: 1px solid var(--gray-200); margin-top: 2rem; padding-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary">
+                        Salvar Preferências
+                    </button>
+                    <a href="{% url 'notificacoes_list' %}" class="btn btn-outline">
+                        Voltar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

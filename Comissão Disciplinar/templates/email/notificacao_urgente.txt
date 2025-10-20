@@ -1,0 +1,17 @@
+Sistema de Ocorrências IFB Recanto das Emas
+
+{{ titulo }}
+
+{{ mensagem }}
+
+{% if ocorrencia %}
+Ocorrência: #{{ ocorrencia.id }}
+Data: {{ ocorrencia.data|date:"d/m/Y" }}
+Curso: {{ ocorrencia.curso.nome }}
+Status: {{ ocorrencia.get_status_display }}
+
+Acesse: http://{{ domain }}{% url 'ocorrencia_detail' ocorrencia.pk %}
+{% endif %}
+
+---
+Esta é uma notificação automática. Não responda este e-mail.

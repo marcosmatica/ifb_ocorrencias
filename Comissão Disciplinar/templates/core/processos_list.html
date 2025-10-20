@@ -1,0 +1,170 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Processos em Andamento{% endblock %}
+
+{% block header_title %}Processos em Andamento{% endblock %}
+
+{% block breadcrumb %}
+    {% include 'core/components/breadcrumb.html' with breadcrumbs=breadcrumbs_list %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header flex-between">
+            <h2 class="card-title">Processos Disciplinares em Andamento</h2>
+            <div class="flex gap-2">
+                <a href="{% url 'comissao_dashboard' %}" class="btn btn-outline btn-sm">
+                    Voltar ao Dashboard
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Processo</th>
+                            <th>Data</th>
+                            <th>Estudante(s)</th>
+                            <th>Curso/Turma</th>
+                            <th>Status</th>
+                            <th>Infração</th>
+                            <th>Prazo Defesa</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for processo in processos %}
+                        <tr>
+                            <td><strong>#{{ processo.id }}</strong></td>
+                            <td>{{ processo.data|date:"d/m/Y" }}</td>
+                            <td>
+                                {% for estudante in processo.estudantes.all %}
+                                    {{ estudante.nome }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {{ processo.curso.nome|truncatewords:2 }}<br>
+                                <small style="color: var(--gray-600);">{{ processo.turma.nome }}</small>
+                            </td>
+                            <td>{% include 'core/components/status_badge.html' with status=processo.status %}</td>
+                            <td>
+                                {% if processo.infracao %}
+                                    <span class="badge badge-{{ processo.infracao.gravidade|lower }}">
+                                        {{ processo.infracao.get_gravidade_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-arquivada">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if processo.prazo_defesa %}
+                                    {{ processo.prazo_defesa|date:"d/m/Y" }}
+                                    {% now "Y-m-d" as today %}
+                                    {% if processo.prazo_defesa|date:"Y-m-d" < today %}
+                                        <br><small style="color: #ef4444;">⚠️ Vencido</small>
+                                    {% elif processo.prazo_defesa|date:"Y-m-d" == today %}
+                                        <br><small style="color: #eab308;">⏰ Hoje</small>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="flex gap-1">
+                                    <a href="{% url 'ocorrencia_detail' processo.pk %}" class="btn btn-outline btn-sm">
+                                        Ver
+                                    </a>
+                                    {% if processo.status == 'REGISTRADA' %}
+                                    <a href="{% url 'ocorrencia_iniciar_analise' processo.pk %}" class="btn btn-primary btn-sm">
+                                        Iniciar Análise
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center" style="padding: 3rem; color: var(--gray-500);">
+                                <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <p>Nenhum processo em andamento no momento.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas dos Processos -->
+    <div class="grid-3 mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Resumo por Status</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; justify-content: between; align-items: center;">
+                        <span>Registradas</span>
+                        <span class="badge badge-registrada">{{ processos|length }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: between; align-items: center;">
+                        <span>Em Análise</span>
+                        <span class="badge badge-analise">{{ processos|length }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: between; align-items: center;">
+                        <span>Aguardando Defesa</span>
+                        <span class="badge badge-aguardando">{{ processos|length }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Ações em Lote</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <button class="btn btn-outline btn-sm">
+                        Gerar Relatório de Processos
+                    </button>
+                    <button class="btn btn-outline btn-sm">
+                        Exportar para Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Próximos Prazos</h3>
+            </div>
+            <div class="card-body">
+                {% for processo in processos %}
+                    {% if processo.prazo_defesa and processo.prazo_defesa <= now|date:"Y-m-d"|add:"3" %}
+                    <div style="padding: 0.5rem; background: #fef3c7; border-radius: var(--radius-sm); margin-bottom: 0.5rem;">
+                        <div style="font-size: 0.875rem; font-weight: 600;">
+                            #{{ processo.id }}
+                        </div>
+                        <div style="font-size: 0.75rem; color: #92400e;">
+                            Vence: {{ processo.prazo_defesa|date:"d/m/Y" }}
+                        </div>
+                    </div>
+                    {% endif %}
+                {% empty %}
+                <div style="text-align: center; color: var(--gray-500); font-size: 0.875rem;">
+                    Nenhum prazo próximo
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Configurações do Sistema{% endblock %}
+
+{% block header_title %}Configurações do Sistema{% endblock %}
+
+{% block breadcrumb %}
+    {% include 'core/components/breadcrumb.html' with breadcrumbs=breadcrumbs_list %}
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Configurações do Sistema</h2>
+            <p style="margin-top: 0.5rem; color: var(--gray-600); font-size: 0.875rem;">
+                Configure as preferências e parâmetros do sistema de ocorrências.
+            </p>
+        </div>
+        
+        <div class="card-body">
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <!-- Notificações -->
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-900);">
+                        Configurações de Notificação
+                    </h3>
+                    <div class="card">
+                        <div class="card-body">
+                            <p style="margin-bottom: 1rem; color: var(--gray-700);">
+                                Gerencie como o sistema envia notificações para usuários e comissão disciplinar.
+                            </p>
+                            <a href="{% url 'preferencias_notificacao' %}" class="btn btn-primary">
+                                Gerenciar Preferências
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parâmetros do Sistema -->
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-900);">
+                        Parâmetros do Sistema
+                    </h3>
+                    <div class="card">
+                        <div class="card-body">
+                            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                <div>
+                                    <label class="form-label">Prazo para Defesa (dias úteis)</label>
+                                    <input type="number" class="form-control" value="5" style="max-width: 200px;">
+                                    <div class="form-help">
+                                        Número de dias úteis que o estudante tem para apresentar defesa.
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="form-label">Dias para alerta de prazo</label>
+                                    <input type="number" class="form-control" value="3" style="max-width: 200px;">
+                                    <div class="form-help">
+                                        Número de dias antes do vencimento para enviar alertas.
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="form-label">Limite de ocorrências por estudante</label>
+                                    <input type="number" class="form-control" value="10" style="max-width: 200px;">
+                                    <div class="form-help">
+                                        Número máximo de ocorrências antes de alerta automático.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup e Exportação -->
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-900);">
+                        Backup e Exportação
+                    </h3>
+                    <div class="card">
+                        <div class="card-body">
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div>
+                                    <p style="margin-bottom: 0.5rem; color: var(--gray-700);">
+                                        Exportar todos os dados do sistema para backup.
+                                    </p>
+                                    <button class="btn btn-outline">
+                                        Exportar Backup Completo
+                                    </button>
+                                </div>
+                                
+                                <div>
+                                    <p style="margin-bottom: 0.5rem; color: var(--gray-700);">
+                                        Último backup realizado: 15/03/2024 14:30
+                                    </p>
+                                    <button class="btn btn-outline">
+                                        Agendar Backup Automático
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manutenção -->
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--gray-900);">
+                        Manutenção do Sistema
+                    </h3>
+                    <div class="card">
+                        <div class="card-body">
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div>
+                                    <p style="margin-bottom: 0.5rem; color: var(--gray-700);">
+                                        Limpar cache do sistema e otimizar performance.
+                                    </p>
+                                    <button class="btn btn-outline">
+                                        Limpar Cache
+                                    </button>
+                                </div>
+                                
+                                <div>
+                                    <p style="margin-bottom: 0.5rem; color: var(--gray-700);">
+                                        Verificar integridade do banco de dados.
+                                    </p>
+                                    <button class="btn btn-outline">
+                                        Verificar Integridade
+                                    </button>
+                                </div>
+                                
+                                <div>
+                                    <p style="margin-bottom: 0.5rem; color: var(--gray-700);">
+                                        Acesso aos logs do sistema para troubleshooting.
+                                    </p>
+                                    <button class="btn btn-outline">
+                                        Acessar Logs do Sistema
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botões de Ação -->
+            <div style="border-top: 1px solid var(--gray-200); margin-top: 2rem; padding-top: 1.5rem;">
+                <button class="btn btn-primary">
+                    Salvar Configurações
+                </button>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline">
+                    Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

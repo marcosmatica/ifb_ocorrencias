@@ -1,0 +1,21 @@
+{% load static %}
+
+{% if status == 'REGISTRADA' %}
+<span class="badge badge-registrada">Registrada</span>
+{% elif status == 'EM_ANALISE' %}
+<span class="badge badge-analise">Em Análise</span>
+{% elif status == 'AGUARDANDO_DEFESA' %}
+<span class="badge badge-aguardando">Aguardando Defesa</span>
+{% elif status == 'EM_JULGAMENTO' %}
+<span class="badge badge-aguardando">Em Julgamento</span>
+{% elif status == 'FINALIZADA' %}
+<span class="badge badge-finalizada">Finalizada</span>
+{% elif status == 'ARQUIVADA' %}
+<span class="badge badge-arquivada">Arquivada</span>
+{% elif status == 'COM_RECURSO' %}
+<span class="badge badge-recurso">Com Recurso</span>
+{% elif status == 'COMISSAO_DESIGNADA' %}
+<span class="badge badge-analise">Comissão Designada</span>
+{% else %}
+<span class="badge badge-arquivada">{{ status }}</span>
+{% endif %}

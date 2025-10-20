@@ -1,0 +1,228 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block header_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total de Ocorrências</div>
+            <div class="stat-value">{{ total_ocorrencias }}</div>
+            <div class="stat-change positive">+5% em relação ao mês anterior</div>
+        </div>
+        
+        <div class="stat-card" style="border-color: #eab308;">
+            <div class="stat-label">Ocorrências Abertas</div>
+            <div class="stat-value">{{ ocorrencias_abertas }}</div>
+            <div class="stat-change">Em andamento</div>
+        </div>
+        
+        <div class="stat-card" style="border-color: #3b82f6;">
+            <div class="stat-label">Minhas Ocorrências</div>
+            <div class="stat-value">{{ minhas_ocorrencias }}</div>
+            <div class="stat-change">Registradas por você</div>
+        </div>
+        
+        <div class="stat-card" style="border-color: #ef4444;">
+            <div class="stat-label">Pendentes de Análise</div>
+            <div class="stat-value">{{ pendentes_analise }}</div>
+            <div class="stat-change">Requerem atenção</div>
+        </div>
+    </div>
+    
+    <!-- Charts Grid -->
+    <div class="grid-2">
+        <!-- Ocorrências por Gravidade -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Ocorrências por Gravidade (Último Mês)</h2>
+            </div>
+            <div class="card-body">
+                {% if por_gravidade %}
+                <canvas id="gravidadeChart" style="max-height: 300px;"></canvas>
+                {% else %}
+                <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                    <p>Nenhum dado disponível para o período.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Top Infrações -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Infrações Mais Comuns</h2>
+            </div>
+            <div class="card-body">
+                {% if top_infracoes %}
+                <canvas id="infracoesChart" style="max-height: 300px;"></canvas>
+                {% else %}
+                <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                    <p>Nenhum dado disponível para o período.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimas Ocorrências -->
+    <div class="card mt-5">
+        <div class="card-header flex-between">
+            <h2 class="card-title">Últimas Ocorrências</h2>
+            <a href="{% url 'ocorrencia_list' %}" class="btn btn-outline btn-sm">Ver Todas</a>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Data</th>
+                            <th>Estudante(s)</th>
+                            <th>Curso/Turma</th>
+                            <th>Status</th>
+                            <th>Gravidade</th>
+                            <th>Responsável</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ocorrencia in ultimas_ocorrencias %}
+                        <tr>
+                            <td><strong>#{{ ocorrencia.id }}</strong></td>
+                            <td>{{ ocorrencia.data|date:"d/m/Y" }}</td>
+                            <td>
+                                {% for estudante in ocorrencia.estudantes.all %}
+                                    {{ estudante.nome }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ ocorrencia.curso.nome|truncatewords:3 }}<br>
+                                <small style="color: var(--gray-600);">{{ ocorrencia.turma.nome }}</small>
+                            </td>
+                            <td>{% include 'core/components/status_badge.html' with status=ocorrencia.status %}</td>
+                            <td>
+                                {% if ocorrencia.infracao %}
+                                    <span class="badge badge-{{ ocorrencia.infracao.gravidade|lower }}">
+                                        {{ ocorrencia.infracao.get_gravidade_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-arquivada">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ ocorrencia.responsavel_registro.nome|truncatewords:2 }}</td>
+                            <td>
+                                <a href="{% url 'ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline btn-sm">
+                                    Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center" style="padding: 2rem; color: var(--gray-500);">
+                                Nenhuma ocorrência registrada ainda.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if por_gravidade or top_infracoes %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Gráfico de Gravidade
+{% if por_gravidade %}
+const gravidadeCtx = document.getElementById('gravidadeChart');
+const gravidadeData = {
+    labels: [
+        {% for item in por_gravidade %}
+            '{{ item.infracao__gravidade|default:"N/A" }}'{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ],
+    datasets: [{
+        label: 'Ocorrências',
+        data: [
+            {% for item in por_gravidade %}
+                {{ item.total }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        backgroundColor: [
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(234, 179, 8, 0.8)',
+            'rgba(249, 115, 22, 0.8)',
+            'rgba(239, 68, 68, 0.8)'
+        ],
+        borderWidth: 0
+    }]
+};
+
+new Chart(gravidadeCtx, {
+    type: 'doughnut',
+    data: gravidadeData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+{% endif %}
+
+// Gráfico de Top Infrações
+{% if top_infracoes %}
+const infracoesCtx = document.getElementById('infracoesChart');
+const infracoesData = {
+    labels: [
+        {% for item in top_infracoes %}
+            '{{ item.infracao__descricao|truncatewords:3|default:"Não classificado" }}'{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ],
+    datasets: [{
+        label: 'Ocorrências',
+        data: [
+            {% for item in top_infracoes %}
+                {{ item.total }}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        backgroundColor: 'rgba(0, 102, 51, 0.8)',
+        borderWidth: 0
+    }]
+};
+
+new Chart(infracoesCtx, {
+    type: 'bar',
+    data: infracoesData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endif %}
+{% endblock %}
