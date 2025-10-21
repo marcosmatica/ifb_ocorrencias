@@ -1,14 +1,9 @@
-# Arquivo .env com senhas e configurações sensíveis
-.env
-.env.local
-.env.*.local
-
-# Arquivos Python
+# Python
 *.py[cod]
 *$py.class
-__pycache__/
 *.so
-*.egg
+.Python
+__pycache__/
 *.egg-info/
 dist/
 build/
@@ -18,21 +13,40 @@ build/
 db.sqlite3
 db.sqlite3-journal
 /static/
+/staticfiles/
 /media/
 
-# Ambientes virtuais
+# Virtual Environment
 venv/
 env/
 ENV/
 .venv
 
-# IDEs
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Sistema operacional
+# OS
 .DS_Store
 Thumbs.db
+
+# Env files
+.env
+.env.local
+
+# Cache
+*.pyc
+.pytest_cache/
+
+# Uploads grandes (IMPORTANTE!)
+media/estudantes/*
+!media/estudantes/.gitkeep
+media/evidencias/*
+!media/evidencias/.gitkeep
+media/defesas/*
+!media/defesas/.gitkeep
+media/documentos_gerados/*
+!media/documentos_gerados/.gitkeep

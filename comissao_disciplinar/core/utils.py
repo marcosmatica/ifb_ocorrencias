@@ -1,6 +1,5 @@
 from django.core.mail import send_mail
 from django.conf import settings
-#from celery import shared_task
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from io import BytesIO
@@ -25,15 +24,15 @@ def gerar_documento_pdf(ocorrencia, tipo_documento):
         y -= 30
         p.drawString(100, y, f"Data: {ocorrencia.data}")
         y -= 20
-        p.drawString(100, y, f"Descrição: {ocorrencia.descricao}")
+        # Limitar tamanho da descrição
+        descricao = ocorrencia.descricao[:100] + "..." if len(ocorrencia.descricao) > 100 else ocorrencia.descricao
+        p.drawString(100, y, f"Descrição: {descricao}")
 
     elif tipo_documento == 'ATA_ADVERTENCIA':
         p.drawString(100, y, "ATA DE ADVERTÊNCIA")
         y -= 30
         estudantes = ", ".join([e.nome for e in ocorrencia.estudantes.all()])
         p.drawString(100, y, f"Estudante(s): {estudantes}")
-
-    # Adicionar mais tipos conforme necessário
 
     # Gerar QR Code
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -47,20 +46,22 @@ def gerar_documento_pdf(ocorrencia, tipo_documento):
     return buffer
 
 
-#@shared_task
-def enviar_notificacao_email(notificacao_id):
-    """Task assíncrona para enviar notificações por e-mail"""
+def enviar_notificacao_email_sincrono(notificacao_id):
+    """Envio síncrono de notificações por e-mail (sem Celery)"""
     from .models import NotificacaoOficial
 
-    notificacao = NotificacaoOficial.objects.get(id=notificacao_id)
-    destinatarios = [email.strip() for email in notificacao.destinatarios.split(',')]
+    try:
+        notificacao = NotificacaoOficial.objects.get(id=notificacao_id)
+        destinatarios = [email.strip() for email in notificacao.destinatarios.split(',')]
 
-    send_mail(
-        subject=f"IFB - {notificacao.get_tipo_display()}",
-        message=notificacao.texto,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=destinatarios,
-        fail_silently=False,
-    )
+        send_mail(
+            subject=f"IFB - {notificacao.get_tipo_display()}",
+            message=notificacao.texto,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=destinatarios,
+            fail_silently=False,
+        )
 
-    return f"E-mail enviado para {len(destinatarios)} destinatário(s)"
+        return f"E-mail enviado para {len(destinatarios)} destinatário(s)"
+    except Exception as e:
+        return f"Erro ao enviar e-mail: {str(e)}"
