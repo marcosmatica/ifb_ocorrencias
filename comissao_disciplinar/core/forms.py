@@ -10,11 +10,27 @@ from .models import (
 
 
 class OcorrenciaForm(forms.ModelForm):
+    # Campo de busca para filtrar estudantes (NÃO incluído nos fields do Meta)
+    busca_estudante = forms.CharField(
+        required=False,
+        label="Buscar estudante",
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Digite o nome ou matrícula do estudante...',
+            'class': 'form-control',
+            'id': 'busca-estudante'
+        })
+    )
+    
+    # Campo de filtro por turma (NÃO incluído nos fields do Meta)
     turma_filtro = forms.ModelChoiceField(
         queryset=Turma.objects.all(),
         required=False,
         label="Filtrar estudantes por turma",
-        empty_label="Selecione uma turma para filtrar"
+        empty_label="Todas as turmas",
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'id': 'turma-filtro'
+        })
     )
 
     class Meta:
@@ -25,12 +41,35 @@ class OcorrenciaForm(forms.ModelForm):
             'medida_preventiva'
         ]
         widgets = {
-            'data': forms.DateInput(attrs={'type': 'date'}),
-            'horario': forms.TimeInput(attrs={'type': 'time'}),
-            'descricao': forms.Textarea(attrs={'rows': 4}),
-            'testemunhas': forms.Textarea(attrs={'rows': 2}),
-            'medida_preventiva': forms.Textarea(attrs={'rows': 3}),
-            'estudantes': forms.CheckboxSelectMultiple(),
+            'data': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control modern-date-input',
+                'id': 'id_data'
+            }),
+            'horario': forms.TimeInput(attrs={
+                'type': 'time',
+                'class': 'form-control modern-time-input',
+                'id': 'id_horario'
+            }),
+            'descricao': forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'form-control',
+                'placeholder': 'Descreva detalhadamente o ocorrido...'
+            }),
+            'testemunhas': forms.Textarea(attrs={
+                'rows': 2,
+                'class': 'form-control',
+                'placeholder': 'Nome das testemunhas, separadas por vírgula'
+            }),
+            'medida_preventiva': forms.Textarea(attrs={
+                'rows': 3,
+                'class': 'form-control',
+                'placeholder': 'Descreva as medidas imediatas tomadas...'
+            }),
+            'curso': forms.Select(attrs={'class': 'form-control'}),
+            'turma': forms.Select(attrs={'class': 'form-control', 'id': 'id_turma'}),
+            'infracao': forms.Select(attrs={'class': 'form-control'}),
+            'evidencias': forms.FileInput(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -39,6 +78,11 @@ class OcorrenciaForm(forms.ModelForm):
 
         # Ordenar estudantes por nome
         self.fields['estudantes'].queryset = Estudante.objects.all().order_by('nome')
+        
+        # Remover o widget padrão de checkbox para usar customizado
+        self.fields['estudantes'].widget = forms.CheckboxSelectMultiple(attrs={
+            'class': 'estudante-checkbox'
+        })
 
         # Se foi enviado um filtro de turma, aplicar
         if 'turma_filtro' in self.data and self.data['turma_filtro']:
@@ -48,7 +92,7 @@ class OcorrenciaForm(forms.ModelForm):
                     turma_id=turma_id
                 ).order_by('nome')
             except (ValueError, TypeError):
-                pass  # Manter todos os estudantes se o filtro for inválido
+                pass
 
         self.helper = FormHelper()
         self.helper.form_method = 'post'
@@ -74,33 +118,65 @@ class OcorrenciaRapidaForm(forms.ModelForm):
         ('AUSENCIA', 'Ausência de sala'),
     ]
 
-    tipo_rapido = forms.ChoiceField(choices=TIPOS_RAPIDOS, label='Tipo de Ocorrência')
+    tipo_rapido = forms.ChoiceField(
+        choices=TIPOS_RAPIDOS,
+        label='Tipo de Ocorrência',
+        widget=forms.RadioSelect(attrs={'class': 'tipo-rapido-radio'})
+    )
+    
+    # Campo de busca para estudantes
+    busca_estudante = forms.CharField(
+        required=False,
+        label="Buscar estudante",
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Digite o nome ou matrícula...',
+            'class': 'form-control',
+            'id': 'busca-estudante-rapido'
+        })
+    )
 
     class Meta:
         model = Ocorrencia
         fields = ['data', 'horario', 'turma', 'estudantes', 'tipo_rapido']
         widgets = {
-            'data': forms.DateInput(attrs={'type': 'date'}),
-            'horario': forms.TimeInput(attrs={'type': 'time'}),
-            'estudantes': forms.CheckboxSelectMultiple(),
+            'data': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control modern-date-input'
+            }),
+            'horario': forms.TimeInput(attrs={
+                'type': 'time',
+                'class': 'form-control modern-time-input'
+            }),
+            'turma': forms.Select(attrs={
+                'class': 'form-control',
+                'id': 'turma-filtro-rapido'
+            }),
+            'estudantes': forms.CheckboxSelectMultiple(attrs={
+                'class': 'estudante-checkbox'
+            }),
         }
 
     def __init__(self, *args, **kwargs):
         self.servidor = kwargs.pop('servidor', None)
         super().__init__(*args, **kwargs)
+        
+        # Ordenar estudantes
+        self.fields['estudantes'].queryset = Estudante.objects.all().order_by('nome')
+        
         self.helper = FormHelper()
         self.helper.form_method = 'post'
 
 
 class DefesaForm(forms.Form):
     defesa_texto = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 6}),
+        widget=forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
         label='Argumentação de Defesa',
         required=True
     )
     defesa_arquivo = forms.FileField(
         label='Anexar Documento (opcional)',
-        required=False
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control'})
     )
 
 
@@ -109,7 +185,8 @@ class RecursoForm(forms.ModelForm):
         model = Recurso
         fields = ['argumentacao', 'documentos_anexos']
         widgets = {
-            'argumentacao': forms.Textarea(attrs={'rows': 6}),
+            'argumentacao': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
+            'documentos_anexos': forms.FileInput(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -124,6 +201,7 @@ class ComissaoForm(forms.ModelForm):
         model = ComissaoProcessoDisciplinar
         fields = ['presidente', 'membros']
         widgets = {
+            'presidente': forms.Select(attrs={'class': 'form-control'}),
             'membros': forms.CheckboxSelectMultiple(),
         }
 
@@ -139,20 +217,43 @@ class NotificacaoForm(forms.ModelForm):
         model = NotificacaoOficial
         fields = ['tipo', 'meio_envio', 'destinatarios', 'texto']
         widgets = {
-            'destinatarios': forms.Textarea(attrs={'rows': 2}),
-            'texto': forms.Textarea(attrs={'rows': 5}),
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'meio_envio': forms.Select(attrs={'class': 'form-control'}),
+            'destinatarios': forms.Textarea(attrs={'rows': 2, 'class': 'form-control'}),
+            'texto': forms.Textarea(attrs={'rows': 5, 'class': 'form-control'}),
         }
 
 
 class FiltroOcorrenciaForm(forms.Form):
-    data_inicio = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
-    data_fim = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
-    status = forms.ChoiceField(choices=[('', 'Todos')] + Ocorrencia.STATUS_CHOICES, required=False)
-    curso = forms.ModelChoiceField(queryset=Curso.objects.all(), required=False, empty_label="Todos")
-    turma = forms.ModelChoiceField(queryset=Turma.objects.all(), required=False, empty_label="Todas")
+    data_inicio = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    data_fim = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    status = forms.ChoiceField(
+        choices=[('', 'Todos')] + Ocorrencia.STATUS_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    curso = forms.ModelChoiceField(
+        queryset=Curso.objects.all(),
+        required=False,
+        empty_label="Todos",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    turma = forms.ModelChoiceField(
+        queryset=Turma.objects.all(),
+        required=False,
+        empty_label="Todas",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
     gravidade = forms.ChoiceField(
         choices=[('', 'Todas')] + Infracao.GRAVIDADE_CHOICES,
-        required=False
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
 
 
@@ -164,7 +265,16 @@ class EstudanteForm(forms.ModelForm):
             'curso', 'responsavel', 'situacao', 'data_ingresso', 'foto'
         ]
         widgets = {
-            'data_ingresso': forms.DateInput(attrs={'type': 'date'}),
+            'data_ingresso': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'matricula_sga': forms.TextInput(attrs={'class': 'form-control'}),
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'turma': forms.Select(attrs={'class': 'form-control'}),
+            'campus': forms.Select(attrs={'class': 'form-control'}),
+            'curso': forms.Select(attrs={'class': 'form-control'}),
+            'responsavel': forms.Select(attrs={'class': 'form-control'}),
+            'situacao': forms.Select(attrs={'class': 'form-control'}),
+            'foto': forms.FileInput(attrs={'class': 'form-control'}),
         }
 
 
@@ -173,5 +283,10 @@ class ResponsavelForm(forms.ModelForm):
         model = Responsavel
         fields = '__all__'
         widgets = {
-            'endereco': forms.Textarea(attrs={'rows': 3}),
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'celular': forms.TextInput(attrs={'class': 'form-control'}),
+            'endereco': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'tipo_vinculo': forms.Select(attrs={'class': 'form-control'}),
+            'preferencia_contato': forms.Select(attrs={'class': 'form-control'}),
         }

@@ -379,17 +379,22 @@ def gerar_documento(request, pk, tipo):
     # Gerar documento PDF
     arquivo_pdf = gerar_documento_pdf(ocorrencia, tipo)
 
-    # Salvar no banco
+    # Criar um nome de arquivo válido
+    nome_arquivo = f"documento_{ocorrencia.id}_{tipo}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+
+    # Salvar no banco usando ContentFile
+    from django.core.files.base import ContentFile
     documento = DocumentoGerado.objects.create(
         ocorrencia=ocorrencia,
         tipo_documento=tipo,
-        arquivo=arquivo_pdf
     )
+
+    # Salvar o conteúdo do PDF no campo arquivo
+    documento.arquivo.save(nome_arquivo, ContentFile(arquivo_pdf.getvalue()))
     documento.assinaturas.add(servidor)
 
     messages.success(request, f'{documento.get_tipo_documento_display()} gerado com sucesso!')
     return redirect('ocorrencia_detail', pk=pk)
-
 
 @login_required
 def relatorio_estudante(request, matricula):
@@ -697,3 +702,37 @@ def testar_email(request):
         messages.error(request, f'Erro ao enviar e-mail: {str(e)}')
 
     return redirect('diagnostico_email')
+
+
+@login_required
+@user_passes_test(is_servidor)
+def api_filtrar_estudantes(request):
+    """API endpoint para filtrar estudantes por turma e busca textual"""
+    turma_id = request.GET.get('turma_id')
+    busca = request.GET.get('busca', '').strip()
+
+    estudantes = Estudante.objects.filter(situacao='ATIVO')
+
+    if turma_id:
+        try:
+            estudantes = estudantes.filter(turma_id=int(turma_id))
+        except (ValueError, TypeError):
+            pass
+
+    if busca:
+        estudantes = estudantes.filter(
+            Q(nome__icontains=busca) |
+            Q(matricula_sga__icontains=busca)
+        )
+
+    estudantes = estudantes.select_related('turma', 'curso').order_by('nome')[:50]
+
+    data = [{
+        'id': e.id,
+        'nome': e.nome,
+        'matricula': e.matricula_sga,
+        'turma': e.turma.nome,
+        'curso': e.curso.nome
+    } for e in estudantes]
+
+    return JsonResponse({'estudantes': data})

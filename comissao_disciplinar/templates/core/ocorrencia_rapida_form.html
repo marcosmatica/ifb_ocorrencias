@@ -5,6 +5,206 @@
 
 {% block header_title %}Registro Rápido de Ocorrência{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Estilos para inputs de data/hora */
+.modern-date-input,
+.modern-time-input {
+    position: relative;
+    padding-left: 2.5rem;
+    background-repeat: no-repeat;
+    background-position: 0.75rem center;
+    background-size: 20px;
+}
+
+.modern-date-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23006633' stroke-width='2'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
+}
+
+.modern-time-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23006633' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpolyline points='12 6 12 12 16 14'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+/* Estilos para tipos rápidos */
+.tipo-rapido-container {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.tipo-rapido-option {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.tipo-rapido-option:hover {
+    border-color: var(--ifb-verde);
+    background: var(--gray-50);
+}
+
+.tipo-rapido-option.selected {
+    border-color: var(--ifb-verde);
+    background: #f0fdf4;
+}
+
+.tipo-rapido-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 1rem;
+    accent-color: var(--ifb-verde);
+}
+
+.tipo-rapido-info {
+    flex: 1;
+}
+
+.tipo-rapido-title {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 0.25rem;
+}
+
+.tipo-rapido-desc {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}
+
+/* Busca de estudantes */
+.search-box {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.search-box input {
+    padding-left: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cpath d='m21 21-4.35-4.35'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0.75rem center;
+    background-size: 20px;
+}
+
+/* Container de estudantes */
+.students-selection-rapido {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.student-item-rapido {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 2px solid transparent;
+    margin-bottom: 0.5rem;
+}
+
+.student-item-rapido:hover {
+    background: var(--gray-50);
+    border-color: var(--ifb-verde-claro);
+}
+
+.student-item-rapido.selected {
+    background: #f0fdf4;
+    border-color: var(--ifb-verde);
+}
+
+.student-checkbox-rapido {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--ifb-verde);
+}
+
+.student-info-rapido {
+    flex: 1;
+}
+
+.student-name-rapido {
+    font-weight: 600;
+    color: var(--gray-900);
+    font-size: 0.875rem;
+}
+
+.student-details-rapido {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+    margin-top: 0.125rem;
+}
+
+/* Contador de seleção */
+.selection-counter-rapido {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--ifb-verde);
+    color: white;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Loading e estados vazios */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 102, 51, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--ifb-verde);
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.empty-state-rapido {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--gray-500);
+}
+
+.empty-state-rapido svg {
+    margin: 0 auto 0.75rem;
+    opacity: 0.5;
+}
+
+/* Scrollbar personalizada */
+.students-selection-rapido::-webkit-scrollbar {
+    width: 6px;
+}
+
+.students-selection-rapido::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: var(--radius-md);
+}
+
+.students-selection-rapido::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: var(--radius-md);
+}
+
+.students-selection-rapido::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container" style="max-width: 700px;">
     <div class="card">
@@ -21,12 +221,13 @@
                 </div>
             </div>
         </div>
+        
         <div class="card-body">
             <div class="alert alert-info" style="margin-bottom: 1.5rem;">
                 <strong>💡 Dica:</strong> Use este formulário para registrar rapidamente ocorrências comuns como atrasos, uso indevido de celular, etc. Para casos mais complexos, use o formulário completo.
             </div>
             
-            <form method="post">
+            <form method="post" id="form-rapido">
                 {% csrf_token %}
                 
                 {% if form.non_field_errors %}
@@ -40,18 +241,13 @@
                     <label class="form-label" style="font-size: 1rem; font-weight: 600;">
                         Tipo de Ocorrência *
                     </label>
-                    <div style="display: grid; gap: 0.75rem; margin-top: 0.5rem;">
+                    <div class="tipo-rapido-container">
                         {% for value, label in form.fields.tipo_rapido.choices %}
-                        <label style="display: flex; align-items: center; padding: 1rem; border: 2px solid var(--gray-200); border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;" 
-                               class="tipo-opcao"
-                               onmouseover="this.style.borderColor='var(--ifb-verde)'; this.style.background='var(--gray-50)'"
-                               onmouseout="this.style.borderColor='var(--gray-200)'; this.style.background='white'">
-                            <input type="radio" name="tipo_rapido" value="{{ value }}" 
-                                   style="width: 20px; height: 20px; margin-right: 1rem;"
-                                   onchange="document.querySelectorAll('.tipo-opcao').forEach(el => {el.style.borderColor='var(--gray-200)'; el.style.background='white';}); this.parentElement.style.borderColor='var(--ifb-verde)'; this.parentElement.style.background='#f0fdf4';">
-                            <div>
-                                <div style="font-weight: 600;">{{ label }}</div>
-                                <div style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.25rem;">
+                        <label class="tipo-rapido-option" data-value="{{ value }}">
+                            <input type="radio" name="tipo_rapido" value="{{ value }}">
+                            <div class="tipo-rapido-info">
+                                <div class="tipo-rapido-title">{{ label }}</div>
+                                <div class="tipo-rapido-desc">
                                     {% if value == 'ATRASO' %}
                                         Estudante chegou atrasado à aula
                                     {% elif value == 'CELULAR' %}
@@ -101,12 +297,47 @@
                     {% endif %}
                 </div>
                 
+                <!-- Busca de Estudantes -->
+                <div class="form-group">
+                    <label class="form-label" for="busca-estudante-rapido">Buscar Estudante</label>
+                    <div class="search-box">
+                        <input type="text" 
+                               name="busca_estudante" 
+                               id="busca-estudante-rapido" 
+                               class="form-control" 
+                               placeholder="Digite nome ou matrícula...">
+                    </div>
+                </div>
+                
                 <!-- Estudantes -->
                 <div class="form-group">
                     <label class="form-label">Estudantes Envolvidos *</label>
-                    <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--gray-300); border-radius: var(--radius-md); padding: 1rem; background: white;">
-                        {{ form.estudantes }}
+                    
+                    <div id="selection-counter-rapido" class="selection-counter-rapido" style="display: none;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span id="counter-text-rapido">0 selecionados</span>
                     </div>
+                    
+                    <div class="students-selection-rapido" id="students-container-rapido">
+                        <div id="loading-state-rapido" style="display: none; text-align: center; padding: 1.5rem;">
+                            <div class="loading-spinner"></div>
+                            <p style="margin-top: 0.75rem; color: var(--gray-600); font-size: 0.875rem;">Carregando...</p>
+                        </div>
+                        
+                        <div id="empty-state-rapido" class="empty-state-rapido" style="display: none;">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                            </svg>
+                            <p style="font-size: 0.875rem;">Nenhum estudante encontrado</p>
+                        </div>
+                        
+                        <div id="students-list-rapido">
+                            <!-- Estudantes carregados via JavaScript -->
+                        </div>
+                    </div>
+                    
                     {% if form.estudantes.errors %}
                         <div class="form-error">{{ form.estudantes.errors }}</div>
                     {% endif %}
@@ -155,36 +386,199 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<style>
-.form-control input[type="checkbox"] {
-    width: auto;
-    margin-right: 0.5rem;
-}
-
-.form-control ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.form-control ul li {
-    padding: 0.5rem;
-    border-bottom: 1px solid var(--gray-200);
-}
-
-.form-control ul li:last-child {
-    border-bottom: none;
-}
-
-.form-control ul li:hover {
-    background: var(--gray-50);
-}
-
-.form-control select,
-.form-control input[type="date"],
-.form-control input[type="time"] {
-    width: 100%;
-}
-</style>
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const turmaSelect = document.getElementById('turma-filtro-rapido');
+    const buscaInput = document.getElementById('busca-estudante-rapido');
+    const studentsContainer = document.getElementById('students-list-rapido');
+    const loadingState = document.getElementById('loading-state-rapido');
+    const emptyState = document.getElementById('empty-state-rapido');
+    const selectionCounter = document.getElementById('selection-counter-rapido');
+    const counterText = document.getElementById('counter-text-rapido');
+    
+    let estudantesSelecionados = new Set();
+    let timeoutId = null;
+    
+    // Efeito visual nos tipos de ocorrência
+    const tipoOptions = document.querySelectorAll('.tipo-rapido-option');
+    tipoOptions.forEach(option => {
+        const radio = option.querySelector('input[type="radio"]');
+        
+        option.addEventListener('click', function(e) {
+            if (e.target.type !== 'radio') {
+                radio.checked = true;
+            }
+            tipoOptions.forEach(opt => opt.classList.remove('selected'));
+            if (radio.checked) {
+                option.classList.add('selected');
+            }
+        });
+        
+        if (radio.checked) {
+            option.classList.add('selected');
+        }
+    });
+    
+    // Definir data e hora padrão
+    const dataInput = document.querySelector('input[type="date"]');
+    const horarioInput = document.querySelector('input[type="time"]');
+    
+    if (dataInput && !dataInput.value) {
+        const hoje = new Date().toISOString().split('T')[0];
+        dataInput.value = hoje;
+    }
+    
+    if (horarioInput && !horarioInput.value) {
+        const agora = new Date();
+        const horas = String(agora.getHours()).padStart(2, '0');
+        const minutos = String(agora.getMinutes()).padStart(2, '0');
+        horarioInput.value = `${horas}:${minutos}`;
+    }
+    
+    // Carregar estudantes ao mudar turma
+    if (turmaSelect) {
+        turmaSelect.addEventListener('change', function() {
+            carregarEstudantes();
+        });
+        
+        // Carregar estudantes inicialmente se houver turma selecionada
+        if (turmaSelect.value) {
+            carregarEstudantes();
+        }
+    }
+    
+    // Busca com debounce
+    if (buscaInput) {
+        buscaInput.addEventListener('input', function() {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                carregarEstudantes();
+            }, 500);
+        });
+    }
+    
+    // Função para carregar estudantes
+    function carregarEstudantes() {
+        const turmaId = turmaSelect ? turmaSelect.value : '';
+        const busca = buscaInput ? buscaInput.value.trim() : '';
+        
+        if (!turmaId && !busca) {
+            studentsContainer.innerHTML = '<p style="text-align: center; color: var(--gray-500); padding: 1.5rem; font-size: 0.875rem;">Selecione uma turma para ver os estudantes</p>';
+            return;
+        }
+        
+        // Mostrar loading
+        loadingState.style.display = 'block';
+        studentsContainer.innerHTML = '';
+        emptyState.style.display = 'none';
+        
+        // Construir URL
+        const params = new URLSearchParams();
+        if (turmaId) params.append('turma_id', turmaId);
+        if (busca) params.append('busca', busca);
+        
+        // Fazer requisição
+        fetch(`/api/estudantes/filtrar/?${params.toString()}`)
+            .then(response => response.json())
+            .then(data => {
+                loadingState.style.display = 'none';
+                
+                if (data.estudantes && data.estudantes.length > 0) {
+                    renderizarEstudantes(data.estudantes);
+                } else {
+                    emptyState.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar estudantes:', error);
+                loadingState.style.display = 'none';
+                emptyState.style.display = 'block';
+            });
+    }
+    
+    // Função para renderizar estudantes
+    function renderizarEstudantes(estudantes) {
+        studentsContainer.innerHTML = '';
+        
+        estudantes.forEach(estudante => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'student-item-rapido';
+            if (estudantesSelecionados.has(estudante.id)) {
+                itemDiv.classList.add('selected');
+            }
+            
+            itemDiv.innerHTML = `
+                <input type="checkbox" 
+                       name="estudantes" 
+                       value="${estudante.id}" 
+                       id="est_${estudante.id}"
+                       class="student-checkbox-rapido"
+                       ${estudantesSelecionados.has(estudante.id) ? 'checked' : ''}>
+                <div class="student-info-rapido">
+                    <div class="student-name-rapido">${estudante.nome}</div>
+                    <div class="student-details-rapido">
+                        ${estudante.matricula} | ${estudante.turma}
+                    </div>
+                </div>
+            `;
+            
+            // Evento de clique no item
+            itemDiv.addEventListener('click', function(e) {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = itemDiv.querySelector('.student-checkbox-rapido');
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+            
+            // Evento de mudança no checkbox
+            const checkbox = itemDiv.querySelector('.student-checkbox-rapido');
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    estudantesSelecionados.add(estudante.id);
+                    itemDiv.classList.add('selected');
+                } else {
+                    estudantesSelecionados.delete(estudante.id);
+                    itemDiv.classList.remove('selected');
+                }
+                atualizarContador();
+            });
+            
+            studentsContainer.appendChild(itemDiv);
+        });
+    }
+    
+    // Atualizar contador
+    function atualizarContador() {
+        const count = estudantesSelecionados.size;
+        if (count > 0) {
+            selectionCounter.style.display = 'inline-flex';
+            counterText.textContent = `${count} selecionado${count > 1 ? 's' : ''}`;
+        } else {
+            selectionCounter.style.display = 'none';
+        }
+    }
+    
+    // Validação ao submeter
+    document.getElementById('form-rapido').addEventListener('submit', function(e) {
+        const tipoSelecionado = document.querySelector('input[name="tipo_rapido"]:checked');
+        const estudantesSelecionadosCount = estudantesSelecionados.size;
+        
+        if (!tipoSelecionado) {
+            e.preventDefault();
+            alert('Por favor, selecione um tipo de ocorrência.');
+            return false;
+        }
+        
+        if (estudantesSelecionadosCount === 0) {
+            e.preventDefault();
+            alert('Por favor, selecione pelo menos um estudante.');
+            return false;
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -6,13 +6,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='change-me-in-production')
 DEBUG = config('DEBUG', default=True, cast=bool)
 #ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
-#ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com']
+ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com']
 
+'''
 if DEBUG:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 else:
     ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='marcosmatica.pythonanywhere.com').split(',')
-
+'''
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,15 +60,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ocorrencias_ifb.wsgi.application'
-'''
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-'''
 
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -78,7 +79,7 @@ DATABASES = {
         'PORT': config('DB_PORT', default='5432'),
     }
 }
-
+'''
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -127,7 +128,7 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
 else:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+    ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com']
 
 
 

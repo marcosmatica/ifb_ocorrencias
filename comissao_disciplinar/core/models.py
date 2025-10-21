@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from viewflow.fsm import State, Transition
+#from viewflow.fsm import State, Transition
 from auditlog.registry import auditlog
 from auditlog.models import AuditlogHistoryField
 from django.core.validators import RegexValidator

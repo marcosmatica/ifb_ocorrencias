@@ -61,4 +61,5 @@ urlpatterns = [
     path('meu-perfil/', views.meu_perfil, name='meu_perfil'),
     path('diagnostico-email/', views.diagnostico_email, name='diagnostico_email'),
     path('testar-email/', views.testar_email, name='testar_email'),
+    path('api/estudantes/filtrar/', views.api_filtrar_estudantes, name='api_filtrar_estudantes'),
 ]

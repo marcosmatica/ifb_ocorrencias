@@ -1,13 +1,207 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% load crispy_forms_tags %}
 
 {% block title %}Registrar Ocorrência{% endblock %}
 
 {% block header_title %}Registrar Nova Ocorrência{% endblock %}
 
-{% block breadcrumb %}
-    {% include 'core/components/breadcrumb.html' with breadcrumbs=breadcrumbs_list %}
+{% block extra_css %}
+<style>
+/* Estilos modernos para date e time inputs */
+.modern-date-input,
+.modern-time-input {
+    position: relative;
+    padding-left: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23006633' stroke-width='2'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0.75rem center;
+    background-size: 20px;
+}
+
+.modern-time-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23006633' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpolyline points='12 6 12 12 16 14'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+/* Container de filtro modernizado */
+.filter-section {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 2px solid #bbf7d0;
+}
+
+.filter-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ifb-verde);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Campo de busca de estudantes */
+.search-box {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.search-box input {
+    padding-left: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cpath d='m21 21-4.35-4.35'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0.75rem center;
+    background-size: 20px;
+}
+
+/* Container de seleção de estudantes modernizado */
+.students-selection {
+    background: white;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    max-height: 450px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.student-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 2px solid transparent;
+    margin-bottom: 0.5rem;
+}
+
+.student-item:hover {
+    background: var(--gray-50);
+    border-color: var(--ifb-verde-claro);
+}
+
+.student-item.selected {
+    background: #f0fdf4;
+    border-color: var(--ifb-verde);
+}
+
+.student-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--ifb-verde);
+}
+
+.student-info {
+    flex: 1;
+}
+
+.student-name {
+    font-weight: 600;
+    color: var(--gray-900);
+    font-size: 0.9375rem;
+}
+
+.student-details {
+    font-size: 0.8125rem;
+    color: var(--gray-600);
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.25rem;
+}
+
+.student-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Badge de contador de selecionados */
+.selection-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--ifb-verde);
+    color: white;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Estado vazio */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--gray-500);
+}
+
+.empty-state svg {
+    margin: 0 auto 1rem;
+    opacity: 0.5;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 102, 51, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--ifb-verde);
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Botão de limpar filtros */
+.clear-filters-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.clear-filters-btn:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+}
+
+/* Scroll suave */
+.students-selection {
+    scroll-behavior: smooth;
+}
+
+.students-selection::-webkit-scrollbar {
+    width: 8px;
+}
+
+.students-selection::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: var(--radius-md);
+}
+
+.students-selection::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: var(--radius-md);
+}
+
+.students-selection::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -29,26 +223,6 @@
                     {{ form.non_field_errors }}
                 </div>
                 {% endif %}
-
-                <!-- Filtro de Turma para Estudantes -->
-                <div class="form-filter-container">
-                    <div class="form-filter-title">Filtrar Estudantes por Turma</div>
-                    <div class="form-filter-grid">
-                        <div>
-                            <label class="form-label">Selecionar Turma</label>
-                            <select name="turma_filtro" id="turma-filtro" class="form-control">
-                                <option value="">Todas as Turmas</option>
-                                {% for turma in form.fields.turma_filtro.queryset %}
-                                <option value="{{ turma.id }}">{{ turma.nome }} - {{ turma.curso.nome }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div>
-                            <button type="button" id="aplicar-filtro" class="btn btn-primary">Aplicar Filtro</button>
-                            <button type="button" id="limpar-filtro" class="btn btn-outline">Limpar</button>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Informações Básicas -->
                 <div class="grid-2 mb-4">
@@ -87,30 +261,89 @@
                     </div>
                 </div>
 
+                <!-- Seção de Filtro e Busca de Estudantes -->
+                <div class="filter-section">
+                    <div class="filter-section-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                        </svg>
+                        Filtrar e Buscar Estudantes
+                    </div>
+                    
+                    <div class="grid-2" style="gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="turma-filtro">Filtrar por Turma</label>
+                            <select name="turma_filtro" id="turma-filtro" class="form-control">
+                                <option value="">Todas as turmas</option>
+                                {% for turma in form.fields.turma.queryset %}
+                                <option value="{{ turma.id }}">{{ turma.nome }} - {{ turma.curso.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="busca-estudante">Buscar Estudante</label>
+                            <div class="search-box">
+                                <input type="text" 
+                                       name="busca_estudante" 
+                                       id="busca-estudante" 
+                                       class="form-control" 
+                                       placeholder="Digite o nome ou matrícula do estudante...">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" id="aplicar-filtros" class="btn btn-primary btn-sm">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            Aplicar Filtros
+                        </button>
+                        <button type="button" id="limpar-filtros" class="clear-filters-btn">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Estudantes Envolvidos -->
                 <div class="form-group mb-4">
                     <label class="form-label">Estudantes Envolvidos *</label>
-                    <div class="student-selection-container">
-                        <div class="student-checkbox-group" id="estudantes-container">
-                            {% for estudante in form.estudantes.field.queryset %}
-                            <label class="student-checkbox-item">
-                                <input type="checkbox" name="estudantes" value="{{ estudante.id }}"
-                                       {% if estudante.id in form.estudantes.value %}checked{% endif %}>
-                                <div class="student-info">
-                                    <div class="student-name">{{ estudante.nome }}</div>
-                                    <div class="student-details">
-                                        {{ estudante.matricula_sga }} | {{ estudante.turma.nome }}
-                                    </div>
-                                </div>
-                            </label>
-                            {% endfor %}
+                    
+                    <div id="selection-counter" class="selection-counter" style="display: none;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span id="counter-text">0 estudantes selecionados</span>
+                    </div>
+                    
+                    <div class="students-selection" id="students-container">
+                        <div id="loading-state" style="display: none; text-align: center; padding: 2rem;">
+                            <div class="loading-spinner"></div>
+                            <p style="margin-top: 1rem; color: var(--gray-600);">Carregando estudantes...</p>
+                        </div>
+                        
+                        <div id="empty-state" class="empty-state" style="display: none;">
+                            <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                            </svg>
+                            <p>Nenhum estudante encontrado</p>
+                            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Tente ajustar os filtros de busca</p>
+                        </div>
+                        
+                        <div id="students-list">
+                            <!-- Os estudantes serão inseridos aqui dinamicamente -->
                         </div>
                     </div>
+                    
                     {% if form.estudantes.errors %}
                         <div class="form-error">{{ form.estudantes.errors }}</div>
                     {% endif %}
                     <div class="form-help">
-                        Selecione um ou mais estudantes envolvidos na ocorrência.
+                        Selecione um ou mais estudantes envolvidos na ocorrência. Use os filtros acima para facilitar a busca.
                     </div>
                 </div>
 
@@ -184,7 +417,7 @@
 
                 <!-- Botões -->
                 <div class="flex gap-2" style="justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
-                    <a href="{% url 'home' %}" class="btn btn-outline">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                         </svg>
@@ -201,106 +434,175 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const turmaFiltro = document.getElementById('turma-filtro');
-    const aplicarFiltro = document.getElementById('aplicar-filtro');
-    const limparFiltro = document.getElementById('limpar-filtro');
-    const estudantesContainer = document.getElementById('estudantes-container');
-    const form = document.getElementById('ocorrencia-form');
-
-    // Aplicar filtro
-    aplicarFiltro.addEventListener('click', function() {
-        const turmaId = turmaFiltro.value;
-        if (turmaId) {
-            // Recarregar a página com o filtro aplicado
-            const url = new URL(window.location.href);
-            url.searchParams.set('turma_filtro', turmaId);
-            window.location.href = url.toString();
-        }
+    const buscaEstudante = document.getElementById('busca-estudante');
+    const aplicarFiltros = document.getElementById('aplicar-filtros');
+    const limparFiltros = document.getElementById('limpar-filtros');
+    const studentsContainer = document.getElementById('students-list');
+    const loadingState = document.getElementById('loading-state');
+    const emptyState = document.getElementById('empty-state');
+    const selectionCounter = document.getElementById('selection-counter');
+    const counterText = document.getElementById('counter-text');
+    
+    let estudantesSelecionados = new Set();
+    let timeoutId = null;
+    
+    // Carregar estudantes inicialmente
+    carregarEstudantes();
+    
+    // Aplicar filtros ao clicar no botão
+    aplicarFiltros.addEventListener('click', function() {
+        carregarEstudantes();
     });
-
-    // Limpar filtro
-    limparFiltro.addEventListener('click', function() {
+    
+    // Busca em tempo real (com debounce)
+    buscaEstudante.addEventListener('input', function() {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            carregarEstudantes();
+        }, 500);
+    });
+    
+    // Limpar filtros
+    limparFiltros.addEventListener('click', function() {
         turmaFiltro.value = '';
-        const url = new URL(window.location.href);
-        url.searchParams.delete('turma_filtro');
-        window.location.href = url.toString();
+        buscaEstudante.value = '';
+        carregarEstudantes();
     });
-
-    // Atualizar dinamicamente a lista de estudantes (opcional - para implementação futura com AJAX)
-    function filtrarEstudantes(turmaId) {
-        const checkboxes = estudantesContainer.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            const item = checkbox.closest('.student-checkbox-item');
-            if (!turmaId || item.querySelector('.student-details').textContent.includes(turmaId)) {
-                item.style.display = 'flex';
-            } else {
-                item.style.display = 'none';
+    
+    // Filtrar automaticamente ao mudar a turma
+    turmaFiltro.addEventListener('change', function() {
+        carregarEstudantes();
+    });
+    
+    // Função para carregar estudantes via AJAX
+    function carregarEstudantes() {
+        const turmaId = turmaFiltro.value;
+        const busca = buscaEstudante.value.trim();
+        
+        // Mostrar loading
+        loadingState.style.display = 'block';
+        studentsContainer.innerHTML = '';
+        emptyState.style.display = 'none';
+        
+        // Construir URL com parâmetros
+        const params = new URLSearchParams();
+        if (turmaId) params.append('turma_id', turmaId);
+        if (busca) params.append('busca', busca);
+        
+        // Fazer requisição AJAX
+        fetch(`/api/estudantes/filtrar/?${params.toString()}`)
+            .then(response => response.json())
+            .then(data => {
+                loadingState.style.display = 'none';
+                
+                if (data.estudantes && data.estudantes.length > 0) {
+                    renderizarEstudantes(data.estudantes);
+                } else {
+                    emptyState.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar estudantes:', error);
+                loadingState.style.display = 'none';
+                emptyState.style.display = 'block';
+            });
+    }
+    
+    // Função para renderizar a lista de estudantes
+    function renderizarEstudantes(estudantes) {
+        studentsContainer.innerHTML = '';
+        
+        estudantes.forEach(estudante => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'student-item';
+            if (estudantesSelecionados.has(estudante.id)) {
+                itemDiv.classList.add('selected');
             }
+            
+            itemDiv.innerHTML = `
+                <input type="checkbox" 
+                       name="estudantes" 
+                       value="${estudante.id}" 
+                       id="estudante_${estudante.id}"
+                       class="student-checkbox"
+                       ${estudantesSelecionados.has(estudante.id) ? 'checked' : ''}>
+                <div class="student-info">
+                    <div class="student-name">${estudante.nome}</div>
+                    <div class="student-details">
+                        <span class="student-badge">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
+                            </svg>
+                            ${estudante.matricula}
+                        </span>
+                        <span class="student-badge">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            ${estudante.turma}
+                        </span>
+                    </div>
+                </div>
+            `;
+            
+            // Adicionar evento de clique no item inteiro
+            itemDiv.addEventListener('click', function(e) {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = itemDiv.querySelector('.student-checkbox');
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+            
+            // Adicionar evento de mudança no checkbox
+            const checkbox = itemDiv.querySelector('.student-checkbox');
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    estudantesSelecionados.add(estudante.id);
+                    itemDiv.classList.add('selected');
+                } else {
+                    estudantesSelecionados.delete(estudante.id);
+                    itemDiv.classList.remove('selected');
+                }
+                atualizarContador();
+            });
+            
+            studentsContainer.appendChild(itemDiv);
         });
     }
-
-    // Se já veio com filtro aplicado, mostrar apenas os estudantes da turma
-    const urlParams = new URLSearchParams(window.location.search);
-    const turmaFiltroParam = urlParams.get('turma_filtro');
-    if (turmaFiltroParam) {
-        turmaFiltro.value = turmaFiltroParam;
-        filtrarEstudantes(turmaFiltroParam);
+    
+    // Função para atualizar o contador de selecionados
+    function atualizarContador() {
+        const count = estudantesSelecionados.size;
+        if (count > 0) {
+            selectionCounter.style.display = 'inline-flex';
+            counterText.textContent = `${count} estudante${count > 1 ? 's' : ''} selecionado${count > 1 ? 's' : ''}`;
+        } else {
+            selectionCounter.style.display = 'none';
+        }
+    }
+    
+    // Definir data e hora padrão (hoje e hora atual)
+    const dataInput = document.getElementById('id_data');
+    const horarioInput = document.getElementById('id_horario');
+    
+    if (dataInput && !dataInput.value) {
+        const hoje = new Date().toISOString().split('T')[0];
+        dataInput.value = hoje;
+    }
+    
+    if (horarioInput && !horarioInput.value) {
+        const agora = new Date();
+        const horas = String(agora.getHours()).padStart(2, '0');
+        const minutos = String(agora.getMinutes()).padStart(2, '0');
+        horarioInput.value = `${horas}:${minutos}`;
     }
 });
 </script>
-
-<style>
-.student-selection-container {
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid var(--gray-300);
-    border-radius: var(--radius-md);
-    padding: 1rem;
-    background: var(--gray-50);
-}
-
-.student-checkbox-group {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 0.5rem;
-}
-
-.student-checkbox-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    border-radius: var(--radius-sm);
-    transition: background-color 0.2s;
-    cursor: pointer;
-}
-
-.student-checkbox-item:hover {
-    background: var(--gray-100);
-}
-
-.student-checkbox-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-
-.student-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.student-name {
-    font-weight: 500;
-    font-size: 0.875rem;
-}
-
-.student-details {
-    font-size: 0.75rem;
-    color: var(--gray-600);
-}
-</style>
 {% endblock %}
