@@ -268,7 +268,7 @@ def ocorrencia_notificar(request, pk):
                 ocorrencia.save()
 
             # Enviar e-mail (task assíncrona)
-            enviar_notificacao_email.delay(notificacao.id)
+            enviar_notificacao_email(notificacao.id)
 
             messages.success(request, 'Notificação enviada!')
             return redirect('ocorrencia_detail', pk=pk)
