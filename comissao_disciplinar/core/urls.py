@@ -31,6 +31,8 @@ urlpatterns = [
 
     # Relatórios
     path('estudantes/<str:matricula>/relatorio/', views.relatorio_estudante, name='relatorio_estudante'),
+    path('estudantes/<str:matricula>/', views.estudante_detail, name='estudante_detail'),
+    #path('estudantes/<str:matricula>/editar/', views.estudante_edit, name='estudante_edit'),
 
     # Auth com recuperação de senha
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),

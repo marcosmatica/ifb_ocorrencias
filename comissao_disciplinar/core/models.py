@@ -35,9 +35,11 @@ class Curso(models.Model):
 
 class Turma(models.Model):
     nome = models.CharField(max_length=50)
-    curso = models.ForeignKey(Curso, on_delete=models.PROTECT, related_name='turmas')
+    curso = models.ForeignKey(Curso, on_delete=models.PROTECT)
     ano = models.IntegerField()
+    periodo = models.CharField(max_length=20)  # "2024.1", "2024.2"
     semestre = models.IntegerField(choices=[(0, 'Anual'), (1, '1º'), (2, '2º')])
+    sala = models.CharField(max_length=20, blank=True)
     ativa = models.BooleanField(default=True)
 
     class Meta:
@@ -81,23 +83,39 @@ class Responsavel(models.Model):
 class Estudante(models.Model):
     SITUACAO_CHOICES = [
         ('ATIVO', 'Ativo'),
+        ('INATIVO', 'Inativo'),
         ('TRANCADO', 'Trancado'),
         ('EVADIDO', 'Evadido'),
         ('FORMADO', 'Formado'),
         ('TRANSFERIDO', 'Transferido'),
     ]
 
-    matricula_sga = models.CharField(max_length=20, unique=True, verbose_name="Matrícula SGA")
+    matricula_sga = models.CharField(max_length=20, unique=True)
     nome = models.CharField(max_length=200)
+    cpf = models.CharField(max_length=14, blank=True)
+    data_nascimento = models.DateField(null=True, blank=True)
+
+    # Contatos
     email = models.EmailField()
+    email_responsavel = models.EmailField(blank=True)
+    contato_responsavel = models.CharField(max_length=15, blank=True)
+
+    # Endereço
+    logradouro = models.CharField(max_length=200, blank=True)
+    bairro_cidade = models.CharField(max_length=100, blank=True)
+    uf = models.CharField(max_length=2, blank=True)
+
+    # Acadêmico
     turma = models.ForeignKey(Turma, on_delete=models.PROTECT, related_name='estudantes')
+    turma_periodo = models.CharField(max_length=20, blank=True)  # "1º Módulo", "2º Ano"
     campus = models.ForeignKey(Campus, on_delete=models.PROTECT)
     curso = models.ForeignKey(Curso, on_delete=models.PROTECT)
-    responsavel = models.ForeignKey(Responsavel, on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name='estudantes')
     situacao = models.CharField(max_length=15, choices=SITUACAO_CHOICES, default='ATIVO')
     data_ingresso = models.DateField()
     foto = models.ImageField(upload_to='estudantes/', blank=True, null=True)
+
+    # Responsável (mantém FK existente)
+    responsavel = models.ForeignKey(Responsavel, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
         ordering = ['nome']
@@ -107,13 +125,32 @@ class Estudante(models.Model):
 
 
 class Servidor(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='servidor')
+    COORDENACAO_CHOICES = [
+        ('CDPD', 'Coordenação Pedagógica'),
+        ('CC', 'Coordenação de Curso'),
+        ('CDRA', 'Coordenação de Registro Acadêmico'),
+        ('NAPNE', 'NAPNE'),
+        ('CDAE', 'Coordenação de Assistência Estudantil'),
+        ('CDAE_PEDAGOGICO', 'CDAE - Pedagógico'),
+        ('CDAE_ASSISTENCIA', 'CDAE - Assistência Estudantil'),
+        ('CDAE_PSICOLOGA', 'CDAE - Psicóloga'),
+        ('CDBA', 'Coordenação de Biblioteca'),
+        ('CGEN', 'Coordenação Geral'),
+        ('CGEN', 'Docente'),
+        ('DREP', 'Direção de Ensino, Pesquisa e Extensão'),
+        ('DG', 'Direção Geral'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     siape = models.CharField(max_length=10, unique=True)
     nome = models.CharField(max_length=200)
     funcao = models.CharField(max_length=100)
     email = models.EmailField()
     campus = models.ForeignKey(Campus, on_delete=models.PROTECT)
+    coordenacao = models.CharField(max_length=30, choices=COORDENACAO_CHOICES, blank=True)
     membro_comissao_disciplinar = models.BooleanField(default=False)
+    pode_registrar_atendimento = models.BooleanField(default=False)
+    pode_visualizar_ficha_aluno = models.BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Servidores"

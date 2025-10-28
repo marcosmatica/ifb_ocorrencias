@@ -260,20 +260,16 @@ class EstudanteForm(forms.ModelForm):
     class Meta:
         model = Estudante
         fields = [
-            'matricula_sga', 'nome', 'email', 'turma', 'campus',
-            'curso', 'responsavel', 'situacao', 'data_ingresso', 'foto'
+            'matricula_sga', 'nome', 'cpf', 'data_nascimento',
+            'email', 'email_responsavel', 'contato_responsavel',
+            'logradouro', 'bairro_cidade', 'uf',
+            'turma', 'turma_periodo', 'campus', 'curso',
+            'situacao', 'data_ingresso', 'foto', 'responsavel'
         ]
         widgets = {
+            'data_nascimento': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'data_ingresso': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'matricula_sga': forms.TextInput(attrs={'class': 'form-control'}),
-            'nome': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'turma': forms.Select(attrs={'class': 'form-control'}),
-            'campus': forms.Select(attrs={'class': 'form-control'}),
-            'curso': forms.Select(attrs={'class': 'form-control'}),
-            'responsavel': forms.Select(attrs={'class': 'form-control'}),
-            'situacao': forms.Select(attrs={'class': 'form-control'}),
-            'foto': forms.FileInput(attrs={'class': 'form-control'}),
+            'cpf': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '000.000.000-00'}),
         }
 
 

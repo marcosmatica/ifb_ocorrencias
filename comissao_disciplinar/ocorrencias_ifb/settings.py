@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     'crispy_tailwind',
     'core',
     #'wagtail',
+    'pedagogico',
+    'atendimentos',
 ]
 
 MIDDLEWARE = [

@@ -108,6 +108,24 @@ def dashboard(request):
 
 
 @login_required
+def estudante_detail(request, matricula):
+    """Detalhes completos do estudante"""
+    estudante = get_object_or_404(Estudante, matricula_sga=matricula)
+
+    # Verificar permissão para ver ficha completa
+    pode_ver_ficha = (
+            request.user.is_superuser or
+            (hasattr(request.user, 'servidor') and
+             request.user.servidor.pode_visualizar_ficha_aluno)
+    )
+
+    context = {
+        'estudante': estudante,
+        'pode_ver_ficha': pode_ver_ficha,
+    }
+    return render(request, 'core/estudante_detail.html', context)
+
+@login_required
 @user_passes_test(is_servidor)
 def ocorrencia_list(request):
     servidor = request.user.servidor
