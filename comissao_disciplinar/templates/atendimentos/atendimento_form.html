@@ -1,10 +1,96 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'core/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
 
-</body>
-</html>
+{% block title %}Novo Atendimento{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">Registrar Atendimento</h1>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <h3 class="section-title">Informações Básicas</h3>
+                <div class="grid-2">
+                    <div class="form-group">
+                        {{ form.coordenacao|as_crispy_field }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.tipo_atendimento|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        {{ form.data|as_crispy_field }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.hora|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        {{ form.situacao|as_crispy_field }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.origem|as_crispy_field }}
+                    </div>
+                </div>
+
+                <h3 class="section-title">Envolvidos</h3>
+                <div class="form-group">
+                    {{ form.estudantes|as_crispy_field }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.servidores_participantes|as_crispy_field }}
+                </div>
+
+                <h3 class="section-title">Detalhes do Atendimento</h3>
+                <div class="form-group">
+                    {{ form.informacoes|as_crispy_field }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.observacoes|as_crispy_field }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.anexos|as_crispy_field }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.publicar_ficha_aluno|as_crispy_field }}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Salvar Atendimento</button>
+                    <a href="{% url 'atendimentos:atendimento_list' %}" class="btn btn-outline">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.section-title {
+    margin: 1.5rem 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--gray-200);
+    color: var(--gray-700);
+}
+.form-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-200);
+}
+</style>
+{% endblock %}

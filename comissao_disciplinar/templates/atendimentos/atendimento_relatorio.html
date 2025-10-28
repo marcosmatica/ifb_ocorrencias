@@ -1,10 +1,169 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'core/base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Relatórios de Atendimentos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">Relatórios de Atendimentos</h1>
+    </div>
+
+    <!-- Filtros Avançados -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">Filtros do Relatório</h3>
+        </div>
+        <div class="card-body">
+            <form method="get" class="grid-4">
+                <div>
+                    <label>Data Início</label>
+                    <input type="date" name="data_inicio" class="form-control" value="{{ request.GET.data_inicio }}">
+                </div>
+                <div>
+                    <label>Data Fim</label>
+                    <input type="date" name="data_fim" class="form-control" value="{{ request.GET.data_fim }}">
+                </div>
+                <div>
+                    <label>Coordenação</label>
+                    <select name="coordenacao" class="form-control">
+                        <option value="">Todas</option>
+                        {% for choice in coordenacoes %}
+                            <option value="{{ choice.0 }}" {% if request.GET.coordenacao == choice.0 %}selected{% endif %}>
+                                {{ choice.1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Tipo de Atendimento</label>
+                    <select name="tipo_atendimento" class="form-control">
+                        <option value="">Todos</option>
+                        <!-- Opções de tipo de atendimento -->
+                    </select>
+                </div>
+                <div class="col-span-2">
+                    <button type="submit" class="btn btn-primary">Gerar Relatório</button>
+                    <button type="button" class="btn btn-outline" onclick="exportToPDF()">Exportar PDF</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="grid-3 mb-4">
+        <div class="stat-card">
+            <div class="stat-label">Total de Atendimentos</div>
+            <div class="stat-value">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Por Coordenação</div>
+            <div class="stat-value">-</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Média Mensal</div>
+            <div class="stat-value">-</div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="grid-2 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Atendimentos por Coordenação</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="chartCoordenacao" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Atendimentos por Mês</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="chartMensal" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela Detalhada -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Detalhamento de Atendimentos</h3>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Estudante</th>
+                            <th>Coordenação</th>
+                            <th>Tipo</th>
+                            <th>Responsável</th>
+                            <th>Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                Aplique os filtros para visualizar os dados.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function exportToPDF() {
+    alert('Funcionalidade de exportação em desenvolvimento');
+}
+
+// Exemplo de gráficos (dados seriam dinâmicos)
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx1 = document.getElementById('chartCoordenacao');
+    const ctx2 = document.getElementById('chartMensal');
+    
+    // Gráfico de exemplo
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['CDPD', 'CDAE', 'NAPNE', 'CC'],
+            datasets: [{
+                label: 'Atendimentos',
+                data: [12, 19, 8, 15],
+                backgroundColor: 'rgba(0, 102, 51, 0.8)'
+            }]
+        }
+    });
+
+    new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai'],
+            datasets: [{
+                label: 'Atendimentos',
+                data: [10, 15, 12, 18, 20],
+                borderColor: 'rgba(0, 102, 51, 1)',
+                tension: 0.1
+            }]
+        }
+    });
+});
+</script>
+
+<style>
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+.col-span-2 {
+    grid-column: span 2;
+}
+</style>
+{% endblock %}

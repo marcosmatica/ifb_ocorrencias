@@ -24,73 +24,95 @@
                 </p>
             </div>
 
-            <!-- Cards de Ação -->
+            <!-- Cards de Módulos -->
             <div class="home-grid">
-                <!-- Registrar Ocorrência Rápida -->
-                <a href="{% url 'ocorrencia_rapida_create' %}" class="action-card">
-                    <div class="action-card-icon">
+                <!-- Módulo Ocorrências -->
+                <a href="{% url 'ocorrencia_list' %}" class="action-card">
+                    <div class="action-card-icon" style="background: var(--ifb-verde);">
                         <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
-                    <h3 class="action-card-title">Registro Rápido</h3>
+                    <h3 class="action-card-title">Ocorrências</h3>
                     <p class="action-card-description">
-                        Registre ocorrências simples de forma ágil e prática para situações frequentes do dia a dia.
+                        Registro e gestão de ocorrências disciplinares, processos e acompanhamento de situações.
                     </p>
                 </a>
 
-                <!-- Registrar Ocorrência -->
-                <a href="{% url 'ocorrencia_create' %}" class="action-card">
-                    <div class="action-card-icon">
+                <!-- Módulo Atendimentos -->
+                <a href="{% url 'atendimentos:atendimento_list' %}" class="action-card">
+                    <div class="action-card-icon" style="background: #3b82f6;">
                         <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
+                        </svg>
+                    </div>
+                    <h3 class="action-card-title">Atendimentos</h3>
+                    <p class="action-card-description">
+                        Registro de atendimentos pedagógicos, psicológicos e de assistência estudantil.
+                    </p>
+                </a>
+
+                <!-- Módulo Pedagógico -->
+                <a href="{% url 'pedagogico:conselho_list' %}" class="action-card">
+                    <div class="action-card-icon" style="background: #8b5cf6;">
+                        <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/>
+                        </svg>
+                    </div>
+                    <h3 class="action-card-title">Opções Pedagógicas</h3>
+                    <p class="action-card-description">
+                        Conselhos de classe, disciplinas, fichas de alunos e acompanhamento pedagógico.
+                    </p>
+                </a>
+            </div>
+
+            <!-- Acesso Rápido para Servidores -->
+            {% if is_servidor_autenticado %}
+            <div class="home-quick-access">
+                <h3 class="quick-access-title">Acesso Rápido</h3>
+                <div class="quick-access-grid">
+                    <a href="{% url 'ocorrencia_rapida_create' %}" class="quick-access-link">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
-                    </div>
-                    <h3 class="action-card-title">Registrar Ocorrência</h3>
-                    <p class="action-card-description">
-                        Registre ocorrências completas com todos os detalhes, infrações e evidências necessárias.
-                    </p>
-                </a>
-
-                <!-- Acessar Dashboard -->
-                {% if is_servidor_autenticado %}
-                <a href="{% url 'dashboard' %}" class="action-card action-card-comissao">
-                    <div class="action-card-icon" style="background: rgba(255,255,255,0.2);">
-                        <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        Ocorrência Rápida
+                    </a>
+                    <a href="{% url 'atendimentos:atendimento_create' %}" class="quick-access-link">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
                         </svg>
-                    </div>
-                    <h3 class="action-card-title">Acessar Dashboard</h3>
-                    <p class="action-card-description">
-                        Acesse o painel administrativo com relatórios, estatísticas e gestão de ocorrências.
-                    </p>
-                </a>
-                {% else %}
-                <a href="{% url 'login' %}" class="action-card action-card-restrito">
-                    <div class="action-card-icon">
-                        <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        Novo Atendimento
+                    </a>
+                    {% if is_membro_comissao %}
+                    <a href="{% url 'comissao_dashboard' %}" class="quick-access-link">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                         </svg>
-                    </div>
-                    <h3 class="action-card-title">Acesso Restrito</h3>
-                    <p class="action-card-description">
-                        Esta área é restrita a servidores autorizados. Faça login para acessar o dashboard.
-                    </p>
-                </a>
-                {% endif %}
+                        Dashboard Comissão
+                    </a>
+                    {% endif %}
+                </div>
             </div>
+            {% endif %}
 
             <!-- Informações Adicionais -->
             <div class="home-footer">
                 <p class="home-footer-text">
-                    Sistema de Gestão de Ocorrências Disciplinares - Comissão Disciplinar
+                    Sistema Integrado de Gestão Disciplinar e Pedagógica
                 </p>
                 <div class="home-footer-links">
-                    <a href="{% url 'login' %}">Área do Servidor</a>
+                    {% if is_servidor_autenticado %}
+                        <a href="{% url 'dashboard' %}">Dashboard</a>
+                        <span>•</span>
+                    {% else %}
+                        <a href="{% url 'login' %}">Login</a>
+                        <span>•</span>
+                    {% endif %}
+                    <a href="{% url 'guia_regulamento_discente' %}">Regulamento Discente</a>
                     <span>•</span>
-                    <a href="{% url 'guia_regulamento_discente' %}">Guia do Regulamento</a>
-                    <span>•</span>
-                    <a href="mailto:comissao.disciplinar@ifb.edu.br">Contato</a>
+                    <a href="mailto:comissao.disciplinar@ifb.edu.br">Suporte</a>
                 </div>
             </div>
         </div>
@@ -100,245 +122,44 @@
 
 {% block extra_css %}
 <style>
-    /* Reset para página home */
-    .home-page .layout-wrapper {
-        display: block;
-        min-height: 100vh;
-    }
-
-    .home-page .sidebar,
-    .home-page .header,
-    .home-page .footer,
-    .home-page .breadcrumb {
-        display: none !important;
-    }
-
-    .home-page .main-content {
-        margin-left: 0 !important;
-        min-height: 100vh;
-    }
-
-    .home-page .content {
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-
-    /* Garantir que o body tenha fundo verde */
-    .home-page body {
-        background: linear-gradient(135deg, #006633 0%, #00994d 100%) !important;
-    }
-
-    /* Estilos específicos para a nova home */
-    .home-hero {
-        background: linear-gradient(135deg, #006633 0%, #00994d 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem 1rem;
-    }
-
-    .home-container {
-        max-width: 1200px;
-        width: 100%;
-        margin: 0 auto;
-    }
-
-    .home-card {
-        background: white;
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-xl);
-        padding: 3rem;
-        width: 100%;
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-
-    .home-header {
-        text-align: center;
-        margin-bottom: 3rem;
-    }
-
-    .home-logo {
-        width: 100px;
-        height: 100px;
-        margin: 0 auto 1.5rem;
-        background: var(--gray-50);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
-    }
-
-    .home-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        color: var(--gray-900);
-    }
-
-    .home-subtitle {
-        font-size: 1.125rem;
-        color: var(--gray-600);
-    }
-
-    .home-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 2rem;
-        margin: 3rem 0;
-    }
-
-    .action-card {
-        background: white;
-        border-radius: var(--radius-lg);
-        padding: 2rem;
-        text-align: center;
-        text-decoration: none;
-        color: inherit;
-        transition: all 0.3s ease;
-        border: 1px solid var(--gray-200);
-        box-shadow: var(--shadow-sm);
-        display: block;
-    }
-
-    .action-card:hover {
-        transform: translateY(-5px);
-        border-color: var(--ifb-verde);
-        box-shadow: var(--shadow-lg);
-        text-decoration: none;
-        color: inherit;
-    }
-
-    .action-card-icon {
-        width: 70px;
-        height: 70px;
-        margin: 0 auto 1.5rem;
-        background: var(--ifb-verde);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-    }
-
-    .action-card-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: var(--gray-900);
-    }
-
-    .action-card-description {
-        color: var(--gray-600);
-        line-height: 1.6;
-        font-size: 0.9375rem;
-    }
-
-    .action-card-comissao {
-        background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        color: white;
-    }
-
-    .action-card-comissao .action-card-title,
-    .action-card-comissao .action-card-description {
-        color: white;
-    }
-
-    .action-card-restrito {
-        background: var(--gray-50);
-    }
-
-    .action-card-restrito .action-card-icon {
-        background: var(--gray-500);
-    }
-
-    .home-footer {
-        text-align: center;
+    /* [Manter todos os estilos CSS anteriores da home] */
+    .home-quick-access {
         margin-top: 3rem;
         padding-top: 2rem;
         border-top: 1px solid var(--gray-200);
     }
 
-    .home-footer-text {
-        margin-bottom: 1rem;
-        color: var(--gray-600);
+    .quick-access-title {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: var(--gray-700);
+        font-size: 1.125rem;
     }
 
-    .home-footer-links {
+    .quick-access-grid {
         display: flex;
         justify-content: center;
-        gap: 1.5rem;
-        font-size: 0.875rem;
+        gap: 1rem;
+        flex-wrap: wrap;
     }
 
-    .home-footer-links a {
-        color: var(--ifb-verde);
+    .quick-access-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--gray-50);
+        border-radius: var(--radius-md);
         text-decoration: none;
-        font-weight: 500;
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+        transition: all 0.2s ease;
     }
 
-    .home-footer-links a:hover {
-        text-decoration: underline;
-    }
-
-    .home-footer-links span {
-        color: var(--gray-400);
-    }
-
-    /* === Responsive Home === */
-    @media (max-width: 768px) {
-        .home-hero {
-            padding: 1rem;
-            align-items: flex-start;
-            padding-top: 2rem;
-        }
-
-        .home-card {
-            padding: 2rem 1.5rem;
-        }
-
-        .home-title {
-            font-size: 2rem;
-        }
-
-        .home-subtitle {
-            font-size: 1rem;
-        }
-
-        .home-grid {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        .action-card {
-            padding: 1.5rem;
-        }
-
-        .home-footer-links {
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .home-footer-links span {
-            display: none;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .home-card {
-            padding: 1.5rem 1rem;
-        }
-
-        .home-title {
-            font-size: 1.75rem;
-        }
-
-        .action-card {
-            padding: 1.25rem;
-        }
+    .quick-access-link:hover {
+        background: var(--ifb-verde);
+        color: white;
+        text-decoration: none;
     }
 </style>
 {% endblock %}

@@ -40,7 +40,24 @@
             {% endif %}
 
             <!-- Breadcrumb -->
-            {% block breadcrumb %}{% endblock %}
+            {% block breadcrumb %}
+            {% if breadcrumbs_list %}
+            <div class="breadcrumb">
+                <div class="container">
+                    <nav class="breadcrumb-nav">
+                        {% for breadcrumb in breadcrumbs_list %}
+                            {% if breadcrumb.url %}
+                                <a href="{{ breadcrumb.url }}" class="breadcrumb-link">{{ breadcrumb.label }}</a>
+                                <span class="breadcrumb-separator">/</span>
+                            {% else %}
+                                <span class="breadcrumb-current">{{ breadcrumb.label }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    </nav>
+                </div>
+            </div>
+            {% endif %}
+            {% endblock %}
 
             <!-- Content -->
             <main class="content">

@@ -1,10 +1,107 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'core/base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Atendimentos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">Atendimentos</h1>
+        <a href="{% url 'atendimentos:atendimento_create' %}" class="btn btn-primary">
+            Novo Atendimento
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="grid-3">
+                <div>
+                    <label>Coordenação</label>
+                    <select name="coordenacao" class="form-control">
+                        <option value="">Todas</option>
+                        {% for choice in coordenacoes %}
+                            <option value="{{ choice.0 }}" {% if request.GET.coordenacao == choice.0 %}selected{% endif %}>
+                                {{ choice.1 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Estudante</label>
+                    <input type="text" name="estudante" class="form-control" 
+                           placeholder="Matrícula..." value="{{ request.GET.estudante }}">
+                </div>
+                <div>
+                    <label>Período</label>
+                    <div class="flex gap-2">
+                        <input type="date" name="data_inicio" class="form-control" 
+                               value="{{ request.GET.data_inicio }}">
+                        <input type="date" name="data_fim" class="form-control" 
+                               value="{{ request.GET.data_fim }}">
+                    </div>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="btn btn-outline">Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista -->
+    <div class="card">
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Estudante(s)</th>
+                            <th>Coordenação</th>
+                            <th>Tipo</th>
+                            <th>Situação</th>
+                            <th>Responsável</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for atendimento in atendimentos %}
+                        <tr>
+                            <td>
+                                {{ atendimento.data|date:"d/m/Y" }}<br>
+                                <small>{{ atendimento.hora|time:"H:i" }}</small>
+                            </td>
+                            <td>
+                                {% for estudante in atendimento.estudantes.all %}
+                                    {{ estudante.nome }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ atendimento.get_coordenacao_display }}</td>
+                            <td>{{ atendimento.tipo_atendimento.nome }}</td>
+                            <td>
+                                <span class="badge" style="background: {{ atendimento.situacao.cor }}">
+                                    {{ atendimento.situacao.nome }}
+                                </span>
+                            </td>
+                            <td>{{ atendimento.servidor_responsavel.nome }}</td>
+                            <td>
+                                <a href="{% url 'atendimentos:atendimento_detail' atendimento.pk %}" 
+                                   class="btn btn-outline btn-sm">
+                                    Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                Nenhum atendimento encontrado.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
