@@ -23,7 +23,7 @@ class OcorrenciaForm(forms.ModelForm):
     
     # Campo de filtro por turma (NÃO incluído nos fields do Meta)
     turma_filtro = forms.ModelChoiceField(
-        queryset=Turma.objects.all(),
+        queryset=Turma.objects.all().distinct(),
         required=False,
         label="Filtrar estudantes por turma",
         empty_label="Todas as turmas",
@@ -162,7 +162,6 @@ class OcorrenciaRapidaForm(forms.ModelForm):
         
         # Ordenar estudantes
         self.fields['estudantes'].queryset = Estudante.objects.all().order_by('nome')
-        
         self.helper = FormHelper()
         self.helper.form_method = 'post'
 
@@ -239,13 +238,13 @@ class FiltroOcorrenciaForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     curso = forms.ModelChoiceField(
-        queryset=Curso.objects.all(),
+        queryset=Curso.objects.all().distinct(),
         required=False,
         empty_label="Todos",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     turma = forms.ModelChoiceField(
-        queryset=Turma.objects.all(),
+        queryset=Turma.objects.all().distinct(),
         required=False,
         empty_label="Todas",
         widget=forms.Select(attrs={'class': 'form-control'})
