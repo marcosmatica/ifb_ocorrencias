@@ -1,10 +1,157 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<!-- ============================================
+     TEMPLATE 2: conselho_detail.html
+     ============================================ -->
+{% extends 'core/base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Conselho de Classe - {{ conselho.turma.nome }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Conselho de Classe</h1>
+            <p class="page-subtitle">
+                {{ conselho.turma.nome }} - {{ conselho.periodo }}
+            </p>
+        </div>
+        <a href="{% url 'pedagogico:conselho_list' %}" class="btn btn-outline">
+            Voltar
+        </a>
+    </div>
+
+    <div class="grid-2">
+        <!-- Coluna Principal -->
+        <div>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title">Informações Gerais</h2>
+                </div>
+                <div class="card-body">
+                    <div class="info-grid mb-3">
+                        <div class="info-label">Data de Realização:</div>
+                        <div class="info-value">{{ conselho.data_realizacao|date:"d/m/Y" }}</div>
+
+                        <div class="info-label">Turma:</div>
+                        <div class="info-value">{{ conselho.turma.nome }}</div>
+
+                        <div class="info-label">Período:</div>
+                        <div class="info-value">{{ conselho.periodo }}</div>
+
+                        <div class="info-label">Coordenação de Curso:</div>
+                        <div class="info-value">{{ conselho.coordenacao_curso.nome }}</div>
+
+                        {% if conselho.coordenacao_pedagogica %}
+                        <div class="info-label">Coordenação Pedagógica:</div>
+                        <div class="info-value">{{ conselho.coordenacao_pedagogica.nome }}</div>
+                        {% endif %}
+                    </div>
+
+                    {% if conselho.informacoes_gerais %}
+                    <div class="mb-3">
+                        <label class="info-label">Informações Gerais:</label>
+                        <div style="margin-top: 0.5rem; padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md);">
+                            {{ conselho.informacoes_gerais|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if conselho.pontos_positivos %}
+                    <div class="mb-3">
+                        <label class="info-label">Pontos Positivos:</label>
+                        <div style="margin-top: 0.5rem; padding: 0.75rem; background: #dcfce7; border-radius: var(--radius-md); border-left: 4px solid #10b981;">
+                            {{ conselho.pontos_positivos|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if conselho.pontos_atencao %}
+                    <div class="mb-3">
+                        <label class="info-label">Pontos de Atenção:</label>
+                        <div style="margin-top: 0.5rem; padding: 0.75rem; background: #fef3c7; border-radius: var(--radius-md); border-left: 4px solid #eab308;">
+                            {{ conselho.pontos_atencao|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if conselho.encaminhamentos %}
+                    <div>
+                        <label class="info-label">Encaminhamentos:</label>
+                        <div style="margin-top: 0.5rem; padding: 0.75rem; background: #dbeafe; border-radius: var(--radius-md); border-left: 4px solid #3b82f6;">
+                            {{ conselho.encaminhamentos|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Estudantes -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Informações dos Estudantes</h2>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Estudante</th>
+                                    <th>Situação</th>
+                                    <th>Encaminhamentos</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for info in informacoes_estudantes %}
+                                <tr>
+                                    <td>{{ info.estudante.nome }}</td>
+                                    <td>{{ info.situacao_geral|default:"-" }}</td>
+                                    <td>
+                                        {% if info.encaminhamento_cdpd %}CDPD {% endif %}
+                                        {% if info.encaminhamento_cdae %}CDAE {% endif %}
+                                        {% if info.encaminhamento_napne %}NAPNE {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'pedagogico:conselho_estudante_edit' conselho.pk info.estudante.id %}"
+                                           class="btn btn-outline btn-sm">
+                                            Editar
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">
+                                        Nenhuma informação de estudante registrada ainda.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Docentes Participantes</h2>
+                </div>
+                <div class="card-body">
+                    {% for docente in conselho.docentes_participantes.all %}
+                    <div style="padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md); margin-bottom: 0.5rem;">
+                        <div style="font-weight: 600;">{{ docente.nome }}</div>
+                        <div style="font-size: 0.875rem; color: var(--gray-600);">
+                            {{ docente.funcao }}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">Nenhum docente registrado.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

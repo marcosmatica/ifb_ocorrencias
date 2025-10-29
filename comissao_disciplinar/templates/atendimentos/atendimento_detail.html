@@ -1,10 +1,190 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'core/base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Atendimento #{{ atendimento.id }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="flex-between mb-4">
+        <div>
+            <h1 class="page-title">Atendimento #{{ atendimento.id }}</h1>
+            <p class="page-subtitle">
+                {{ atendimento.data|date:"d/m/Y" }} às {{ atendimento.hora|time:"H:i" }}
+            </p>
+        </div>
+        <div class="flex gap-2">
+            <button class="btn btn-outline btn-sm" onclick="window.print()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+                Imprimir
+            </button>
+        </div>
+    </div>
+
+    <div class="grid-3">
+        <!-- Coluna Principal (2/3) -->
+        <div style="grid-column: span 2;">
+            <!-- Informações Básicas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title">Informações do Atendimento</h2>
+                </div>
+                <div class="card-body">
+                    <div class="info-grid mb-3">
+                        <div class="info-label">Coordenação:</div>
+                        <div class="info-value">{{ atendimento.get_coordenacao_display }}</div>
+
+                        <div class="info-label">Tipo de Atendimento:</div>
+                        <div class="info-value">{{ atendimento.tipo_atendimento.nome }}</div>
+
+                        <div class="info-label">Origem:</div>
+                        <div class="info-value">{{ atendimento.get_origem_display }}</div>
+
+                        <div class="info-label">Situação:</div>
+                        <div class="info-value">
+                            <span class="badge" style="background: {{ atendimento.situacao.cor }}">
+                                {{ atendimento.situacao.nome }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Estudantes -->
+                    <div class="mb-3">
+                        <label class="info-label">Estudantes Atendidos:</label>
+                        <div style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                            {% for estudante in atendimento.estudantes.all %}
+                            <div style="padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--ifb-verde); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                                    {{ estudante.nome|slice:":1" }}
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600;">{{ estudante.nome }}</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                        {{ estudante.matricula_sga }} | {{ estudante.turma.nome }}
+                                    </div>
+                                </div>
+                                <a href="{% url 'pedagogico:ficha_aluno' estudante.matricula_sga %}" class="btn btn-outline btn-sm">
+                                    Ver Ficha
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Informações Detalhadas -->
+                    <div class="mb-3">
+                        <label class="info-label">Informações:</label>
+                        <div style="margin-top: 0.5rem; padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md); white-space: pre-wrap;">{{ atendimento.informacoes }}</div>
+                    </div>
+
+                    {% if atendimento.observacoes %}
+                    <div class="mb-3">
+                        <label class="info-label">Observações:</label>
+                        <div style="margin-top: 0.5rem; padding: 0.75rem; background: #fef3c7; border-radius: var(--radius-md); border-left: 4px solid #eab308; white-space: pre-wrap;">
+                            {{ atendimento.observacoes }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if atendimento.anexos %}
+                    <div class="mb-3">
+                        <label class="info-label">Anexos:</label>
+                        <a href="{{ atendimento.anexos.url }}" target="_blank" class="btn btn-outline btn-sm" style="margin-top: 0.5rem;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                            </svg>
+                            Baixar Arquivo
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <div class="info-grid">
+                        <div class="info-label">Responsável:</div>
+                        <div class="info-value">{{ atendimento.servidor_responsavel.nome }}</div>
+
+                        <div class="info-label">Registrado em:</div>
+                        <div class="info-value">{{ atendimento.criado_em|date:"d/m/Y H:i" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Servidores Participantes -->
+            {% if atendimento.servidores_participantes.all %}
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Servidores Participantes</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        {% for servidor in atendimento.servidores_participantes.all %}
+                        <div style="padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md);">
+                            <div style="font-weight: 600;">{{ servidor.nome }}</div>
+                            <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                {{ servidor.funcao }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar (1/3) -->
+        <div>
+            <!-- Ações -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title">Ações</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <a href="{% url 'atendimentos:atendimento_list' %}" class="btn btn-outline btn-sm">
+                            Voltar à Lista
+                        </a>
+                        {% if pode_editar %}
+                        <a href="#" class="btn btn-primary btn-sm">
+                            Editar Atendimento
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Informações Adicionais</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">
+                                Publicar na Ficha do Aluno
+                            </label>
+                            <div style="margin-top: 0.25rem;">
+                                {% if atendimento.publicar_ficha_aluno %}
+                                    <span class="badge" style="background: #10b981;">Sim</span>
+                                {% else %}
+                                    <span class="badge" style="background: #6b7280;">Não</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">
+                                Última Atualização
+                            </label>
+                            <div style="margin-top: 0.25rem; font-size: 0.875rem;">
+                                {{ atendimento.atualizado_em|date:"d/m/Y H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

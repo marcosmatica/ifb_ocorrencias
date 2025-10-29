@@ -1,10 +1,90 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<!-- ============================================
+     TEMPLATE 3: disciplina_list.html
+     ============================================ -->
+{% extends 'core/base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Disciplinas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">Disciplinas</h1>
+        <a href="{% url 'pedagogico:disciplina_create' %}" class="btn btn-primary">
+            Nova Disciplina
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="grid-3">
+                <div>
+                    <label class="form-label">Curso</label>
+                    <select name="curso" class="form-control">
+                        <option value="">Todos os Cursos</option>
+                        <!-- Opções dinâmicas -->
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Status</label>
+                    <select name="ativa" class="form-control">
+                        <option value="">Todas</option>
+                        <option value="true">Ativas</option>
+                        <option value="false">Inativas</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="btn btn-outline">Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista -->
+    <div class="card">
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nome</th>
+                            <th>Curso</th>
+                            <th>Carga Horária</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for disciplina in disciplinas %}
+                        <tr>
+                            <td><strong>{{ disciplina.codigo }}</strong></td>
+                            <td>{{ disciplina.nome }}</td>
+                            <td>{{ disciplina.curso.nome }}</td>
+                            <td>{{ disciplina.carga_horaria }}h</td>
+                            <td>
+                                {% if disciplina.ativa %}
+                                    <span class="badge" style="background: #10b981;">Ativa</span>
+                                {% else %}
+                                    <span class="badge" style="background: #6b7280;">Inativa</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="#" class="btn btn-outline btn-sm">Ver</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                Nenhuma disciplina encontrada.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

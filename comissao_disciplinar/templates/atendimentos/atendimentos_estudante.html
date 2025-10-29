@@ -1,10 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<!-- ============================================
+     TEMPLATE 1: atendimentos_estudante.html
+     ============================================ -->
+{% extends 'core/base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Atendimentos - {{ estudante.nome }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Histórico de Atendimentos</h1>
+            <p class="page-subtitle">{{ estudante.nome }} - {{ estudante.matricula_sga }}</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Todos os Atendimentos ({{ atendimentos.count }})</h2>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Coordenação</th>
+                            <th>Tipo</th>
+                            <th>Responsável</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for atendimento in atendimentos %}
+                        <tr>
+                            <td>{{ atendimento.data|date:"d/m/Y" }}</td>
+                            <td>{{ atendimento.get_coordenacao_display }}</td>
+                            <td>{{ atendimento.tipo_atendimento.nome }}</td>
+                            <td>{{ atendimento.servidor_responsavel.nome }}</td>
+                            <td>
+                                <a href="{% url 'atendimentos:atendimento_detail' atendimento.pk %}"
+                                   class="btn btn-outline btn-sm">
+                                    Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                Nenhum atendimento registrado.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
