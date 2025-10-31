@@ -28,7 +28,7 @@
             <div class="home-grid">
                 <!-- Módulo Ocorrências -->
                 <a href="{% url 'ocorrencia_list' %}" class="action-card">
-                    <div class="action-card-icon" style="background: var(--ifb-verde);">
+                    <div class="action-card-icon bg-primary">
                         <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
@@ -41,7 +41,7 @@
 
                 <!-- Módulo Atendimentos -->
                 <a href="{% url 'atendimentos:atendimento_list' %}" class="action-card">
-                    <div class="action-card-icon" style="background: #3b82f6;">
+                    <div class="action-card-icon bg-blue-500">
                         <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
                         </svg>
@@ -54,7 +54,7 @@
 
                 <!-- Módulo Pedagógico -->
                 <a href="{% url 'pedagogico:conselho_list' %}" class="action-card">
-                    <div class="action-card-icon" style="background: #8b5cf6;">
+                    <div class="action-card-icon bg-purple-500">
                         <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
@@ -122,7 +122,6 @@
 
 {% block extra_css %}
 <style>
-    /* [Manter todos os estilos CSS anteriores da home] */
     .home-quick-access {
         margin-top: 3rem;
         padding-top: 2rem;

@@ -33,7 +33,7 @@
 
             <!-- Messages -->
             {% if messages %}
-            <div style="padding: 1rem 2rem;">
+            <div class="p-4">
                 {% for message in messages %}
                 <div class="alert alert-{{ message.tags }}">
                     {{ message }}
@@ -45,19 +45,8 @@
             <!-- Breadcrumb -->
             {% block breadcrumb %}
             {% if breadcrumbs_list %}
-            <div class="breadcrumb">
-                <div class="container">
-                    <nav class="breadcrumb-nav">
-                        {% for breadcrumb in breadcrumbs_list %}
-                            {% if breadcrumb.url %}
-                                <a href="{{ breadcrumb.url }}" class="breadcrumb-link">{{ breadcrumb.label }}</a>
-                                <span class="breadcrumb-separator">/</span>
-                            {% else %}
-                                <span class="breadcrumb-current">{{ breadcrumb.label }}</span>
-                            {% endif %}
-                        {% endfor %}
-                    </nav>
-                </div>
+            <div class="container">
+                {% include 'core/components/breadcrumb.html' %}
             </div>
             {% endif %}
             {% endblock %}

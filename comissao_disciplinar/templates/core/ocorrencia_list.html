@@ -6,13 +6,13 @@
 {% block header_title %}Gerenciar Ocorrências{% endblock %}
 
 {% block breadcrumb %}
-    {% include 'core/components/breadcrumb.html' with breadcrumbs=breadcrumbs_list %}
+    {% include 'core/components/breadcrumb.html' %}
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <!-- Filtros e Busca -->
-    <div class="card mb-4">
+    <div class="card mb-6">
         <div class="card-header flex-between">
             <h2 class="card-title">Filtros</h2>
             <div class="flex gap-2">
@@ -31,13 +31,13 @@
             </div>
         </div>
         <div class="card-body">
-            <form method="get" action="{% url 'ocorrencia_list' %}" class="grid-2">
+            <form method="get" action="{% url 'ocorrencia_list' %}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- Busca Textual -->
-                <div class="form-group" style="grid-column: 1 / -1;">
+                <div class="form-group md:col-span-2 lg:col-span-3">
                     <label class="form-label">Buscar</label>
-                    <input type="search" 
-                           name="q" 
-                           class="form-control" 
+                    <input type="search"
+                           name="q"
+                           class="form-control"
                            placeholder="Buscar por descrição, nome do estudante ou matrícula..."
                            value="{{ busca }}"
                            hx-get="{% url 'ocorrencia_list' %}"
@@ -45,39 +45,39 @@
                            hx-target="#results"
                            hx-include="[name='status'], [name='curso'], [name='turma'], [name='gravidade'], [name='data_inicio'], [name='data_fim']">
                 </div>
-                
+
                 <!-- Filtros -->
                 <div class="form-group">
                     <label class="form-label">Data Início</label>
                     {{ filtro_form.data_inicio }}
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Data Fim</label>
                     {{ filtro_form.data_fim }}
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Status</label>
                     {{ filtro_form.status }}
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Curso</label>
                     {{ filtro_form.curso }}
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Turma</label>
                     {{ filtro_form.turma }}
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Gravidade</label>
                     {{ filtro_form.gravidade }}
                 </div>
-                
-                <div class="form-group" style="grid-column: 1 / -1; display: flex; gap: 0.5rem; justify-content: flex-end;">
+
+                <div class="form-group md:col-span-2 lg:col-span-3 flex gap-2 justify-end">
                     <button type="submit" class="btn btn-primary">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
@@ -89,14 +89,14 @@
             </form>
         </div>
     </div>
-    
+
     <!-- Resultados -->
     <div id="results">
         <div class="card">
             <div class="card-header flex-between">
                 <h2 class="card-title">
                     Ocorrências Encontradas
-                    <span style="color: var(--gray-500); font-weight: normal; font-size: 0.875rem;">
+                    <span class="text-gray-500 font-normal text-sm">
                         ({{ ocorrencias.paginator.count }} total)
                     </span>
                 </h2>
@@ -109,7 +109,7 @@
                     </button>
                 </div>
             </div>
-            <div class="card-body" style="padding: 0;">
+            <div class="card-body p-0">
                 <div class="table-container">
                     <table class="table">
                         <thead>
@@ -130,25 +130,25 @@
                                 <td><strong>#{{ ocorrencia.id }}</strong></td>
                                 <td>
                                     {{ ocorrencia.data|date:"d/m/Y" }}<br>
-                                    <small style="color: var(--gray-600);">{{ ocorrencia.horario|time:"H:i" }}</small>
+                                    <small class="text-gray-600">{{ ocorrencia.horario|time:"H:i" }}</small>
                                 </td>
                                 <td>
                                     {% for estudante in ocorrencia.estudantes.all %}
                                         <div>{{ estudante.nome }}</div>
-                                        <small style="color: var(--gray-600);">{{ estudante.matricula_sga }}</small>
+                                        <small class="text-gray-600">{{ estudante.matricula_sga }}</small>
                                     {% endfor %}
                                 </td>
                                 <td>
                                     {{ ocorrencia.curso.nome|truncatewords:3 }}<br>
-                                    <small style="color: var(--gray-600);">{{ ocorrencia.turma.nome }}</small>
+                                    <small class="text-gray-600">{{ ocorrencia.turma.nome }}</small>
                                 </td>
                                 <td>
                                     {% if ocorrencia.infracao %}
-                                        <div style="max-width: 200px;">
+                                        <div class="max-w-xs">
                                             {{ ocorrencia.infracao.descricao|truncatewords:5 }}
                                         </div>
                                     {% else %}
-                                        <span style="color: var(--gray-500);">Não classificado</span>
+                                        <span class="text-gray-500">Não classificado</span>
                                     {% endif %}
                                 </td>
                                 <td>{% include 'core/components/status_badge.html' with status=ocorrencia.status %}</td>
@@ -174,11 +174,11 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="8" class="text-center" style="padding: 3rem; color: var(--gray-500);">
-                                    <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem;">
+                                <td colspan="8" class="text-center p-12 text-gray-500">
+                                    <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="mx-auto mb-4">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                     </svg>
-                                    <div style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">
+                                    <div class="text-lg font-medium mb-2">
                                         Nenhuma ocorrência encontrada
                                     </div>
                                     <div>Tente ajustar os filtros ou criar uma nova ocorrência.</div>

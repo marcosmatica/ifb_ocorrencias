@@ -5,44 +5,40 @@
 
 {% block header_title %}Registro Rápido de Ocorrência{% endblock %}
 
-{% block extra_css %}
-
-{% endblock %}
-
 {% block content %}
-<div class="container" style="max-width: 700px;">
+<div class="container max-w-2xl">
     <div class="card">
-        <div class="card-header" style="background: linear-gradient(135deg, #006633 0%, #00994d 100%); color: white;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="card-header bg-gradient-to-r from-primary to-primary-dark text-white">
+            <div class="flex items-center gap-4">
                 <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                 </svg>
                 <div>
-                    <h2 class="card-title" style="color: white; margin: 0;">Registro Rápido</h2>
-                    <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; opacity: 0.9;">
+                    <h2 class="card-title text-white">Registro Rápido</h2>
+                    <p class="mt-1 text-white text-sm opacity-90">
                         Para ocorrências simples e frequentes
                     </p>
                 </div>
             </div>
         </div>
-        
+
         <div class="card-body">
-            <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+            <div class="alert alert-info mb-6">
                 <strong>💡 Dica:</strong> Use este formulário para registrar rapidamente ocorrências comuns como atrasos, uso indevido de celular, etc. Para casos mais complexos, use o formulário completo.
             </div>
-            
+
             <form method="post" id="form-rapido">
                 {% csrf_token %}
-                
+
                 {% if form.non_field_errors %}
                 <div class="alert alert-danger">
                     {{ form.non_field_errors }}
                 </div>
                 {% endif %}
-                
+
                 <!-- Tipo de Ocorrência -->
                 <div class="form-group">
-                    <label class="form-label" style="font-size: 1rem; font-weight: 600;">
+                    <label class="form-label text-base font-semibold">
                         Tipo de Ocorrência *
                     </label>
                     <div class="tipo-rapido-container">
@@ -72,9 +68,9 @@
                         <div class="form-error">{{ form.tipo_rapido.errors }}</div>
                     {% endif %}
                 </div>
-                
+
                 <!-- Data e Horário -->
-                <div class="grid-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-group">
                         <label class="form-label">Data *</label>
                         {{ form.data }}
@@ -82,7 +78,7 @@
                             <div class="form-error">{{ form.data.errors }}</div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label">Horário *</label>
                         {{ form.horario }}
@@ -91,7 +87,7 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <!-- Turma -->
                 <div class="form-group">
                     <label class="form-label">Turma *</label>
@@ -100,56 +96,56 @@
                         <div class="form-error">{{ form.turma.errors }}</div>
                     {% endif %}
                 </div>
-                
+
                 <!-- Busca de Estudantes -->
                 <div class="form-group">
                     <label class="form-label" for="busca-estudante-rapido">Buscar Estudante</label>
                     <div class="search-box">
-                        <input type="text" 
-                               name="busca_estudante" 
-                               id="busca-estudante-rapido" 
-                               class="form-control" 
+                        <input type="text"
+                               name="busca_estudante"
+                               id="busca-estudante-rapido"
+                               class="form-control"
                                placeholder="Digite nome ou matrícula...">
                     </div>
                 </div>
-                
+
                 <!-- Estudantes -->
                 <div class="form-group">
                     <label class="form-label">Estudantes Envolvidos *</label>
-                    
-                    <div id="selection-counter-rapido" class="selection-counter-rapido" style="display: none;">
+
+                    <div id="selection-counter-rapido" class="selection-counter hidden">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
                         <span id="counter-text-rapido">0 selecionados</span>
                     </div>
-                    
-                    <div class="students-selection-rapido" id="students-container-rapido">
-                        <div id="loading-state-rapido" style="display: none; text-align: center; padding: 1.5rem;">
+
+                    <div class="students-selection" id="students-container-rapido">
+                        <div id="loading-state-rapido" class="hidden text-center p-6">
                             <div class="loading-spinner"></div>
-                            <p style="margin-top: 0.75rem; color: var(--gray-600); font-size: 0.875rem;">Carregando...</p>
+                            <p class="mt-3 text-gray-600 text-sm">Carregando...</p>
                         </div>
-                        
-                        <div id="empty-state-rapido" class="empty-state-rapido" style="display: none;">
+
+                        <div id="empty-state-rapido" class="empty-state hidden">
                             <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                             </svg>
-                            <p style="font-size: 0.875rem;">Nenhum estudante encontrado</p>
+                            <p class="text-sm">Nenhum estudante encontrado</p>
                         </div>
-                        
+
                         <div id="students-list-rapido">
                             <!-- Estudantes carregados via JavaScript -->
                         </div>
                     </div>
-                    
+
                     {% if form.estudantes.errors %}
                         <div class="form-error">{{ form.estudantes.errors }}</div>
                     {% endif %}
                     <div class="form-help">Selecione um ou mais estudantes</div>
                 </div>
-                
+
                 <!-- Botões -->
-                <div class="flex gap-2" style="justify-content: space-between; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-200);">
+                <div class="flex gap-2 justify-between mt-8 pt-6 border-t border-gray-200">
                     <a href="{% url 'dashboard' %}" class="btn btn-outline">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -171,21 +167,21 @@
             </form>
         </div>
     </div>
-    
+
     <!-- Card de Ajuda -->
-    <div class="card mt-4" style="border-left: 4px solid #3b82f6;">
+    <div class="card mt-6 border-l-4 border-blue-500">
         <div class="card-body">
-            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #1e40af;">
+            <h3 class="text-lg font-semibold text-blue-800 mb-3">
                 ℹ️ Quando usar o Registro Rápido?
             </h3>
-            <ul style="margin: 0; padding-left: 1.5rem; color: var(--gray-700); font-size: 0.875rem;">
-                <li style="margin-bottom: 0.5rem;">Ocorrências simples e recorrentes</li>
-                <li style="margin-bottom: 0.5rem;">Infrações leves que não requerem investigação detalhada</li>
-                <li style="margin-bottom: 0.5rem;">Quando você precisa documentar rapidamente durante a aula</li>
+            <ul class="text-gray-700 text-sm list-disc pl-5">
+                <li class="mb-2">Ocorrências simples e recorrentes</li>
+                <li class="mb-2">Infrações leves que não requerem investigação detalhada</li>
+                <li class="mb-2">Quando você precisa documentar rapidamente durante a aula</li>
             </ul>
-            <p style="margin: 1rem 0 0 0; font-size: 0.875rem; color: var(--gray-600);">
-                Para casos que envolvem evidências, testemunhas ou descrição detalhada, utilize o 
-                <a href="{% url 'ocorrencia_create' %}" style="color: var(--ifb-verde); font-weight: 600;">formulário completo</a>.
+            <p class="mt-4 text-gray-600 text-sm">
+                Para casos que envolvem evidências, testemunhas ou descrição detalhada, utilize o
+                <a href="{% url 'ocorrencia_create' %}" class="text-primary font-semibold">formulário completo</a>.
             </p>
         </div>
     </div>
@@ -195,22 +191,22 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const turmaSelect = document.getElementById('turma-filtro-rapido');
+    const turmaSelect = document.querySelector('select[name="turma"]');
     const buscaInput = document.getElementById('busca-estudante-rapido');
     const studentsContainer = document.getElementById('students-list-rapido');
     const loadingState = document.getElementById('loading-state-rapido');
     const emptyState = document.getElementById('empty-state-rapido');
     const selectionCounter = document.getElementById('selection-counter-rapido');
     const counterText = document.getElementById('counter-text-rapido');
-    
+
     let estudantesSelecionados = new Set();
     let timeoutId = null;
-    
+
     // Efeito visual nos tipos de ocorrência
     const tipoOptions = document.querySelectorAll('.tipo-rapido-option');
     tipoOptions.forEach(option => {
         const radio = option.querySelector('input[type="radio"]');
-        
+
         option.addEventListener('click', function(e) {
             if (e.target.type !== 'radio') {
                 radio.checked = true;
@@ -220,40 +216,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 option.classList.add('selected');
             }
         });
-        
+
         if (radio.checked) {
             option.classList.add('selected');
         }
     });
-    
+
     // Definir data e hora padrão
     const dataInput = document.querySelector('input[type="date"]');
     const horarioInput = document.querySelector('input[type="time"]');
-    
+
     if (dataInput && !dataInput.value) {
         const hoje = new Date().toISOString().split('T')[0];
         dataInput.value = hoje;
     }
-    
+
     if (horarioInput && !horarioInput.value) {
         const agora = new Date();
         const horas = String(agora.getHours()).padStart(2, '0');
         const minutos = String(agora.getMinutes()).padStart(2, '0');
         horarioInput.value = `${horas}:${minutos}`;
     }
-    
+
     // Carregar estudantes ao mudar turma
     if (turmaSelect) {
         turmaSelect.addEventListener('change', function() {
             carregarEstudantes();
         });
-        
+
         // Carregar estudantes inicialmente se houver turma selecionada
         if (turmaSelect.value) {
             carregarEstudantes();
         }
     }
-    
+
     // Busca com debounce
     if (buscaInput) {
         buscaInput.addEventListener('input', function() {
@@ -263,83 +259,83 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         });
     }
-    
+
     // Função para carregar estudantes
     function carregarEstudantes() {
         const turmaId = turmaSelect ? turmaSelect.value : '';
         const busca = buscaInput ? buscaInput.value.trim() : '';
-        
+
         if (!turmaId && !busca) {
-            studentsContainer.innerHTML = '<p style="text-align: center; color: var(--gray-500); padding: 1.5rem; font-size: 0.875rem;">Selecione uma turma para ver os estudantes</p>';
+            studentsContainer.innerHTML = '<p class="text-center text-gray-500 p-6 text-sm">Selecione uma turma para ver os estudantes</p>';
             return;
         }
-        
+
         // Mostrar loading
-        loadingState.style.display = 'block';
+        loadingState.classList.remove('hidden');
         studentsContainer.innerHTML = '';
-        emptyState.style.display = 'none';
-        
+        emptyState.classList.add('hidden');
+
         // Construir URL
         const params = new URLSearchParams();
         if (turmaId) params.append('turma_id', turmaId);
         if (busca) params.append('busca', busca);
-        
+
         // Fazer requisição
         fetch(`/api/estudantes/filtrar/?${params.toString()}`)
             .then(response => response.json())
             .then(data => {
-                loadingState.style.display = 'none';
-                
+                loadingState.classList.add('hidden');
+
                 if (data.estudantes && data.estudantes.length > 0) {
                     renderizarEstudantes(data.estudantes);
                 } else {
-                    emptyState.style.display = 'block';
+                    emptyState.classList.remove('hidden');
                 }
             })
             .catch(error => {
                 console.error('Erro ao carregar estudantes:', error);
-                loadingState.style.display = 'none';
-                emptyState.style.display = 'block';
+                loadingState.classList.add('hidden');
+                emptyState.classList.remove('hidden');
             });
     }
-    
+
     // Função para renderizar estudantes
     function renderizarEstudantes(estudantes) {
         studentsContainer.innerHTML = '';
-        
+
         estudantes.forEach(estudante => {
             const itemDiv = document.createElement('div');
-            itemDiv.className = 'student-item-rapido';
+            itemDiv.className = 'student-item';
             if (estudantesSelecionados.has(estudante.id)) {
                 itemDiv.classList.add('selected');
             }
-            
+
             itemDiv.innerHTML = `
-                <input type="checkbox" 
-                       name="estudantes" 
-                       value="${estudante.id}" 
+                <input type="checkbox"
+                       name="estudantes"
+                       value="${estudante.id}"
                        id="est_${estudante.id}"
-                       class="student-checkbox-rapido"
+                       class="student-checkbox"
                        ${estudantesSelecionados.has(estudante.id) ? 'checked' : ''}>
-                <div class="student-info-rapido">
-                    <div class="student-name-rapido">${estudante.nome}</div>
-                    <div class="student-details-rapido">
+                <div class="student-info">
+                    <div class="student-name">${estudante.nome}</div>
+                    <div class="student-details">
                         ${estudante.matricula} | ${estudante.turma}
                     </div>
                 </div>
             `;
-            
+
             // Evento de clique no item
             itemDiv.addEventListener('click', function(e) {
                 if (e.target.type !== 'checkbox') {
-                    const checkbox = itemDiv.querySelector('.student-checkbox-rapido');
+                    const checkbox = itemDiv.querySelector('.student-checkbox');
                     checkbox.checked = !checkbox.checked;
                     checkbox.dispatchEvent(new Event('change'));
                 }
             });
-            
+
             // Evento de mudança no checkbox
-            const checkbox = itemDiv.querySelector('.student-checkbox-rapido');
+            const checkbox = itemDiv.querySelector('.student-checkbox');
             checkbox.addEventListener('change', function() {
                 if (this.checked) {
                     estudantesSelecionados.add(estudante.id);
@@ -350,19 +346,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 atualizarContador();
             });
-            
+
             studentsContainer.appendChild(itemDiv);
         });
     }
-    
+
     // Atualizar contador
     function atualizarContador() {
         const count = estudantesSelecionados.size;
         if (count > 0) {
-            selectionCounter.style.display = 'inline-flex';
+            selectionCounter.classList.remove('hidden');
             counterText.textContent = `${count} selecionado${count > 1 ? 's' : ''}`;
         } else {
-            selectionCounter.style.display = 'none';
+            selectionCounter.classList.add('hidden');
         }
     }
     

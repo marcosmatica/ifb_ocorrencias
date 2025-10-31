@@ -6,62 +6,62 @@
 {% block header_title %}Comissão Disciplinar{% endblock %}
 
 {% block breadcrumb %}
-    {% include 'core/components/breadcrumb.html' with breadcrumbs=breadcrumbs_list %}
+    {% include 'core/components/breadcrumb.html' %}
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <!-- Stats Cards para Comissão -->
     <div class="stats-grid">
-        <div class="stat-card" style="border-color: #ef4444;">
+        <div class="stat-card border-l-red-500">
             <div class="stat-label">Ocorrências Pendentes</div>
             <div class="stat-value">{{ ocorrencias_pendentes }}</div>
             <div class="stat-change negative">Requerem análise inicial</div>
         </div>
-        
-        <div class="stat-card" style="border-color: #eab308;">
+
+        <div class="stat-card border-l-yellow-500">
             <div class="stat-label">Em Análise</div>
             <div class="stat-value">{{ ocorrencias_analise }}</div>
             <div class="stat-change">Em andamento</div>
         </div>
-        
-        <div class="stat-card" style="border-color: #3b82f6;">
+
+        <div class="stat-card border-l-blue-500">
             <div class="stat-label">Aguardando Julgamento</div>
             <div class="stat-value">{{ ocorrencias_julgamento }}</div>
             <div class="stat-change">Prontas para decisão</div>
         </div>
-        
-        <div class="stat-card" style="border-color: #f97316;">
+
+        <div class="stat-card border-l-orange-500">
             <div class="stat-label">Prazos Próximos</div>
             <div class="stat-value">{{ prazos_vencendo }}</div>
             <div class="stat-change negative">Vencem em até 3 dias</div>
         </div>
     </div>
 
-    <div class="grid-2">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Ações Rápidas -->
         <div>
-            <div class="card mb-4">
+            <div class="card mb-6">
                 <div class="card-header">
                     <h2 class="card-title">Ações Rápidas</h2>
                 </div>
                 <div class="card-body">
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        <a href="{% url 'processos_list' %}" class="btn btn-primary" style="justify-content: center;">
+                    <div class="flex flex-col gap-3">
+                        <a href="{% url 'processos_list' %}" class="btn btn-primary justify-center">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                             Ver Todos os Processos
                         </a>
-                        
-                        <a href="{% url 'ocorrencia_list' %}?status=REGISTRADA" class="btn btn-outline" style="justify-content: center;">
+
+                        <a href="{% url 'ocorrencia_list' %}?status=REGISTRADA" class="btn btn-outline justify-center">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
                             </svg>
                             Ocorrências Pendentes
                         </a>
-                        
-                        <a href="{% url 'ocorrencia_list' %}?status=AGUARDANDO_DEFESA" class="btn btn-outline" style="justify-content: center;">
+
+                        <a href="{% url 'ocorrencia_list' %}?status=AGUARDANDO_DEFESA" class="btn btn-outline justify-center">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
@@ -77,15 +77,15 @@
                     <h2 class="card-title">Documentos e Relatórios</h2>
                 </div>
                 <div class="card-body">
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                        <a href="{% url 'guia_regulamento_discente' %}" class="btn btn-outline" style="justify-content: center;" target="_blank">
+                    <div class="flex flex-col gap-3">
+                        <a href="{% url 'guia_regulamento_discente' %}" class="btn btn-outline justify-center" target="_blank">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                             Guia do Regulamento Discente
                         </a>
-                        
-                        <a href="{% url 'relatorios_estatisticas' %}" class="btn btn-outline" style="justify-content: center;">
+
+                        <a href="{% url 'relatorios_estatisticas' %}" class="btn btn-outline justify-center">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
@@ -103,12 +103,12 @@
                     <h2 class="card-title">Informações da Comissão</h2>
                 </div>
                 <div class="card-body">
-                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="flex flex-col gap-6">
                         <div>
-                            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--gray-900);">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">
                                 Competências
                             </h3>
-                            <ul style="color: var(--gray-700); line-height: 1.6; padding-left: 1.25rem;">
+                            <ul class="text-gray-700 leading-6 list-disc pl-5">
                                 <li>Instaurar processos disciplinares</li>
                                 <li>Ouvir as partes envolvidas</li>
                                 <li>Coletar provas e evidências</li>
@@ -116,13 +116,13 @@
                                 <li>Encaminhar recursos</li>
                             </ul>
                         </div>
-                        
+
                         <div>
-                            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--gray-900);">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">
                                 Prazos Processuais
                             </h3>
-                            <div style="background: var(--gray-50); padding: 1rem; border-radius: var(--radius-md);">
-                                <div style="display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; font-size: 0.875rem;">
+                            <div class="bg-gray-50 p-4 rounded-md">
+                                <div class="grid grid-cols-2 gap-2 text-sm">
                                     <div><strong>Defesa do Estudante:</strong></div>
                                     <div>5 dias úteis</div>
                                     <div><strong>Análise da Comissão:</strong></div>
@@ -132,16 +132,16 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div>
-                            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--gray-900);">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">
                                 Contato
                             </h3>
-                            <div style="color: var(--gray-700);">
-                                <p style="margin-bottom: 0.5rem;">
+                            <div class="text-gray-700">
+                                <p class="mb-2">
                                     <strong>Email:</strong> comissao.disciplinar@ifb.edu.br
                                 </p>
-                                <p style="margin-bottom: 0.5rem;">
+                                <p class="mb-2">
                                     <strong>Telefone:</strong> (61) 2103-2100
                                 </p>
                                 <p>

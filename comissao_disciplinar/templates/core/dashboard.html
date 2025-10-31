@@ -15,27 +15,27 @@
             <div class="stat-change positive">+5% em relação ao mês anterior</div>
         </div>
         
-        <div class="stat-card" style="border-color: #eab308;">
+        <div class="stat-card border-l-yellow-500">
             <div class="stat-label">Ocorrências Abertas</div>
             <div class="stat-value">{{ ocorrencias_abertas }}</div>
             <div class="stat-change">Em andamento</div>
         </div>
-        
-        <div class="stat-card" style="border-color: #3b82f6;">
+
+        <div class="stat-card border-l-blue-500">
             <div class="stat-label">Minhas Ocorrências</div>
             <div class="stat-value">{{ minhas_ocorrencias }}</div>
             <div class="stat-change">Registradas por você</div>
         </div>
-        
-        <div class="stat-card" style="border-color: #ef4444;">
+
+        <div class="stat-card border-l-red-500">
             <div class="stat-label">Pendentes de Análise</div>
             <div class="stat-value">{{ pendentes_analise }}</div>
             <div class="stat-change">Requerem atenção</div>
         </div>
     </div>
-    
+
     <!-- Charts Grid -->
-    <div class="grid-2">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Ocorrências por Gravidade -->
         <div class="card">
             <div class="card-header">
@@ -45,7 +45,7 @@
                 {% if por_gravidade %}
                 <canvas id="gravidadeChart" style="max-height: 300px;"></canvas>
                 {% else %}
-                <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                <div class="text-center p-8 text-gray-500">
                     <p>Nenhum dado disponível para o período.</p>
                 </div>
                 {% endif %}
@@ -61,7 +61,7 @@
                 {% if top_infracoes %}
                 <canvas id="infracoesChart" style="max-height: 300px;"></canvas>
                 {% else %}
-                <div style="text-align: center; padding: 2rem; color: var(--gray-500);">
+                <div class="text-center p-8 text-gray-500">
                     <p>Nenhum dado disponível para o período.</p>
                 </div>
                 {% endif %}
@@ -70,12 +70,12 @@
     </div>
 
     <!-- Últimas Ocorrências -->
-    <div class="card mt-5">
+    <div class="card mt-8">
         <div class="card-header flex-between">
             <h2 class="card-title">Últimas Ocorrências</h2>
             <a href="{% url 'ocorrencia_list' %}" class="btn btn-outline btn-sm">Ver Todas</a>
         </div>
-        <div class="card-body" style="padding: 0;">
+        <div class="card-body p-0">
             <div class="table-container">
                 <table class="table">
                     <thead>
@@ -100,8 +100,10 @@
                                     {{ estudante.nome }}{% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                             </td>
-                            <td>{{ ocorrencia.curso.nome|truncatewords:3 }}<br>
-                                <small style="color: var(--gray-600);">{{ ocorrencia.turma.nome }}</small>
+                            <td>
+                                {{ ocorrencia.curso.nome|truncatewords:3 }}
+                                <br>
+                                <small class="text-gray-600">{{ ocorrencia.turma.nome }}</small>
                             </td>
                             <td>{% include 'core/components/status_badge.html' with status=ocorrencia.status %}</td>
                             <td>
@@ -122,7 +124,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="8" class="text-center" style="padding: 2rem; color: var(--gray-500);">
+                            <td colspan="8" class="text-center p-8 text-gray-500">
                                 Nenhuma ocorrência registrada ainda.
                             </td>
                         </tr>
@@ -137,7 +139,6 @@
 
 {% block extra_js %}
 {% if por_gravidade or top_infracoes %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Gráfico de Gravidade
 {% if por_gravidade %}
