@@ -9,12 +9,17 @@ class TipoAtendimento(models.Model):
     descricao = models.TextField(blank=True)
     ativo = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.nome
+
 
 class SituacaoAtendimento(models.Model):
     nome = models.CharField(max_length=100)
     cor = models.CharField(max_length=7, default='#6b7280')  # Hex color
     ativo = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.nome
 
 class Atendimento(models.Model):
     COORDENACAO_CHOICES = [
