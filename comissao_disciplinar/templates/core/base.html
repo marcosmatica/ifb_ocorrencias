@@ -73,23 +73,58 @@
         </div>
     </div>
 
+    <!-- Overlay para Sidebar Mobile -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
+
     <!-- Scripts Globais -->
     <script>
+    // Toggle Sidebar
     function toggleSidebar() {
         const sidebar = document.querySelector('.sidebar');
-        if (sidebar) sidebar.classList.toggle('open');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        if (sidebar && overlay) {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('hidden');
+        }
     }
 
-    // Fechar sidebar ao clicar fora (mobile)
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth > 1024) return;
+    // Fechar sidebar ao clicar no overlay
+    document.addEventListener('DOMContentLoaded', function() {
+        const overlay = document.getElementById('sidebar-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                toggleSidebar();
+            });
+        }
+    });
 
-        const sidebar = document.querySelector('.sidebar');
-        const toggleBtn = e.target.closest('[onclick="toggleSidebar()"]');
+    // Fechar sidebar ao clicar em um link (mobile)
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.innerWidth <= 1024) {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                const links = sidebar.querySelectorAll('a');
+                links.forEach(link => {
+                    link.addEventListener('click', function() {
+                        const overlay = document.getElementById('sidebar-overlay');
+                        if (overlay && !overlay.classList.contains('hidden')) {
+                            toggleSidebar();
+                        }
+                    });
+                });
+            }
+        }
+    });
 
-        if (sidebar && sidebar.classList.contains('open') &&
-            !sidebar.contains(e.target) && !toggleBtn) {
-            sidebar.classList.remove('open');
+    // Fechar sidebar ao pressionar ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar && sidebar.classList.contains('open')) {
+                toggleSidebar();
+            }
         }
     });
 

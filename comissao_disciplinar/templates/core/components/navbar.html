@@ -16,7 +16,7 @@
     <div class="user-menu">
         <!-- Notificações -->
         <div class="relative">
-            <button class="btn btn-outline btn-sm relative" onclick="toggleNotifications()" id="notifications-btn" aria-label="Notificações">
+            <button class="btn btn-outline btn-sm relative" onclick="toggleNotifications(event)" id="notifications-btn" aria-label="Notificações">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                 </svg>
@@ -29,7 +29,7 @@
                     <h3 class="font-semibold m-0">Notificações</h3>
                     <div class="flex gap-2">
                         <a href="{% url 'notificacoes_list' %}" class="btn btn-outline btn-sm text-xs">Ver Todas</a>
-                        <button onclick="marcarTodasComoLidas()" class="btn btn-primary btn-sm text-xs">Marcar Lidas</button>
+                        <button onclick="marcarTodasComoLidas(event)" class="btn btn-primary btn-sm text-xs">Marcar Lidas</button>
                     </div>
                 </div>
                 <div class="max-h-96 overflow-y-auto">
@@ -50,7 +50,7 @@
 
         <!-- Menu Usuário -->
         <div class="relative">
-            <button class="btn btn-outline btn-sm flex items-center gap-2" onclick="toggleUserMenu()" aria-label="Menu do usuário">
+            <button class="btn btn-outline btn-sm flex items-center gap-2" onclick="toggleUserMenu(event)" aria-label="Menu do usuário">
                 <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-sm">
                     {{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
                 </div>
@@ -105,7 +105,8 @@
 
 <script>
 // Toggle Notificações
-function toggleNotifications() {
+function toggleNotifications(e) {
+    e.stopPropagation();
     const dropdown = document.getElementById('notifications-dropdown');
     const userDropdown = document.getElementById('user-menu-dropdown');
 
@@ -120,7 +121,8 @@ function toggleNotifications() {
 }
 
 // Toggle Menu Usuário
-function toggleUserMenu() {
+function toggleUserMenu(e) {
+    e.stopPropagation();
     const dropdown = document.getElementById('user-menu-dropdown');
     const notifDropdown = document.getElementById('notifications-dropdown');
 
@@ -162,7 +164,7 @@ function carregarNotificacoes() {
                                 <div class="flex justify-between items-center">
                                     <small class="text-xs text-gray-500">${n.criado_em}</small>
                                     ${!n.lida ? `
-                                        <button onclick="marcarComoLida(${n.id})"
+                                        <button onclick="marcarComoLida(event, ${n.id})"
                                                 class="btn btn-primary btn-sm text-xs py-1 px-2">
                                             Marcar lida
                                         </button>
@@ -187,7 +189,8 @@ function carregarNotificacoes() {
 }
 
 // Marcar como lida
-function marcarComoLida(id) {
+function marcarComoLida(e, id) {
+    e.stopPropagation();
     fetch(`/notificacoes/${id}/marcar-lida/`, {
         method: 'POST',
         headers: {
@@ -205,7 +208,8 @@ function marcarComoLida(id) {
 }
 
 // Marcar todas como lidas
-function marcarTodasComoLidas() {
+function marcarTodasComoLidas(e) {
+    e.stopPropagation();
     fetch('{% url "notificacao_marcar_todas_lidas" %}', {
         method: 'POST',
         headers: {
@@ -239,7 +243,23 @@ function atualizarContadorNotificacoes() {
 
 // Fechar dropdowns ao clicar fora
 document.addEventListener('click', function(e) {
-    if (!e.target.closest('.user-menu')) {
+    const notifDropdown = document.getElementById('notifications-dropdown');
+    const userDropdown = document.getElementById('user-menu-dropdown');
+
+    if (notifDropdown && !notifDropdown.contains(e.target) &&
+        !e.target.closest('#notifications-btn')) {
+        notifDropdown.classList.add('hidden');
+    }
+
+    if (userDropdown && !userDropdown.contains(e.target) &&
+        !e.target.closest('button[onclick*="toggleUserMenu"]')) {
+        userDropdown.classList.add('hidden');
+    }
+});
+
+// Fechar dropdowns ao pressionar ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
         document.getElementById('notifications-dropdown').classList.add('hidden');
         document.getElementById('user-menu-dropdown').classList.add('hidden');
     }
@@ -248,6 +268,6 @@ document.addEventListener('click', function(e) {
 // Inicializar
 document.addEventListener('DOMContentLoaded', function() {
     atualizarContadorNotificacoes();
-    setInterval(atualizarContadorNotificacoes, 60000); // Atualizar a cada minuto
+    setInterval(atualizarContadorNotificacoes, 60000);
 });
 </script>
