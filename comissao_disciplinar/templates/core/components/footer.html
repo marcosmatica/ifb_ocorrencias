@@ -1,50 +1,59 @@
-<footer class="bg-gray-50 border-t border-gray-200 py-8 mt-auto">
-    <div class="container">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+{% load static %}
+<footer class="bg-white border-t border-gray-200 mt-auto">
+    <div class="container py-5">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Sobre -->
             <div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <h3 class="text-base font-semibold text-gray-900 mb-3">
                     Sistema de Ocorrências
                 </h3>
-                <p class="text-gray-600 text-sm leading-6">
+                <p class="text-sm text-gray-600 leading-relaxed">
                     Sistema de Gestão de Ocorrências Disciplinares do Instituto Federal de Brasília - Campus Recanto das Emas.
                 </p>
             </div>
 
+            <!-- Contato -->
             <div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <h3 class="text-base font-semibold text-gray-900 mb-3">
                     Contato
                 </h3>
-                <div class="text-gray-600 text-sm leading-6">
+                <div class="text-sm text-gray-600 space-y-1">
                     <p>Comissão Disciplinar</p>
-                    <p>Email: comissao.disciplinar@ifb.edu.br</p>
+                    <p>
+                        <a href="mailto:comissao.disciplinar@ifb.edu.br" class="hover:text-primary">
+                            comissao.disciplinar@ifb.edu.br
+                        </a>
+                    </p>
                     <p>Telefone: (61) 2103-2100</p>
                 </div>
             </div>
 
+            <!-- Links -->
             <div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <h3 class="text-base font-semibold text-gray-900 mb-3">
                     Links Úteis
                 </h3>
-                <div class="flex flex-col gap-2">
-                    <a href="https://ifb.edu.br" target="_blank" class="text-gray-600 text-sm no-underline hover:text-primary">
+                <div class="flex flex-col gap-2 text-sm">
+                    <a href="https://ifb.edu.br" target="_blank" rel="noopener" class="text-gray-600 hover:text-primary transition">
                         Portal IFB
                     </a>
-                    <a href="https://remas.ifb.edu.br" target="_blank" class="text-gray-600 text-sm no-underline hover:text-primary">
+                    <a href="https://remas.ifb.edu.br" target="_blank" rel="noopener" class="text-gray-600 hover:text-primary transition">
                         Campus Recanto das Emas
                     </a>
-                    <a href="#" class="text-gray-600 text-sm no-underline hover:text-primary">
-                        Manual do Sistema
+                    <a href="{% url 'guia_regulamento_discente' %}" class="text-gray-600 hover:text-primary transition">
+                        Regulamento Discente
                     </a>
                 </div>
             </div>
         </div>
 
-        <div class="border-t border-gray-300 mt-8 pt-6 text-center">
-            <p class="text-gray-500 text-sm m-0">
-                &copy; 2025 Instituto Federal de Brasília - Campus Recanto das Emas. Todos os direitos reservados.
+        <!-- Copyright -->
+        <div class="border-t border-gray-200 mt-5 pt-4 text-center">
+            <p class="text-sm text-gray-600">
+                &copy; {{ year|default:"2025" }} Instituto Federal de Brasília - Campus Recanto das Emas. Todos os direitos reservados.
             </p>
-            <p class="text-gray-400 text-xs mt-2">
-                Versão 1.0.0 - Desenvolvido pela Comissão Disciplinar
+            <p class="text-xs text-gray-500 mt-2">
+                Versão 1.0.0
             </p>
         </div>
     </div>

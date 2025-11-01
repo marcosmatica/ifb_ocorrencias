@@ -1,55 +1,59 @@
 {% if page_obj.paginator.num_pages > 1 %}
-<div class="pagination">
-    <!-- Primeira página -->
-    {% if page_obj.number > 1 %}
-    <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="pagination-item">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
-        </svg>
-    </a>
-    {% endif %}
+<nav aria-label="Paginação" class="mt-5">
+    <div class="pagination">
+        <!-- Primeira -->
+        {% if page_obj.has_previous %}
+        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+           class="pagination-item" aria-label="Primeira página">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+            </svg>
+        </a>
 
-    <!-- Página anterior -->
-    {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="pagination-item">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-        </svg>
-    </a>
-    {% endif %}
-
-    <!-- Páginas próximas -->
-    {% for num in page_obj.paginator.page_range %}
-        {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
-            {% if page_obj.number == num %}
-            <span class="pagination-item active">{{ num }}</span>
-            {% else %}
-            <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="pagination-item">{{ num }}</a>
-            {% endif %}
+        <!-- Anterior -->
+        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+           class="pagination-item" aria-label="Página anterior">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
         {% endif %}
-    {% endfor %}
 
-    <!-- Próxima página -->
-    {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="pagination-item">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-        </svg>
-    </a>
-    {% endif %}
+        <!-- Páginas -->
+        {% for num in page_obj.paginator.page_range %}
+            {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                {% if page_obj.number == num %}
+                <span class="pagination-item active" aria-current="page">{{ num }}</span>
+                {% else %}
+                <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                   class="pagination-item">{{ num }}</a>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
 
-    <!-- Última página -->
-    {% if page_obj.number < page_obj.paginator.num_pages %}
-    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="pagination-item">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
-        </svg>
-    </a>
-    {% endif %}
-</div>
+        <!-- Próxima -->
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+           class="pagination-item" aria-label="Próxima página">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </a>
 
-<!-- Informação de página atual -->
-<div class="text-center mt-4 text-gray-600 text-sm">
-    Mostrando {{ page_obj.start_index }} - {{ page_obj.end_index }} de {{ page_obj.paginator.count }} registros
-</div>
+        <!-- Última -->
+        <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+           class="pagination-item" aria-label="Última página">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+            </svg>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Info -->
+    <div class="text-center mt-3 text-sm text-gray-600">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        ({{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }} registros)
+    </div>
+</nav>
 {% endif %}

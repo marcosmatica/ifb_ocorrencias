@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='change-me-in-production')
 DEBUG = config('DEBUG', default=True, cast=bool)
 #ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
-ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com']
+ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 '''
 if DEBUG:
@@ -130,7 +130,7 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
 else:
-    ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com']
+    ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 

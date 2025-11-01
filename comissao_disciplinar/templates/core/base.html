@@ -8,58 +8,107 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/forms-basics.css' %}">
     <link rel="stylesheet" href="{% static 'css/forms-advanced.css' %}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
     <link rel="stylesheet" href="{% static 'css/utilities.css' %}">
-    <link rel="stylesheet" href="{% static 'css/forms-basics.css' %}">
 
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
-    <!-- Chart.js (para dashboards) -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 
     {% block extra_css %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
+<body>
     <div class="layout-wrapper">
         <!-- Sidebar -->
-        {% include 'core/components/sidebar.html' %}
+        {% if user.is_authenticated %}
+            {% include 'core/components/sidebar.html' %}
+        {% endif %}
 
         <!-- Main Content -->
         <div class="main-content">
             <!-- Header -->
-            {% include 'core/components/navbar.html' %}
+            {% if user.is_authenticated %}
+                {% include 'core/components/navbar.html' %}
+            {% endif %}
 
             <!-- Messages -->
             {% if messages %}
-            <div class="p-4">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
+            <div class="content">
+                <div class="container">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} mb-3">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
             {% endif %}
 
             <!-- Breadcrumb -->
-            {% block breadcrumb %}
-            {% if breadcrumbs_list %}
-            <div class="container">
-                {% include 'core/components/breadcrumb.html' %}
+            {% if user.is_authenticated and breadcrumbs_list %}
+            <div class="content pt-3 pb-0">
+                <div class="container">
+                    {% block breadcrumb %}
+                        {% include 'core/components/breadcrumb.html' %}
+                    {% endblock %}
+                </div>
             </div>
             {% endif %}
-            {% endblock %}
 
             <!-- Content -->
             <main class="content">
-                {% block content %}{% endblock %}
+                <div class="container">
+                    {% block content %}{% endblock %}
+                </div>
             </main>
 
             <!-- Footer -->
-            {% include 'core/components/footer.html' %}
+            {% if user.is_authenticated %}
+                {% include 'core/components/footer.html' %}
+            {% endif %}
         </div>
     </div>
+
+    <!-- Scripts Globais -->
+    <script>
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) sidebar.classList.toggle('open');
+    }
+
+    // Fechar sidebar ao clicar fora (mobile)
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth > 1024) return;
+
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = e.target.closest('[onclick="toggleSidebar()"]');
+
+        if (sidebar && sidebar.classList.contains('open') &&
+            !sidebar.contains(e.target) && !toggleBtn) {
+            sidebar.classList.remove('open');
+        }
+    });
+
+    // Helper para obter CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

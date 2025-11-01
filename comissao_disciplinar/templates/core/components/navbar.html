@@ -1,99 +1,102 @@
+{% load static %}
 <header class="header">
-    <div class="flex items-center gap-4">
-        <!-- Botão menu mobile -->
-        <button class="btn btn-outline btn-sm md:hidden" onclick="toggleSidebar()">
+    <div class="flex items-center gap-3">
+        <!-- Menu Mobile -->
+        <button class="btn btn-outline btn-sm lg:hidden" onclick="toggleSidebar()" aria-label="Menu">
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
         </button>
 
-        <div class="header-title">
+        <h1 class="header-title">
             {% block header_title %}Sistema de Ocorrências{% endblock %}
-        </div>
+        </h1>
     </div>
 
     <div class="user-menu">
         <!-- Notificações -->
         <div class="relative">
-            <button class="btn btn-outline btn-sm relative" onclick="toggleNotifications()" id="notifications-btn">
+            <button class="btn btn-outline btn-sm relative" onclick="toggleNotifications()" id="notifications-btn" aria-label="Notificações">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM10.5 3.75a6 6 0 00-6 6v2.25l-2.47 2.47a.75.75 0 00.53 1.28h15.88a.75.75 0 00.53-1.28L16.5 12V9.75a6 6 0 00-6-6z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                 </svg>
-                <span id="notification-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-5 h-5 flex items-center justify-center hidden">
-                    0
-                </span>
+                <span id="notification-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hidden">0</span>
             </button>
 
-            <!-- Dropdown de Notificações -->
-            <div id="notifications-dropdown" class="card absolute right-0 top-full mt-2 w-80 z-50 hidden">
-                <div class="card-header flex-between">
-                    <h3 class="text-lg font-semibold m-0">Notificações</h3>
+            <!-- Dropdown Notificações -->
+            <div id="notifications-dropdown" class="card absolute right-0 top-full mt-2 w-96 max-w-screen z-50 shadow-xl hidden">
+                <div class="card-header flex-between p-3">
+                    <h3 class="font-semibold m-0">Notificações</h3>
                     <div class="flex gap-2">
-                        <a href="{% url 'notificacoes_list' %}" class="btn btn-outline btn-sm">Ver Todas</a>
-                        <button onclick="marcarTodasComoLidas()" class="btn btn-primary btn-sm">Marcar Todas</button>
+                        <a href="{% url 'notificacoes_list' %}" class="btn btn-outline btn-sm text-xs">Ver Todas</a>
+                        <button onclick="marcarTodasComoLidas()" class="btn btn-primary btn-sm text-xs">Marcar Lidas</button>
                     </div>
                 </div>
-                <div class="card-body max-h-80 overflow-y-auto p-0">
+                <div class="max-h-96 overflow-y-auto">
                     <div id="notifications-list">
                         <div class="text-center text-gray-500 p-8">
-                            Carregando notificações...
+                            <div class="loading-spinner mx-auto mb-3"></div>
+                            <p>Carregando...</p>
                         </div>
                     </div>
                 </div>
-                <div class="card-footer text-center">
-                    <a href="{% url 'preferencias_notificacao' %}" class="text-primary text-sm">
+                <div class="card-footer text-center p-2">
+                    <a href="{% url 'preferencias_notificacao' %}" class="text-primary text-sm hover:underline">
                         Configurar notificações
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Menu do Usuário -->
+        <!-- Menu Usuário -->
         <div class="relative">
-            <button class="btn btn-outline btn-sm flex items-center gap-2" onclick="toggleUserMenu()">
-                <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
-                    {{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}
+            <button class="btn btn-outline btn-sm flex items-center gap-2" onclick="toggleUserMenu()" aria-label="Menu do usuário">
+                <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-sm">
+                    {{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
                 </div>
-                <span>{{ user.get_full_name|default:user.username }}</span>
+                <span class="hidden md:inline">{{ user.get_full_name|default:user.username|truncatewords:2 }}</span>
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
 
-            <!-- Dropdown do Usuário -->
-            <div id="user-menu-dropdown" class="card absolute right-0 top-full mt-2 w-48 z-50 hidden">
-                <div class="card-body p-2">
-                    <div class="px-3 py-2 border-b border-gray-200">
-                        <div class="font-semibold text-sm">{{ user.get_full_name|default:user.username }}</div>
-                        <div class="text-gray-600 text-xs mt-1">{{ user.email }}</div>
-                    </div>
+            <!-- Dropdown Usuário -->
+            <div id="user-menu-dropdown" class="card absolute right-0 top-full mt-2 w-56 z-50 shadow-xl hidden">
+                <div class="p-3 border-b border-gray-200">
+                    <div class="font-semibold text-sm truncate">{{ user.get_full_name|default:user.username }}</div>
+                    <div class="text-gray-600 text-xs mt-1 truncate">{{ user.email }}</div>
+                    {% if user.servidor %}
+                    <div class="text-xs text-gray-500 mt-1">{{ user.servidor.get_coordenacao_display }}</div>
+                    {% endif %}
+                </div>
 
-                    <a href="#" class="nav-item no-underline p-2">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="mr-2">
+                <div class="p-1">
+                    <a href="{% url 'meu_perfil' %}" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
                         Meu Perfil
                     </a>
 
-                    <a href="#" class="nav-item no-underline p-2">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="mr-2">
+                    <a href="{% url 'preferencias_notificacao' %}" class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
-                        Configurações
+                        Preferências
                     </a>
+                </div>
 
-                    <div class="border-t border-gray-200 mt-2 pt-2">
-                        <form method="post" action="{% url 'logout' %}" class="inline w-full">
-                            {% csrf_token %}
-                            <button type="submit" class="nav-item no-underline p-2 text-red-500 w-full text-left">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="mr-2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                                </svg>
-                                Sair
-                            </button>
-                        </form>
-                    </div>
+                <div class="border-t border-gray-200 p-1">
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded w-full text-left">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                            Sair
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -101,14 +104,13 @@
 </header>
 
 <script>
-function toggleSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    sidebar.classList.toggle('open');
-}
-
-// Carregar notificações ao abrir o dropdown
+// Toggle Notificações
 function toggleNotifications() {
     const dropdown = document.getElementById('notifications-dropdown');
+    const userDropdown = document.getElementById('user-menu-dropdown');
+
+    userDropdown.classList.add('hidden');
+
     if (dropdown.classList.contains('hidden')) {
         dropdown.classList.remove('hidden');
         carregarNotificacoes();
@@ -117,44 +119,54 @@ function toggleNotifications() {
     }
 }
 
-// Carregar notificações via AJAX
+// Toggle Menu Usuário
+function toggleUserMenu() {
+    const dropdown = document.getElementById('user-menu-dropdown');
+    const notifDropdown = document.getElementById('notifications-dropdown');
+
+    notifDropdown.classList.add('hidden');
+    dropdown.classList.toggle('hidden');
+}
+
+// Carregar Notificações
 function carregarNotificacoes() {
     fetch('{% url "api_notificacoes_recentes" %}')
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
             const container = document.getElementById('notifications-list');
 
-            if (data.notificacoes.length === 0) {
+            if (!data.notificacoes || data.notificacoes.length === 0) {
                 container.innerHTML = `
                     <div class="text-center text-gray-500 p-8">
-                        Nenhuma notificação
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                        </svg>
+                        <p>Nenhuma notificação</p>
                     </div>
                 `;
                 return;
             }
 
             let html = '';
-            data.notificacoes.forEach(notificacao => {
+            data.notificacoes.forEach(n => {
+                const bgClass = n.lida ? 'bg-white' : 'bg-blue-50';
                 html += `
-                    <div class="notification-item ${notificacao.lida ? '' : 'notification-unread'} p-4 border-b border-gray-200">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <div class="font-semibold text-sm mb-1">
-                                    ${notificacao.titulo}
+                    <div class="${bgClass} p-4 border-b border-gray-200 hover:bg-gray-50 transition">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-sm mb-1 flex items-center gap-2">
+                                    ${!n.lida ? '<span class="w-2 h-2 bg-blue-500 rounded-full"></span>' : ''}
+                                    <span class="truncate">${n.titulo}</span>
                                 </div>
-                                <div class="text-sm text-gray-600 mb-2">
-                                    ${notificacao.mensagem}
-                                </div>
+                                <p class="text-sm text-gray-600 mb-2">${n.mensagem}</p>
                                 <div class="flex justify-between items-center">
-                                    <small class="text-gray-500">
-                                        ${notificacao.criado_em}
-                                    </small>
-                                    ${notificacao.lida ? '' : `
-                                    <button onclick="marcarComoLida(${notificacao.id})"
-                                            class="btn btn-primary btn-sm py-1 px-2">
-                                        Marcar
-                                    </button>
-                                    `}
+                                    <small class="text-xs text-gray-500">${n.criado_em}</small>
+                                    ${!n.lida ? `
+                                        <button onclick="marcarComoLida(${n.id})"
+                                                class="btn btn-primary btn-sm text-xs py-1 px-2">
+                                            Marcar lida
+                                        </button>
+                                    ` : ''}
                                 </div>
                             </div>
                         </div>
@@ -163,24 +175,33 @@ function carregarNotificacoes() {
             });
 
             container.innerHTML = html;
+        })
+        .catch(err => {
+            console.error('Erro ao carregar notificações:', err);
+            document.getElementById('notifications-list').innerHTML = `
+                <div class="text-center text-red-500 p-8">
+                    <p>Erro ao carregar notificações</p>
+                </div>
+            `;
         });
 }
 
-// Marcar notificação como lida
-function marcarComoLida(notificacaoId) {
-    fetch(`/notificacoes/${notificacaoId}/marcar-lida/`, {
+// Marcar como lida
+function marcarComoLida(id) {
+    fetch(`/notificacoes/${id}/marcar-lida/`, {
         method: 'POST',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRFToken': getCookie('csrftoken')
         }
-    }).then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              carregarNotificacoes();
-              atualizarContadorNotificacoes();
-          }
-      });
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            carregarNotificacoes();
+            atualizarContadorNotificacoes();
+        }
+    });
 }
 
 // Marcar todas como lidas
@@ -191,23 +212,24 @@ function marcarTodasComoLidas() {
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRFToken': getCookie('csrftoken')
         }
-    }).then(response => response.json())
-      .then(data => {
-          if (data.success) {
-              carregarNotificacoes();
-              atualizarContadorNotificacoes();
-          }
-      });
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            carregarNotificacoes();
+            atualizarContadorNotificacoes();
+        }
+    });
 }
 
-// Atualizar contador de notificações
+// Atualizar contador
 function atualizarContadorNotificacoes() {
     fetch('{% url "api_notificacoes_nao_lidas" %}')
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
             const badge = document.getElementById('notification-count');
             if (data.count > 0) {
-                badge.textContent = data.count;
+                badge.textContent = data.count > 99 ? '99+' : data.count;
                 badge.classList.remove('hidden');
             } else {
                 badge.classList.add('hidden');
@@ -215,41 +237,17 @@ function atualizarContadorNotificacoes() {
         });
 }
 
-// Helper para pegar cookie CSRF
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-// Atualizar contador periodicamente
-document.addEventListener('DOMContentLoaded', function() {
-    atualizarContadorNotificacoes();
-    setInterval(atualizarContadorNotificacoes, 30000);
-});
-
-function toggleUserMenu() {
-    const dropdown = document.getElementById('user-menu-dropdown');
-    dropdown.classList.toggle('hidden');
-
-    // Fechar outros dropdowns
-    document.getElementById('notifications-dropdown').classList.add('hidden');
-}
-
 // Fechar dropdowns ao clicar fora
-document.addEventListener('click', function(event) {
-    if (!event.target.closest('.user-menu')) {
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.user-menu')) {
         document.getElementById('notifications-dropdown').classList.add('hidden');
         document.getElementById('user-menu-dropdown').classList.add('hidden');
     }
+});
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    atualizarContadorNotificacoes();
+    setInterval(atualizarContadorNotificacoes, 60000); // Atualizar a cada minuto
 });
 </script>
