@@ -79,45 +79,35 @@
    <script>
     // Estado global do sidebar
     let sidebarOpen = false;
-
-    // Toggle Sidebar - Versão robusta
+    // Toggle Sidebar - Versão para sidebar sempre oculto
     function toggleSidebar() {
         console.log('🚀 toggleSidebar() executando...');
 
         const sidebar = document.getElementById('main-sidebar');
         const overlay = document.getElementById('sidebar-overlay');
 
-        if (!sidebar) {
-            console.error('❌ Sidebar não encontrado!');
-            return;
-        }
-        if (!overlay) {
-            console.error('❌ Overlay não encontrado!');
+        if (!sidebar || !overlay) {
+            console.error('❌ Elementos do sidebar não encontrados!');
             return;
         }
 
-        console.log('📊 Estado anterior - sidebarOpen:', sidebarOpen);
-        console.log('📊 Classes do sidebar:', sidebar.classList);
-        console.log('📊 Classes do overlay:', overlay.classList);
-
-        sidebarOpen = !sidebarOpen;
+        const wasOpen = sidebar.classList.contains('open');
+        sidebarOpen = !wasOpen;
 
         if (sidebarOpen) {
             // Abrir sidebar
             sidebar.classList.add('open');
             overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Impede scroll do body
             console.log('✅ Sidebar ABERTO');
             closeAllDropdowns();
         } else {
             // Fechar sidebar
             sidebar.classList.remove('open');
             overlay.classList.add('hidden');
+            document.body.style.overflow = ''; // Restaura scroll do body
             console.log('✅ Sidebar FECHADO');
         }
-
-        console.log('📊 Estado atual - sidebarOpen:', sidebarOpen);
-        console.log('📊 Classes do sidebar após:', sidebar.classList);
-        console.log('📊 Classes do overlay após:', overlay.classList);
     }
 
     // Fechar todos os dropdowns
@@ -152,18 +142,16 @@
             });
         }
 
-        // Fechar sidebar ao clicar em um link (mobile)
-        if (window.innerWidth <= 1024) {
-            const sidebar = document.getElementById('main-sidebar');
-            if (sidebar) {
-                const links = sidebar.querySelectorAll('a');
-                links.forEach(link => {
-                    link.addEventListener('click', function() {
-                        console.log('🔗 Link clicado no sidebar mobile - Fechando');
-                        toggleSidebar();
-                    });
+        // Fechar sidebar ao clicar em um link (funciona em mobile e desktop)
+        const sidebar = document.getElementById('main-sidebar');
+        if (sidebar) {
+            const links = sidebar.querySelectorAll('a');
+            links.forEach(link => {
+                link.addEventListener('click', function() {
+                    console.log('🔗 Link clicado no sidebar - Fechando');
+                    toggleSidebar();
                 });
-            }
+            });
         }
     });
 
@@ -183,7 +171,6 @@
             closeAllDropdowns();
         }
     });
-
     // Helper para obter CSRF token
     function getCookie(name) {
         let cookieValue = null;
