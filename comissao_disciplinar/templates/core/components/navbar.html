@@ -107,9 +107,14 @@ function toggleNotifications(e) {
     const dropdown = document.getElementById('notifications-dropdown');
     const userDropdown = document.getElementById('user-menu-dropdown');
 
+    // Fecha sidebar se estiver aberto
+    closeSidebar();
+
+    // Fecha menu do usuário se estiver aberto
     userDropdown.classList.add('hidden');
     userDropdownOpen = false;
 
+    // Alterna notificações
     notifDropdownOpen = !notifDropdownOpen;
     if (notifDropdownOpen) {
         dropdown.classList.remove('hidden');
@@ -124,13 +129,34 @@ function toggleUserMenu(e) {
     const dropdown = document.getElementById('user-menu-dropdown');
     const notifDropdown = document.getElementById('notifications-dropdown');
 
+    // Fecha sidebar se estiver aberto
+    closeSidebar();
+
+    // Fecha notificações se estiverem abertas
     notifDropdown.classList.add('hidden');
     notifDropdownOpen = false;
 
+    // Alterna menu do usuário
     userDropdownOpen = !userDropdownOpen;
-    dropdown.classList.toggle('hidden');
+    if (userDropdownOpen) {
+        dropdown.classList.remove('hidden');
+    } else {
+        dropdown.classList.add('hidden');
+    }
 }
 
+// Função auxiliar para fechar sidebar
+function closeSidebar() {
+    const sidebar = document.getElementById('main-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    if (sidebar && sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+        overlay.classList.add('hidden');
+        if (typeof sidebarOpen !== 'undefined') sidebarOpen = false;
+    }
+}
+
+// Restante do código permanece igual...
 function carregarNotificacoes() {
     fetch('{% url "api_notificacoes_recentes" %}')
         .then(res => res.json())
@@ -238,28 +264,20 @@ function atualizarContadorNotificacoes() {
         });
 }
 
+// Event listener para fechar dropdowns ao clicar fora
 document.addEventListener('click', function(e) {
     const notifDropdown = document.getElementById('notifications-dropdown');
     const userDropdown = document.getElementById('user-menu-dropdown');
     const notifBtn = document.getElementById('notifications-btn');
+    const userBtn = document.querySelector('button[onclick*="toggleUserMenu"]');
 
-    if (notifDropdown && !notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+    if (notifDropdown && !notifDropdown.contains(e.target) && notifBtn && !notifBtn.contains(e.target)) {
         notifDropdown.classList.add('hidden');
         notifDropdownOpen = false;
     }
 
-    if (userDropdown && !userDropdown.contains(e.target) &&
-        !e.target.closest('button[onclick*="toggleUserMenu"]')) {
+    if (userDropdown && !userDropdown.contains(e.target) && userBtn && !userBtn.contains(e.target)) {
         userDropdown.classList.add('hidden');
-        userDropdownOpen = false;
-    }
-});
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        document.getElementById('notifications-dropdown').classList.add('hidden');
-        document.getElementById('user-menu-dropdown').classList.add('hidden');
-        notifDropdownOpen = false;
         userDropdownOpen = false;
     }
 });
