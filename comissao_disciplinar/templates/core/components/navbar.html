@@ -111,8 +111,10 @@ function toggleNotifications(e) {
     closeSidebar();
 
     // Fecha menu do usuário se estiver aberto
-    userDropdown.classList.add('hidden');
-    userDropdownOpen = false;
+    if (userDropdownOpen) {
+        userDropdown.classList.add('hidden');
+        userDropdownOpen = false;
+    }
 
     // Alterna notificações
     notifDropdownOpen = !notifDropdownOpen;
@@ -133,8 +135,10 @@ function toggleUserMenu(e) {
     closeSidebar();
 
     // Fecha notificações se estiverem abertas
-    notifDropdown.classList.add('hidden');
-    notifDropdownOpen = false;
+    if (notifDropdownOpen) {
+        notifDropdown.classList.add('hidden');
+        notifDropdownOpen = false;
+    }
 
     // Alterna menu do usuário
     userDropdownOpen = !userDropdownOpen;
@@ -151,12 +155,11 @@ function closeSidebar() {
     const overlay = document.getElementById('sidebar-overlay');
     if (sidebar && sidebar.classList.contains('open')) {
         sidebar.classList.remove('open');
-        overlay.classList.add('hidden');
+        if (overlay) overlay.classList.add('hidden');
         if (typeof sidebarOpen !== 'undefined') sidebarOpen = false;
     }
 }
 
-// Restante do código permanece igual...
 function carregarNotificacoes() {
     fetch('{% url "api_notificacoes_recentes" %}')
         .then(res => res.json())

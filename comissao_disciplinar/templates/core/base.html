@@ -75,52 +75,79 @@
 
     <!-- Overlay para Sidebar Mobile -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
-
-    <!-- Scripts Globais -->
-    <script>
+</body>
+   <script>
     // Estado global do sidebar
     let sidebarOpen = false;
 
-    // Toggle Sidebar
+    // Toggle Sidebar - Versão robusta
     function toggleSidebar() {
+        console.log('🚀 toggleSidebar() executando...');
+
         const sidebar = document.getElementById('main-sidebar');
         const overlay = document.getElementById('sidebar-overlay');
-        const mainContent = document.querySelector('.main-content');
+
+        if (!sidebar) {
+            console.error('❌ Sidebar não encontrado!');
+            return;
+        }
+        if (!overlay) {
+            console.error('❌ Overlay não encontrado!');
+            return;
+        }
+
+        console.log('📊 Estado anterior - sidebarOpen:', sidebarOpen);
+        console.log('📊 Classes do sidebar:', sidebar.classList);
+        console.log('📊 Classes do overlay:', overlay.classList);
 
         sidebarOpen = !sidebarOpen;
 
         if (sidebarOpen) {
+            // Abrir sidebar
             sidebar.classList.add('open');
             overlay.classList.remove('hidden');
-            // Fecha dropdowns quando abre o sidebar
+            console.log('✅ Sidebar ABERTO');
             closeAllDropdowns();
         } else {
+            // Fechar sidebar
             sidebar.classList.remove('open');
             overlay.classList.add('hidden');
+            console.log('✅ Sidebar FECHADO');
         }
+
+        console.log('📊 Estado atual - sidebarOpen:', sidebarOpen);
+        console.log('📊 Classes do sidebar após:', sidebar.classList);
+        console.log('📊 Classes do overlay após:', overlay.classList);
     }
 
     // Fechar todos os dropdowns
     function closeAllDropdowns() {
+        console.log('🔒 Fechando todos os dropdowns...');
+
         const notifDropdown = document.getElementById('notifications-dropdown');
         const userDropdown = document.getElementById('user-menu-dropdown');
 
         if (notifDropdown) {
             notifDropdown.classList.add('hidden');
             if (typeof notifDropdownOpen !== 'undefined') notifDropdownOpen = false;
+            console.log('✅ Dropdown notificações fechado');
         }
 
         if (userDropdown) {
             userDropdown.classList.add('hidden');
             if (typeof userDropdownOpen !== 'undefined') userDropdownOpen = false;
+            console.log('✅ Dropdown usuário fechado');
         }
     }
 
     // Fechar sidebar ao clicar no overlay
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 DOM carregado - Inicializando sidebar...');
+
         const overlay = document.getElementById('sidebar-overlay');
         if (overlay) {
             overlay.addEventListener('click', function() {
+                console.log('🎯 Overlay clicado - Fechando sidebar');
                 toggleSidebar();
             });
         }
@@ -132,6 +159,7 @@
                 const links = sidebar.querySelectorAll('a');
                 links.forEach(link => {
                     link.addEventListener('click', function() {
+                        console.log('🔗 Link clicado no sidebar mobile - Fechando');
                         toggleSidebar();
                     });
                 });
@@ -142,9 +170,12 @@
     // Fechar sidebar e dropdowns ao pressionar ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
+            console.log('⌨️ Tecla ESC pressionada');
+
             // Fecha sidebar
             const sidebar = document.getElementById('main-sidebar');
             if (sidebar && sidebar.classList.contains('open')) {
+                console.log('🚪 Fechando sidebar com ESC');
                 toggleSidebar();
             }
 
@@ -168,8 +199,15 @@
         }
         return cookieValue;
     }
-    </script>
 
-    {% block extra_js %}{% endblock %}
-</body>
+    // Debug adicional - verificar se tudo está carregado
+    setTimeout(() => {
+        console.log('🔍 DEBUG FINAL:');
+        console.log('📍 Sidebar:', document.getElementById('main-sidebar'));
+        console.log('📍 Overlay:', document.getElementById('sidebar-overlay'));
+        console.log('📍 Botão sidebar:', document.querySelector('button[onclick*="toggleSidebar"]'));
+        console.log('📍 Função toggleSidebar:', typeof toggleSidebar);
+    }, 1000);
+</script>
+
 </html>
