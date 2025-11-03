@@ -4,74 +4,312 @@
 
 {% block title %}Novo Atendimento{% endblock %}
 
+{% block header_title %}Registrar Novo Atendimento{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <h1 class="page-title">Registrar Atendimento</h1>
-    </div>
-
+<div class="container" style="max-width: 1000px;">
     <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Formulário de Atendimento</h2>
+            <p style="margin-top: 0.5rem; color: var(--gray-600); font-size: 0.875rem;">
+                Preencha os campos para registrar um novo atendimento.
+            </p>
+        </div>
+
         <div class="card-body">
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" id="atendimento-form">
                 {% csrf_token %}
-                
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- Informações Básicas -->
                 <h3 class="section-title">Informações Básicas</h3>
-                <div class="grid-2">
+                <div class="grid-2 mb-4">
                     <div class="form-group">
-                        {{ form.coordenacao|as_crispy_field }}
+                        <label class="form-label">Coordenação *</label>
+                        {{ form.coordenacao }}
+                        {% if form.coordenacao.errors %}
+                            <div class="form-error">{{ form.coordenacao.errors }}</div>
+                        {% endif %}
                     </div>
+
                     <div class="form-group">
-                        {{ form.tipo_atendimento|as_crispy_field }}
+                        <label class="form-label">Tipo de Atendimento *</label>
+                        {{ form.tipo_atendimento }}
+                        {% if form.tipo_atendimento.errors %}
+                            <div class="form-error">{{ form.tipo_atendimento.errors }}</div>
+                        {% endif %}
                     </div>
                 </div>
 
-                <div class="grid-2">
+                <div class="grid-2 mb-4">
                     <div class="form-group">
-                        {{ form.data|as_crispy_field }}
+                        <label class="form-label">Data *</label>
+                        {{ form.data }}
+                        {% if form.data.errors %}
+                            <div class="form-error">{{ form.data.errors }}</div>
+                        {% endif %}
                     </div>
+
                     <div class="form-group">
-                        {{ form.hora|as_crispy_field }}
+                        <label class="form-label">Hora *</label>
+                        {{ form.hora }}
+                        {% if form.hora.errors %}
+                            <div class="form-error">{{ form.hora.errors }}</div>
+                        {% endif %}
                     </div>
                 </div>
 
-                <div class="grid-2">
+                <div class="grid-2 mb-4">
                     <div class="form-group">
-                        {{ form.situacao|as_crispy_field }}
+                        <label class="form-label">Situação *</label>
+                        {{ form.situacao }}
+                        {% if form.situacao.errors %}
+                            <div class="form-error">{{ form.situacao.errors }}</div>
+                        {% endif %}
                     </div>
+
                     <div class="form-group">
-                        {{ form.origem|as_crispy_field }}
+                        <label class="form-label">Origem</label>
+                        {{ form.origem }}
+                        {% if form.origem.errors %}
+                            <div class="form-error">{{ form.origem.errors }}</div>
+                        {% endif %}
                     </div>
                 </div>
 
-                <h3 class="section-title">Envolvidos</h3>
-                <div class="form-group">
-                    {{ form.estudantes|as_crispy_field }}
+                <!-- Seção de Estudantes -->
+                <h3 class="section-title">Estudantes Envolvidos</h3>
+
+                <!-- Filtro e Busca de Estudantes -->
+                <div class="filter-section">
+                    <div class="filter-section-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                        </svg>
+                        Filtrar e Buscar Estudantes
+                    </div>
+
+                    <div class="grid-2" style="gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="turma-filtro">Filtrar por Turma</label>
+                            {{ form.turma_filtro }}
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="busca-estudante">Buscar Estudante</label>
+                            <div class="search-box">
+                                {{ form.busca_estudante }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" id="aplicar-filtros-estudantes" class="btn btn-primary btn-sm">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            Aplicar Filtros
+                        </button>
+                        <button type="button" id="limpar-filtros-estudantes" class="clear-filters-btn">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Limpar
+                        </button>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    {{ form.servidores_participantes|as_crispy_field }}
+                <div class="form-group mb-4">
+                    <label class="form-label">Estudantes Selecionados</label>
+
+                    <div id="selection-counter-estudantes" class="selection-counter" style="display: none;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span id="counter-text-estudantes">0 estudantes selecionados</span>
+                    </div>
+
+                    <div class="students-selection" id="students-container">
+                        <div id="loading-state-estudantes" style="display: none; text-align: center; padding: 2rem;">
+                            <div class="loading-spinner"></div>
+                            <p style="margin-top: 1rem; color: var(--gray-600);">Carregando estudantes...</p>
+                        </div>
+
+                        <div id="empty-state-estudantes" class="empty-state" style="display: none;">
+                            <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                            </svg>
+                            <p>Nenhum estudante encontrado</p>
+                            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Tente ajustar os filtros de busca</p>
+                        </div>
+
+                        <div id="students-list">
+                            <!-- Os estudantes serão inseridos aqui dinamicamente -->
+                        </div>
+                    </div>
+
+                    {% if form.estudantes.errors %}
+                        <div class="form-error">{{ form.estudantes.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Selecione um ou mais estudantes envolvidos no atendimento.
+                    </div>
                 </div>
 
+                <!-- Seção de Servidores -->
+                <h3 class="section-title">Servidores Participantes</h3>
+
+                <!-- Busca de Servidores -->
+                <div class="filter-section">
+                    <div class="filter-section-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        Buscar Servidores
+                    </div>
+
+                    <div class="grid-2" style="gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="busca-servidor">Buscar Servidor</label>
+                            <div class="search-box">
+                                {{ form.busca_servidor }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" id="aplicar-filtros-servidores" class="btn btn-primary btn-sm">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            Buscar
+                        </button>
+                        <button type="button" id="limpar-filtros-servidores" class="clear-filters-btn">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label">Servidores Selecionados</label>
+
+                    <div id="selection-counter-servidores" class="selection-counter" style="display: none;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span id="counter-text-servidores">0 servidores selecionados</span>
+                    </div>
+
+                    <div class="students-selection" id="servidores-container">
+                        <div id="loading-state-servidores" style="display: none; text-align: center; padding: 2rem;">
+                            <div class="loading-spinner"></div>
+                            <p style="margin-top: 1rem; color: var(--gray-600);">Carregando servidores...</p>
+                        </div>
+
+                        <div id="empty-state-servidores" class="empty-state" style="display: none;">
+                            <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                            </svg>
+                            <p>Nenhum servidor encontrado</p>
+                            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Tente ajustar os filtros de busca</p>
+                        </div>
+
+                        <div id="servidores-list">
+                            <!-- Os servidores serão inseridos aqui dinamicamente -->
+                        </div>
+                    </div>
+
+                    {% if form.servidores_participantes.errors %}
+                        <div class="form-error">{{ form.servidores_participantes.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Selecione os servidores participantes do atendimento.
+                    </div>
+                </div>
+
+                <!-- Detalhes do Atendimento -->
                 <h3 class="section-title">Detalhes do Atendimento</h3>
-                <div class="form-group">
-                    {{ form.informacoes|as_crispy_field }}
+
+                <div class="form-group mb-4">
+                    <label class="form-label">Informações do Atendimento *</label>
+                    {{ form.informacoes }}
+                    {% if form.informacoes.errors %}
+                        <div class="form-error">{{ form.informacoes.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Descreva detalhadamente as informações do atendimento.
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    {{ form.observacoes|as_crispy_field }}
+                <div class="form-group mb-4">
+                    <label class="form-label">Observações</label>
+                    {{ form.observacoes }}
+                    {% if form.observacoes.errors %}
+                        <div class="form-error">{{ form.observacoes.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Observações adicionais sobre o atendimento.
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    {{ form.anexos|as_crispy_field }}
+                <!-- Anexos -->
+                <div class="form-group mb-4">
+                    <label class="form-label">Anexos (Opcional)</label>
+                    <div style="padding: 1.5rem; border: 2px dashed var(--gray-300); border-radius: var(--radius-md); text-align: center; background: var(--gray-50);">
+                        {{ form.anexos }}
+                        <div style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--gray-600);">
+                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 0.5rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            <div>Clique para selecionar um arquivo ou arraste aqui</div>
+                            <div style="margin-top: 0.25rem; color: var(--gray-500); font-size: 0.8125rem;">
+                                PDF, imagens, documentos (máx. 10MB)
+                            </div>
+                        </div>
+                    </div>
+                    {% if form.anexos.errors %}
+                        <div class="form-error">{{ form.anexos.errors }}</div>
+                    {% endif %}
                 </div>
 
-                <div class="form-group">
-                    {{ form.publicar_ficha_aluno|as_crispy_field }}
+                <!-- Configurações -->
+                <div class="form-group mb-4">
+                    <div class="checkbox-group">
+                        {{ form.publicar_ficha_aluno }}
+                        <label for="{{ form.publicar_ficha_aluno.id_for_label }}" class="checkbox-label">
+                            <span class="checkbox-text">
+                                <strong>Publicar na ficha do aluno</strong>
+                                <span class="checkbox-description">Tornar este atendimento visível na ficha do estudante</span>
+                            </span>
+                        </label>
+                    </div>
+                    {% if form.publicar_ficha_aluno.errors %}
+                        <div class="form-error">{{ form.publicar_ficha_aluno.errors }}</div>
+                    {% endif %}
                 </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Salvar Atendimento</button>
-                    <a href="{% url 'atendimentos:atendimento_list' %}" class="btn btn-outline">Cancelar</a>
+                <!-- Botões -->
+                <div class="flex gap-2" style="justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                    <a href="{% url 'atendimentos:atendimento_list' %}" class="btn btn-outline">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Registrar Atendimento
+                    </button>
                 </div>
             </form>
         </div>
@@ -80,17 +318,353 @@
 
 <style>
 .section-title {
-    margin: 1.5rem 0 1rem 0;
+    margin: 2rem 0 1rem 0;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--gray-200);
-    color: var(--gray-700);
+    border-bottom: 2px solid var(--primary);
+    color: var(--gray-800);
+    font-size: 1.25rem;
+    font-weight: 600;
 }
-.form-actions {
+
+.checkbox-group {
     display: flex;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--gray-200);
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    background: var(--gray-50);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    flex: 1;
+}
+
+.checkbox-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.checkbox-description {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin-top: 0.25rem;
 }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Parte dos estudantes
+    const turmaFiltroEstudantes = document.getElementById('turma-filtro');
+    const buscaEstudante = document.getElementById('busca-estudante');
+    const aplicarFiltrosEstudantes = document.getElementById('aplicar-filtros-estudantes');
+    const limparFiltrosEstudantes = document.getElementById('limpar-filtros-estudantes');
+    const studentsContainer = document.getElementById('students-list');
+    const loadingStateEstudantes = document.getElementById('loading-state-estudantes');
+    const emptyStateEstudantes = document.getElementById('empty-state-estudantes');
+    const selectionCounterEstudantes = document.getElementById('selection-counter-estudantes');
+    const counterTextEstudantes = document.getElementById('counter-text-estudantes');
+
+    let estudantesSelecionados = new Set();
+    let timeoutIdEstudantes = null;
+
+    // Carregar estudantes inicialmente
+    carregarEstudantes();
+
+    // Aplicar filtros ao clicar no botão
+    aplicarFiltrosEstudantes.addEventListener('click', function() {
+        carregarEstudantes();
+    });
+
+    // Busca em tempo real (com debounce)
+    buscaEstudante.addEventListener('input', function() {
+        clearTimeout(timeoutIdEstudantes);
+        timeoutIdEstudantes = setTimeout(() => {
+            carregarEstudantes();
+        }, 500);
+    });
+
+    // Limpar filtros
+    limparFiltrosEstudantes.addEventListener('click', function() {
+        turmaFiltroEstudantes.value = '';
+        buscaEstudante.value = '';
+        carregarEstudantes();
+    });
+
+    // Filtrar automaticamente ao mudar a turma
+    turmaFiltroEstudantes.addEventListener('change', function() {
+        carregarEstudantes();
+    });
+
+    // Função para carregar estudantes via AJAX
+    function carregarEstudantes() {
+        const turmaId = turmaFiltroEstudantes.value;
+        const busca = buscaEstudante.value.trim();
+
+        // Mostrar loading
+        loadingStateEstudantes.style.display = 'block';
+        studentsContainer.innerHTML = '';
+        emptyStateEstudantes.style.display = 'none';
+
+        // Construir URL com parâmetros
+        const params = new URLSearchParams();
+        if (turmaId) params.append('turma_id', turmaId);
+        if (busca) params.append('busca', busca);
+
+        // Fazer requisição AJAX
+        fetch(`/api/estudantes/filtrar/?${params.toString()}`)
+            .then(response => response.json())
+            .then(data => {
+                loadingStateEstudantes.style.display = 'none';
+
+                if (data.estudantes && data.estudantes.length > 0) {
+                    renderizarEstudantes(data.estudantes);
+                } else {
+                    emptyStateEstudantes.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar estudantes:', error);
+                loadingStateEstudantes.style.display = 'none';
+                emptyStateEstudantes.style.display = 'block';
+            });
+    }
+
+    // Função para renderizar a lista de estudantes
+    function renderizarEstudantes(estudantes) {
+        studentsContainer.innerHTML = '';
+
+        estudantes.forEach(estudante => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'student-item';
+            if (estudantesSelecionados.has(estudante.id)) {
+                itemDiv.classList.add('selected');
+            }
+
+            itemDiv.innerHTML = `
+                <input type="checkbox"
+                       name="estudantes"
+                       value="${estudante.id}"
+                       id="estudante_${estudante.id}"
+                       class="student-checkbox"
+                       ${estudantesSelecionados.has(estudante.id) ? 'checked' : ''}>
+                <div class="student-info">
+                    <div class="student-name">${estudante.nome}</div>
+                    <div class="student-details">
+                        <span class="student-badge">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
+                            </svg>
+                            ${estudante.matricula}
+                        </span>
+                        <span class="student-badge">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            ${estudante.turma}
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            // Adicionar evento de clique no item inteiro
+            itemDiv.addEventListener('click', function(e) {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = itemDiv.querySelector('.student-checkbox');
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+
+            // Adicionar evento de mudança no checkbox
+            const checkbox = itemDiv.querySelector('.student-checkbox');
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    estudantesSelecionados.add(estudante.id);
+                    itemDiv.classList.add('selected');
+                } else {
+                    estudantesSelecionados.delete(estudante.id);
+                    itemDiv.classList.remove('selected');
+                }
+                atualizarContadorEstudantes();
+            });
+
+            studentsContainer.appendChild(itemDiv);
+        });
+    }
+
+    // Função para atualizar o contador de selecionados
+    function atualizarContadorEstudantes() {
+        const count = estudantesSelecionados.size;
+        if (count > 0) {
+            selectionCounterEstudantes.style.display = 'inline-flex';
+            counterTextEstudantes.textContent = `${count} estudante${count > 1 ? 's' : ''} selecionado${count > 1 ? 's' : ''}`;
+        } else {
+            selectionCounterEstudantes.style.display = 'none';
+        }
+    }
+
+    // Parte dos servidores
+    const buscaServidor = document.getElementById('busca-servidor');
+    const aplicarFiltrosServidores = document.getElementById('aplicar-filtros-servidores');
+    const limparFiltrosServidores = document.getElementById('limpar-filtros-servidores');
+    const servidoresContainer = document.getElementById('servidores-list');
+    const loadingStateServidores = document.getElementById('loading-state-servidores');
+    const emptyStateServidores = document.getElementById('empty-state-servidores');
+    const selectionCounterServidores = document.getElementById('selection-counter-servidores');
+    const counterTextServidores = document.getElementById('counter-text-servidores');
+
+    let servidoresSelecionados = new Set();
+    let timeoutIdServidores = null;
+
+    // Carregar servidores inicialmente
+    carregarServidores();
+
+    // Aplicar filtros ao clicar no botão
+    aplicarFiltrosServidores.addEventListener('click', function() {
+        carregarServidores();
+    });
+
+    // Busca em tempo real (com debounce)
+    buscaServidor.addEventListener('input', function() {
+        clearTimeout(timeoutIdServidores);
+        timeoutIdServidores = setTimeout(() => {
+            carregarServidores();
+        }, 500);
+    });
+
+    // Limpar filtros
+    limparFiltrosServidores.addEventListener('click', function() {
+        buscaServidor.value = '';
+        carregarServidores();
+    });
+
+    // Função para carregar servidores via AJAX
+    function carregarServidores() {
+        const busca = buscaServidor.value.trim();
+
+        // Mostrar loading
+        loadingStateServidores.style.display = 'block';
+        servidoresContainer.innerHTML = '';
+        emptyStateServidores.style.display = 'none';
+
+        // Construir URL com parâmetros
+        const params = new URLSearchParams();
+        if (busca) params.append('busca', busca);
+
+        // Fazer requisição AJAX
+        fetch(`/api/servidores/filtrar/?${params.toString()}`)
+            .then(response => response.json())
+            .then(data => {
+                loadingStateServidores.style.display = 'none';
+
+                if (data.servidores && data.servidores.length > 0) {
+                    renderizarServidores(data.servidores);
+                } else {
+                    emptyStateServidores.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar servidores:', error);
+                loadingStateServidores.style.display = 'none';
+                emptyStateServidores.style.display = 'block';
+            });
+    }
+
+    // Função para renderizar a lista de servidores
+    function renderizarServidores(servidores) {
+        servidoresContainer.innerHTML = '';
+
+        servidores.forEach(servidor => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'student-item';
+            if (servidoresSelecionados.has(servidor.id)) {
+                itemDiv.classList.add('selected');
+            }
+
+            itemDiv.innerHTML = `
+                <input type="checkbox"
+                       name="servidores_participantes"
+                       value="${servidor.id}"
+                       id="servidor_${servidor.id}"
+                       class="student-checkbox"
+                       ${servidoresSelecionados.has(servidor.id) ? 'checked' : ''}>
+                <div class="student-info">
+                    <div class="student-name">${servidor.nome}</div>
+                    <div class="student-details">
+                        <span class="student-badge">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            ${servidor.email}
+                        </span>
+                        <span class="student-badge">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                            ${servidor.coordenacao}
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            // Adicionar evento de clique no item inteiro
+            itemDiv.addEventListener('click', function(e) {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = itemDiv.querySelector('.student-checkbox');
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+
+            // Adicionar evento de mudança no checkbox
+            const checkbox = itemDiv.querySelector('.student-checkbox');
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    servidoresSelecionados.add(servidor.id);
+                    itemDiv.classList.add('selected');
+                } else {
+                    servidoresSelecionados.delete(servidor.id);
+                    itemDiv.classList.remove('selected');
+                }
+                atualizarContadorServidores();
+            });
+
+            servidoresContainer.appendChild(itemDiv);
+        });
+    }
+
+    // Função para atualizar o contador de selecionados
+    function atualizarContadorServidores() {
+        const count = servidoresSelecionados.size;
+        if (count > 0) {
+            selectionCounterServidores.style.display = 'inline-flex';
+            counterTextServidores.textContent = `${count} servidor${count > 1 ? 'es' : ''} selecionado${count > 1 ? 's' : ''}`;
+        } else {
+            selectionCounterServidores.style.display = 'none';
+        }
+    }
+
+    // Definir data e hora padrão
+    const dataInput = document.querySelector('input[type="date"]');
+    const horaInput = document.querySelector('input[type="time"]');
+
+    if (dataInput && !dataInput.value) {
+        const hoje = new Date().toISOString().split('T')[0];
+        dataInput.value = hoje;
+    }
+
+    if (horaInput && !horaInput.value) {
+        const agora = new Date();
+        const horas = String(agora.getHours()).padStart(2, '0');
+        const minutos = String(agora.getMinutes()).padStart(2, '0');
+        horaInput.value = `${horas}:${minutos}`;
+    }
+});
+</script>
 {% endblock %}

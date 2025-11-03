@@ -754,3 +754,30 @@ def api_filtrar_estudantes(request):
     } for e in estudantes]
 
     return JsonResponse({'estudantes': data})
+
+# core/views.py - Adicione esta função
+
+@login_required
+@user_passes_test(is_servidor)
+def api_filtrar_servidores(request):
+    """API endpoint para filtrar servidores por nome"""
+    busca = request.GET.get('busca', '').strip()
+
+    servidores = Servidor.objects.all()
+
+    if busca:
+        servidores = servidores.filter(
+            Q(nome__icontains=busca) |
+            Q(email__icontains=busca)
+        )
+
+    servidores = servidores.order_by('nome')[:50]
+
+    data = [{
+        'id': s.id,
+        'nome': s.nome,
+        'email': s.email,
+        'coordenacao': s.coordenacao,
+    } for s in servidores]
+
+    return JsonResponse({'servidores': data})

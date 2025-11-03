@@ -64,4 +64,5 @@ urlpatterns = [
     path('diagnostico-email/', views.diagnostico_email, name='diagnostico_email'),
     path('testar-email/', views.testar_email, name='testar_email'),
     path('api/estudantes/filtrar/', views.api_filtrar_estudantes, name='api_filtrar_estudantes'),
+    path('api/servidores/filtrar/', views.api_filtrar_servidores, name='api_filtrar_servidores'),
 ]
