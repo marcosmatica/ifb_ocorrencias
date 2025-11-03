@@ -99,14 +99,19 @@
 </header>
 
 <script>
+let notifDropdownOpen = false;
+let userDropdownOpen = false;
+
 function toggleNotifications(e) {
     e.stopPropagation();
     const dropdown = document.getElementById('notifications-dropdown');
     const userDropdown = document.getElementById('user-menu-dropdown');
 
     userDropdown.classList.add('hidden');
+    userDropdownOpen = false;
 
-    if (dropdown.classList.contains('hidden')) {
+    notifDropdownOpen = !notifDropdownOpen;
+    if (notifDropdownOpen) {
         dropdown.classList.remove('hidden');
         carregarNotificacoes();
     } else {
@@ -120,6 +125,9 @@ function toggleUserMenu(e) {
     const notifDropdown = document.getElementById('notifications-dropdown');
 
     notifDropdown.classList.add('hidden');
+    notifDropdownOpen = false;
+
+    userDropdownOpen = !userDropdownOpen;
     dropdown.classList.toggle('hidden');
 }
 
@@ -233,15 +241,17 @@ function atualizarContadorNotificacoes() {
 document.addEventListener('click', function(e) {
     const notifDropdown = document.getElementById('notifications-dropdown');
     const userDropdown = document.getElementById('user-menu-dropdown');
+    const notifBtn = document.getElementById('notifications-btn');
 
-    if (notifDropdown && !notifDropdown.contains(e.target) &&
-        !e.target.closest('#notifications-btn')) {
+    if (notifDropdown && !notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
         notifDropdown.classList.add('hidden');
+        notifDropdownOpen = false;
     }
 
     if (userDropdown && !userDropdown.contains(e.target) &&
         !e.target.closest('button[onclick*="toggleUserMenu"]')) {
         userDropdown.classList.add('hidden');
+        userDropdownOpen = false;
     }
 });
 
@@ -249,6 +259,8 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         document.getElementById('notifications-dropdown').classList.add('hidden');
         document.getElementById('user-menu-dropdown').classList.add('hidden');
+        notifDropdownOpen = false;
+        userDropdownOpen = false;
     }
 });
 
