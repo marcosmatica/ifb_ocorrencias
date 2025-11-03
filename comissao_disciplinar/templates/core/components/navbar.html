@@ -1,7 +1,6 @@
 {% load static %}
 <header class="header">
     <div class="flex items-center gap-3">
-        <!-- Menu Mobile -->
         <button class="btn btn-outline btn-sm lg:hidden" onclick="toggleSidebar()" aria-label="Menu">
             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -14,7 +13,6 @@
     </div>
 
     <div class="user-menu">
-        <!-- Notificações -->
         <div class="relative">
             <button class="btn btn-outline btn-sm relative" onclick="toggleNotifications(event)" id="notifications-btn" aria-label="Notificações">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,7 +21,6 @@
                 <span id="notification-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hidden">0</span>
             </button>
 
-            <!-- Dropdown Notificações -->
             <div id="notifications-dropdown" class="card absolute right-0 top-full mt-2 w-96 max-w-screen z-50 shadow-xl hidden">
                 <div class="card-header flex-between p-3">
                     <h3 class="font-semibold m-0">Notificações</h3>
@@ -48,7 +45,6 @@
             </div>
         </div>
 
-        <!-- Menu Usuário -->
         <div class="relative">
             <button class="btn btn-outline btn-sm flex items-center gap-2" onclick="toggleUserMenu(event)" aria-label="Menu do usuário">
                 <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold text-sm">
@@ -60,7 +56,6 @@
                 </svg>
             </button>
 
-            <!-- Dropdown Usuário -->
             <div id="user-menu-dropdown" class="card absolute right-0 top-full mt-2 w-56 z-50 shadow-xl hidden">
                 <div class="p-3 border-b border-gray-200">
                     <div class="font-semibold text-sm truncate">{{ user.get_full_name|default:user.username }}</div>
@@ -104,7 +99,6 @@
 </header>
 
 <script>
-// Toggle Notificações
 function toggleNotifications(e) {
     e.stopPropagation();
     const dropdown = document.getElementById('notifications-dropdown');
@@ -120,7 +114,6 @@ function toggleNotifications(e) {
     }
 }
 
-// Toggle Menu Usuário
 function toggleUserMenu(e) {
     e.stopPropagation();
     const dropdown = document.getElementById('user-menu-dropdown');
@@ -130,7 +123,6 @@ function toggleUserMenu(e) {
     dropdown.classList.toggle('hidden');
 }
 
-// Carregar Notificações
 function carregarNotificacoes() {
     fetch('{% url "api_notificacoes_recentes" %}')
         .then(res => res.json())
@@ -188,7 +180,6 @@ function carregarNotificacoes() {
         });
 }
 
-// Marcar como lida
 function marcarComoLida(e, id) {
     e.stopPropagation();
     fetch(`/notificacoes/${id}/marcar-lida/`, {
@@ -207,7 +198,6 @@ function marcarComoLida(e, id) {
     });
 }
 
-// Marcar todas como lidas
 function marcarTodasComoLidas(e) {
     e.stopPropagation();
     fetch('{% url "notificacao_marcar_todas_lidas" %}', {
@@ -226,7 +216,6 @@ function marcarTodasComoLidas(e) {
     });
 }
 
-// Atualizar contador
 function atualizarContadorNotificacoes() {
     fetch('{% url "api_notificacoes_nao_lidas" %}')
         .then(res => res.json())
@@ -241,7 +230,6 @@ function atualizarContadorNotificacoes() {
         });
 }
 
-// Fechar dropdowns ao clicar fora
 document.addEventListener('click', function(e) {
     const notifDropdown = document.getElementById('notifications-dropdown');
     const userDropdown = document.getElementById('user-menu-dropdown');
@@ -257,7 +245,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Fechar dropdowns ao pressionar ESC
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         document.getElementById('notifications-dropdown').classList.add('hidden');
@@ -265,7 +252,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Inicializar
 document.addEventListener('DOMContentLoaded', function() {
     atualizarContadorNotificacoes();
     setInterval(atualizarContadorNotificacoes, 60000);
