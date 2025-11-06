@@ -1,0 +1,219 @@
+<!-- templates/napne/atendimento_detail.html -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Atendimento NAPNE #{{ atendimento.id }}{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="page-title">Atendimento NAPNE #{{ atendimento.id }}</h1>
+    <div class="breadcrumb">
+        <a href="{% url 'napne:dashboard' %}">Dashboard</a>
+        <span class="separator">/</span>
+        <a href="{% url 'napne:atendimento_list' %}">Atendimentos</a>
+        <span class="separator">/</span>
+        <span class="active">Detalhes</span>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Informações Principais -->
+    <div class="lg:col-span-2">
+        <div class="card">
+            <div class="card-header flex-between">
+                <h2 class="card-title">Informações do Atendimento</h2>
+                <div class="flex gap-2">
+                    <a href="{% url 'napne:atendimento_edit' atendimento.pk %}" class="btn btn-outline btn-sm">
+                        Editar
+                    </a>
+                    <a href="{% url 'napne:adicionar_encaminhamento' atendimento.pk %}" class="btn btn-primary btn-sm">
+                        Adicionar Encaminhamento
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="info-group">
+                        <label class="info-label">Estudante:</label>
+                        <span class="info-value">{{ atendimento.estudante.nome }}</span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Matrícula:</label>
+                        <span class="info-value">{{ atendimento.estudante.matricula_sga }}</span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Turma:</label>
+                        <span class="info-value">{{ atendimento.turma.nome }}</span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Data:</label>
+                        <span class="info-value">{{ atendimento.data|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Tipo:</label>
+                        <span class="info-value">{{ atendimento.tipo_atendimento.nome }}</span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Origem:</label>
+                        <span class="info-value">{{ atendimento.get_origem_display }}</span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Status:</label>
+                        <span class="info-value">
+                            <span class="badge" style="background-color: {{ atendimento.status.cor }}; color: white;">
+                                {{ atendimento.status.nome }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Atendido por:</label>
+                        <span class="info-value">{{ atendimento.atendido_por.usuario.get_full_name }}</span>
+                    </div>
+                </div>
+
+                {% if atendimento.necessidades_especificas.exists %}
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Necessidades Específicas</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% for necessidade in atendimento.necessidades_especificas.all %}
+                        <span class="badge badge-primary">{{ necessidade.nome }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if atendimento.detalhamento %}
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Detalhamento do Atendimento</h3>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        {{ atendimento.detalhamento|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if atendimento.acoes %}
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Ações Realizadas</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        {{ atendimento.acoes|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if atendimento.resumo_atendimento %}
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Resumo do Atendimento</h3>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        {{ atendimento.resumo_atendimento|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Encaminhamentos -->
+        {% if atendimento.observacoes_encaminhamento.exists %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2 class="card-title">Encaminhamentos</h2>
+            </div>
+            <div class="card-body">
+                <div class="space-y-4">
+                    {% for obs in atendimento.observacoes_encaminhamento.all %}
+                    <div class="border-l-4 border-blue-500 pl-4 py-2">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h4 class="font-semibold">{{ obs.setor.nome }} ({{ obs.setor.sigla }})</h4>
+                                <p class="text-sm text-gray-600 mt-1">{{ obs.observacao|linebreaks }}</p>
+                            </div>
+                            <span class="text-xs text-gray-500">{{ obs.criado_em|date:"d/m/Y H:i" }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-4">
+        <!-- Informações Adicionais -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informações Adicionais</h3>
+            </div>
+            <div class="card-body">
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Laudo Prévio:</span>
+                        <span>
+                            {% if atendimento.laudo_previo %}
+                            <span class="badge badge-success">Sim</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Não</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Publicar na Ficha:</span>
+                        <span>
+                            {% if atendimento.publicar_ficha_aluno %}
+                            <span class="badge badge-success">Sim</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Não</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações do Sistema -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informações do Sistema</h3>
+            </div>
+            <div class="card-body">
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Criado em:</span>
+                        <span>{{ atendimento.criado_em|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Atualizado em:</span>
+                        <span>{{ atendimento.atualizado_em|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Último Status:</span>
+                        <span>{{ atendimento.data_ultima_atualizacao_status|date:"d/m/Y H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ações Rápidas -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Ações Rápidas</h3>
+            </div>
+            <div class="card-body">
+                <div class="space-y-2">
+                    <a href="{% url 'napne:adicionar_encaminhamento' atendimento.pk %}" 
+                       class="btn btn-outline btn-sm w-full justify-center">
+                        Adicionar Encaminhamento
+                    </a>
+                    <a href="{% url 'napne:ficha_detail' atendimento.estudante.ficha_napne.pk %}" 
+                       class="btn btn-outline btn-sm w-full justify-center">
+                        Ver Ficha do Estudante
+                    </a>
+                    <a href="{% url 'napne:atendimento_edit' atendimento.pk %}" 
+                       class="btn btn-outline btn-sm w-full justify-center">
+                        Editar Atendimento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

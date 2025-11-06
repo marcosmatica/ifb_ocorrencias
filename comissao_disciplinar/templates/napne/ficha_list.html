@@ -1,0 +1,96 @@
+<!-- templates/napne/ficha_list.html -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Fichas NAPNE{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="page-title">Fichas NAPNE</h1>
+    <div class="breadcrumb">
+        <a href="{% url 'napne:dashboard' %}">Dashboard</a>
+        <span class="separator">/</span>
+        <span class="active">Fichas</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header flex-between">
+        <div>
+            <h2 class="card-title">Lista de Fichas</h2>
+            <p class="text-sm text-gray-600 mt-1">Fichas cadastradas no sistema</p>
+        </div>
+        <a href="{% url 'napne:ficha_create' %}" class="btn btn-primary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nova Ficha
+        </a>
+    </div>
+
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Estudante</th>
+                        <th>Turma</th>
+                        <th>Necessidade Específica</th>
+                        <th>Telefone</th>
+                        <th>Atendido por</th>
+                        <th>Laudo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ficha in fichas %}
+                    <tr>
+                        <td>
+                            <div class="font-semibold">{{ ficha.estudante.nome }}</div>
+                            <div class="text-sm text-gray-600">{{ ficha.estudante.matricula_sga }}</div>
+                        </td>
+                        <td>{{ ficha.turma.nome }}</td>
+                        <td>
+                            <div class="max-w-xs truncate">{{ ficha.necessidade_especifica }}</div>
+                        </td>
+                        <td>{{ ficha.telefone }}</td>
+                        <td>{{ ficha.atendido_por.usuario.get_full_name }}</td>
+                        <td>
+                            {% if ficha.laudo_apresentado %}
+                            <span class="badge badge-success">Sim</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Não</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="flex gap-2">
+                                <a href="{% url 'napne:ficha_detail' ficha.pk %}" class="btn btn-outline btn-sm">
+                                    Ver
+                                </a>
+                                <a href="{% url 'napne:ficha_edit' ficha.pk %}" class="btn btn-outline btn-sm">
+                                    Editar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <p>Nenhuma ficha cadastrada</p>
+                                <a href="{% url 'napne:ficha_create' %}" class="btn btn-primary btn-sm mt-3">
+                                    Cadastrar Primeira Ficha
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

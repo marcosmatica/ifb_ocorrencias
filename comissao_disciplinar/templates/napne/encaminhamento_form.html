@@ -1,0 +1,84 @@
+<!-- templates/napne/encaminhamento_form.html -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Adicionar Encaminhamento{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="page-title">Adicionar Encaminhamento</h1>
+    <div class="breadcrumb">
+        <a href="{% url 'napne:dashboard' %}">Dashboard</a>
+        <span class="separator">/</span>
+        <a href="{% url 'napne:atendimento_list' %}">Atendimentos</a>
+        <span class="separator">/</span>
+        <a href="{% url 'napne:atendimento_detail' atendimento.pk %}">#{{ atendimento.id }}</a>
+        <span class="separator">/</span>
+        <span class="active">Encaminhamento</span>
+    </div>
+</div>
+
+<div class="card max-w-2xl mx-auto">
+    <div class="card-header">
+        <h2 class="card-title">Novo Encaminhamento</h2>
+        <p class="text-sm text-gray-600 mt-1">Atendimento #{{ atendimento.id }} - {{ atendimento.estudante.nome }}</p>
+    </div>
+    <div class="card-body">
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="form-group required">
+                <label for="{{ form.setor.id_for_label }}" class="form-label">
+                    {{ form.setor.label }}
+                </label>
+                {{ form.setor }}
+                {% if form.setor.help_text %}
+                <div class="form-help">{{ form.setor.help_text }}</div>
+                {% endif %}
+                {% if form.setor.errors %}
+                <div class="form-error">
+                    {% for error in form.setor.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group required">
+                <label for="{{ form.observacao.id_for_label }}" class="form-label">
+                    {{ form.observacao.label }}
+                </label>
+                {{ form.observacao }}
+                {% if form.observacao.help_text %}
+                <div class="form-help">{{ form.observacao.help_text }}</div>
+                {% endif %}
+                {% if form.observacao.errors %}
+                <div class="form-error">
+                    {% for error in form.observacao.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t">
+                <a href="{% url 'napne:atendimento_detail' atendimento.pk %}" 
+                   class="btn btn-secondary">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    Adicionar Encaminhamento
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

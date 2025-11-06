@@ -1,0 +1,136 @@
+<!-- templates/napne/atendimento_list.html -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Atendimentos NAPNE{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="page-title">Atendimentos NAPNE</h1>
+    <div class="breadcrumb">
+        <a href="{% url 'napne:dashboard' %}">Dashboard</a>
+        <span class="separator">/</span>
+        <span class="active">Atendimentos</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header flex-between">
+        <div>
+            <h2 class="card-title">Lista de Atendimentos</h2>
+            <p class="text-sm text-gray-600 mt-1">Atendimentos registrados no sistema</p>
+        </div>
+        <a href="{% url 'napne:atendimento_create' %}" class="btn btn-primary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Novo Atendimento
+        </a>
+    </div>
+
+    <div class="card-body">
+        <!-- Filtros -->
+        <div class="bg-gray-50 p-4 rounded-lg mb-4">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="form-label">Estudante:</label>
+                    <input type="text" name="estudante" value="{{ request.GET.estudante }}" 
+                           class="form-control" placeholder="Matrícula do estudante">
+                </div>
+                <div>
+                    <label class="form-label">Data Início:</label>
+                    <input type="date" name="data_inicio" value="{{ request.GET.data_inicio }}" 
+                           class="form-control">
+                </div>
+                <div>
+                    <label class="form-label">Data Fim:</label>
+                    <input type="date" name="data_fim" value="{{ request.GET.data_fim }}" 
+                           class="form-control">
+                </div>
+                <div>
+                    <label class="form-label">Status:</label>
+                    <select name="status" class="form-control">
+                        <option value="">Todos</option>
+                        {% for status in status_list %}
+                        <option value="{{ status.id }}" {% if request.GET.status == status.id|stringformat:"i" %}selected{% endif %}>
+                            {{ status.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="md:col-span-4 flex justify-end gap-2">
+                    <a href="{% url 'napne:atendimento_list' %}" class="btn btn-secondary">
+                        Limpar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Estudante</th>
+                        <th>Turma</th>
+                        <th>Tipo</th>
+                        <th>Origem</th>
+                        <th>Status</th>
+                        <th>Atendido por</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for atendimento in atendimentos %}
+                    <tr>
+                        <td class="whitespace-nowrap">{{ atendimento.data|date:"d/m/Y" }}</td>
+                        <td>
+                            <div class="font-semibold">{{ atendimento.estudante.nome }}</div>
+                            <div class="text-sm text-gray-600">{{ atendimento.estudante.matricula_sga }}</div>
+                        </td>
+                        <td>{{ atendimento.turma.nome }}</td>
+                        <td>{{ atendimento.tipo_atendimento.nome }}</td>
+                        <td>
+                            <span class="badge badge-secondary">{{ atendimento.get_origem_display }}</span>
+                        </td>
+                        <td>
+                            <span class="badge" style="background-color: {{ atendimento.status.cor }}; color: white;">
+                                {{ atendimento.status.nome }}
+                            </span>
+                        </td>
+                        <td>{{ atendimento.atendido_por.usuario.get_full_name }}</td>
+                        <td>
+                            <div class="flex gap-2">
+                                <a href="{% url 'napne:atendimento_detail' atendimento.pk %}" class="btn btn-outline btn-sm">
+                                    Ver
+                                </a>
+                                <a href="{% url 'napne:atendimento_edit' atendimento.pk %}" class="btn btn-outline btn-sm">
+                                    Editar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <p>Nenhum atendimento encontrado</p>
+                                <a href="{% url 'napne:atendimento_create' %}" class="btn btn-primary btn-sm mt-3">
+                                    Registrar Primeiro Atendimento
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

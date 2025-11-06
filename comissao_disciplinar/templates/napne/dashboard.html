@@ -1,0 +1,101 @@
+<!-- templates/napne/dashboard.html -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard NAPNE{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="page-title">Dashboard NAPNE</h1>
+    <div class="breadcrumb">
+        <span class="active">Dashboard</span>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid mb-5">
+    <div class="stat-card">
+        <div class="stat-label">Total de Fichas</div>
+        <div class="stat-value">{{ total_fichas }}</div>
+        <div class="stat-change positive">Estudantes cadastrados</div>
+    </div>
+
+    <div class="stat-card" style="border-left-color: #eab308;">
+        <div class="stat-label">Total de Atendimentos</div>
+        <div class="stat-value">{{ total_atendimentos }}</div>
+        <div class="stat-change">Registros realizados</div>
+    </div>
+
+    <div class="stat-card" style="border-left-color: #3b82f6;">
+        <div class="stat-label">Atendimentos do Mês</div>
+        <div class="stat-value">{{ atendimentos_mes }}</div>
+        <div class="stat-change">Este mês</div>
+    </div>
+</div>
+
+<!-- Últimos Atendimentos -->
+<div class="card">
+    <div class="card-header flex-between">
+        <div>
+            <h2 class="card-title">Últimos Atendimentos</h2>
+            <p class="text-sm text-gray-600 mt-1">10 registros mais recentes</p>
+        </div>
+        <a href="{% url 'napne:atendimento_list' %}" class="btn btn-outline btn-sm">
+            Ver Todos
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </a>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Estudante</th>
+                    <th>Turma</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th>Atendido por</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for atendimento in ultimos_atendimentos %}
+                <tr>
+                    <td class="whitespace-nowrap">{{ atendimento.data|date:"d/m/Y" }}</td>
+                    <td>{{ atendimento.estudante.nome }}</td>
+                    <td>{{ atendimento.turma.nome }}</td>
+                    <td>{{ atendimento.tipo_atendimento.nome }}</td>
+                    <td>
+                        <span class="badge" style="background-color: {{ atendimento.status.cor }}; color: white;">
+                            {{ atendimento.status.nome }}
+                        </span>
+                    </td>
+                    <td>{{ atendimento.atendido_por.usuario.get_full_name }}</td>
+                    <td>
+                        <a href="{% url 'napne:atendimento_detail' atendimento.pk %}" class="btn btn-outline btn-sm">
+                            Ver
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <p>Nenhum atendimento registrado</p>
+                            <a href="{% url 'napne:atendimento_create' %}" class="btn btn-primary btn-sm mt-3">
+                                Registrar Primeiro Atendimento
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,194 @@
+<!-- templates/napne/ficha_detail.html -->
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Ficha NAPNE - {{ ficha.estudante.nome }}{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="page-title">Ficha NAPNE - {{ ficha.estudante.nome }}</h1>
+    <div class="breadcrumb">
+        <a href="{% url 'napne:dashboard' %}">Dashboard</a>
+        <span class="separator">/</span>
+        <a href="{% url 'napne:ficha_list' %}">Fichas</a>
+        <span class="separator">/</span>
+        <span class="active">Detalhes</span>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Informações Principais -->
+    <div class="lg:col-span-2">
+        <div class="card">
+            <div class="card-header flex-between">
+                <h2 class="card-title">Informações do Estudante</h2>
+                <a href="{% url 'napne:ficha_edit' ficha.pk %}" class="btn btn-outline btn-sm">
+                    Editar Ficha
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="info-group">
+                        <label class="info-label">Estudante:</label>
+                        <span class="info-value">{{ ficha.estudante.nome }}</span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Matrícula:</label>
+                        <span class="info-value">{{ ficha.estudante.matricula_sga }}</span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Turma:</label>
+                        <span class="info-value">{{ ficha.turma.nome }}</span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Telefone:</label>
+                        <span class="info-value">{{ ficha.telefone }}</span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Atendido por:</label>
+                        <span class="info-value">{{ ficha.atendido_por.usuario.get_full_name }}</span>
+                    </div>
+                    <div class="info-group">
+                        <label class="info-label">Laudo Apresentado:</label>
+                        <span class="info-value">
+                            {% if ficha.laudo_apresentado %}
+                            <span class="badge badge-success">Sim</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Não</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Necessidade Específica</h3>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        {{ ficha.necessidade_especifica|linebreaks }}
+                    </div>
+                </div>
+
+                {% if ficha.observacao_laudo_atual %}
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-3">Observação do Laudo Atual</h3>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        {{ ficha.observacao_laudo_atual|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Desempenho -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2 class="card-title">Desempenho Escolar</h2>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% if ficha.desempenho_1bim %}
+                    <div>
+                        <h4 class="font-semibold mb-2">1º Bimestre</h4>
+                        <div class="bg-gray-50 p-3 rounded-lg text-sm">
+                            {{ ficha.desempenho_1bim|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if ficha.desempenho_2bim %}
+                    <div>
+                        <h4 class="font-semibold mb-2">2º Bimestre</h4>
+                        <div class="bg-gray-50 p-3 rounded-lg text-sm">
+                            {{ ficha.desempenho_2bim|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if ficha.desempenho_3bim %}
+                    <div>
+                        <h4 class="font-semibold mb-2">3º Bimestre</h4>
+                        <div class="bg-gray-50 p-3 rounded-lg text-sm">
+                            {{ ficha.desempenho_3bim|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if ficha.desempenho_4bim %}
+                    <div>
+                        <h4 class="font-semibold mb-2">4º Bimestre</h4>
+                        <div class="bg-gray-50 p-3 rounded-lg text-sm">
+                            {{ ficha.desempenho_4bim|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if ficha.resultado_final %}
+                <div class="mt-6">
+                    <h4 class="font-semibold mb-2">Resultado Final</h4>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        {{ ficha.resultado_final|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-4">
+        <!-- Atendimentos -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Atendimentos Relacionados</h3>
+            </div>
+            <div class="card-body">
+                {% if atendimentos %}
+                <div class="space-y-3">
+                    {% for atendimento in atendimentos %}
+                    <div class="border-l-4 border-blue-500 pl-3 py-1">
+                        <div class="font-medium text-sm">{{ atendimento.data|date:"d/m/Y" }}</div>
+                        <div class="text-xs text-gray-600">{{ atendimento.tipo_atendimento.nome }}</div>
+                        <div class="text-xs">
+                            <span class="badge" style="background-color: {{ atendimento.status.cor }}; color: white;">
+                                {{ atendimento.status.nome }}
+                            </span>
+                        </div>
+                        <a href="{% url 'napne:atendimento_detail' atendimento.pk %}" class="text-xs text-blue-600 hover:underline">
+                            Ver detalhes
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-sm text-gray-600 text-center py-4">Nenhum atendimento registrado</p>
+                {% endif %}
+                <div class="mt-4">
+                    <a href="{% url 'napne:atendimento_create' %}?estudante={{ ficha.estudante.id }}" 
+                       class="btn btn-outline btn-sm w-full">
+                        Novo Atendimento
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações do Sistema -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informações do Sistema</h3>
+            </div>
+            <div class="card-body">
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Criado em:</span>
+                        <span>{{ ficha.criado_em|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Atualizado em:</span>
+                        <span>{{ ficha.atualizado_em|date:"d/m/Y H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
