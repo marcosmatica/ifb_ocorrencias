@@ -9,6 +9,7 @@ urlpatterns = [
     path('atendimentos/', include('atendimentos.urls')),      # Novo
     path('pedagogico/', include('pedagogico.urls')),          # Novo
     path('accounts/', include('django.contrib.auth.urls')),
+    path('napne/', include('napne.urls')),
 ]
 
 if settings.DEBUG:
