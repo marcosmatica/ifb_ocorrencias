@@ -30,10 +30,13 @@ class SituacaoAtendimento(models.Model):
 
 class Atendimento(models.Model):
     ORIGEM_CHOICES = [
-        ('ESPONTANEO', 'Espontâneo'),
+        ('PRESENCIAL', 'Presencial'),
         ('ENCAMINHAMENTO', 'Encaminhamento'),
         ('SOLICITACAO_DOCENTE', 'Solicitação de Docente'),
         ('SOLICITACAO_COORDENACAO', 'Solicitação de Coordenação'),
+        ('CONTATO_TELEFONICO', 'Contato Telefônico'),
+        ('CONTATO_WHATSAPP', 'Contato Whatsapp'),
+        ('RESPONSAVEL', 'Responsável'),
         ('OUTRO', 'Outro'),
     ]
 
