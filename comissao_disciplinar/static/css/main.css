@@ -1278,13 +1278,18 @@ textarea.form-control {
     }
 }
 
-/* === Reset Layout === */
+/* === Layout Principal === */
 .layout-wrapper {
-    display: flex;
+    position: relative;
     min-height: 100vh;
+    width: 100%;
 }
 
-/* Sidebar - sempre fixo e oculto por padrão */
+.hidden {
+    display: none !important;
+}
+
+/* Sidebar - sempre fixo e sobreposto */
 .sidebar {
     width: 260px;
     background: white;
@@ -1299,23 +1304,27 @@ textarea.form-control {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Sidebar aberto */
 .sidebar.open {
     transform: translateX(0);
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Main content - sempre ocupa toda largura */
+/* Main content - se ajusta com sidebar */
 .main-content {
-    flex: 1;
-    margin-left: 0 !important;
     width: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    transition: none;
+    margin-left: 0;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Overlay do sidebar */
+/* Sidebar aberto: empurra conteúdo */
+.sidebar.open ~ .main-content {
+    margin-left: 260px;
+}
+
+/* Overlay */
 #sidebar-overlay {
     position: fixed;
     inset: 0;
@@ -1331,7 +1340,6 @@ textarea.form-control {
     pointer-events: auto;
 }
 
-/* Prevenir scroll quando sidebar aberto em mobile */
 body.sidebar-open {
     overflow: hidden;
 }
