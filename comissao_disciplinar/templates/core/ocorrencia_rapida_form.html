@@ -262,42 +262,53 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Função para carregar estudantes
     function carregarEstudantes() {
-        const turmaId = turmaSelect ? turmaSelect.value : '';
-        const busca = buscaInput ? buscaInput.value.trim() : '';
+    const turmaId = turmaSelect ? turmaSelect.value : '';
+    const busca = buscaInput ? buscaInput.value.trim() : '';
 
-        if (!turmaId && !busca) {
-            studentsContainer.innerHTML = '<p class="text-center text-gray-500 p-6 text-sm">Selecione uma turma para ver os estudantes</p>';
-            return;
-        }
-
-        // Mostrar loading
-        loadingState.classList.remove('hidden');
-        studentsContainer.innerHTML = '';
-        emptyState.classList.add('hidden');
-
-        // Construir URL
-        const params = new URLSearchParams();
-        if (turmaId) params.append('turma_id', turmaId);
-        if (busca) params.append('busca', busca);
-
-        // Fazer requisição
-        fetch(`/api/estudantes/filtrar/?${params.toString()}`)
-            .then(response => response.json())
-            .then(data => {
-                loadingState.classList.add('hidden');
-
-                if (data.estudantes && data.estudantes.length > 0) {
-                    renderizarEstudantes(data.estudantes);
-                } else {
-                    emptyState.classList.remove('hidden');
-                }
-            })
-            .catch(error => {
-                console.error('Erro ao carregar estudantes:', error);
-                loadingState.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-            });
+    if (!turmaId && !busca) {
+        studentsContainer.innerHTML = '<p class="text-center text-gray-500 p-6 text-sm">Selecione uma turma para ver os estudantes</p>';
+        //loadingState.classList.add('hidden');
+        loadingState.style.display = 'none';
+        //emptyState.classList.add('hidden');
+        emptyState.style.display = 'none';
+        return;
     }
+
+    // Mostrar APENAS loading
+    //loadingState.classList.remove('hidden');
+    loadingState.style.display = 'block';
+    //emptyState.classList.add('hidden');
+    emptyState.style.display = 'flex';
+    studentsContainer.innerHTML = '';
+
+    const params = new URLSearchParams();
+    if (turmaId) params.append('turma_id', turmaId);
+    if (busca) params.append('busca', busca);
+
+    fetch(`/api/estudantes/filtrar/?${params.toString()}`)
+        .then(response => response.json())
+        .then(data => {
+            //loadingState.classList.add('hidden'); // Esconder loading
+            loadingState.style.display = 'none';
+            if (data.estudantes && data.estudantes.length > 0) {
+                //emptyState.classList.add('hidden'); // Garantir que empty está oculto
+                emptyState.style.display = 'none';
+                renderizarEstudantes(data.estudantes);
+            } else {
+                emptyState.style.display = 'flex';
+                //emptyState.classList.remove('hidden'); // Mostrar empty
+                studentsContainer.innerHTML = ''; // Limpar lista
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            //loadingState.classList.add('hidden');
+            loadingState.style.display = 'none';
+            //emptyState.classList.remove('hidden');
+            emptyState.style.display = 'none';
+            studentsContainer.innerHTML = '';
+        });
+}
 
     // Função para renderizar estudantes
     function renderizarEstudantes(estudantes) {

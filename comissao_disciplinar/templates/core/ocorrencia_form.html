@@ -286,37 +286,41 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Função para carregar estudantes via AJAX
     function carregarEstudantes() {
-        const turmaId = turmaFiltro.value;
-        const busca = buscaEstudante.value.trim();
-        
-        // Mostrar loading
-        loadingState.style.display = 'block';
-        studentsContainer.innerHTML = '';
-        emptyState.style.display = 'none';
-        
-        // Construir URL com parâmetros
-        const params = new URLSearchParams();
-        if (turmaId) params.append('turma_id', turmaId);
-        if (busca) params.append('busca', busca);
-        
-        // Fazer requisição AJAX
-        fetch(`/api/estudantes/filtrar/?${params.toString()}`)
-            .then(response => response.json())
-            .then(data => {
-                loadingState.style.display = 'none';
-                
-                if (data.estudantes && data.estudantes.length > 0) {
-                    renderizarEstudantes(data.estudantes);
-                } else {
-                    emptyState.style.display = 'block';
-                }
-            })
-            .catch(error => {
-                console.error('Erro ao carregar estudantes:', error);
-                loadingState.style.display = 'none';
+    const turmaId = turmaFiltro.value;
+    const busca = buscaEstudante.value.trim();
+
+    // Mostrar loading
+    loadingState.style.display = 'block';
+    studentsContainer.innerHTML = '';
+    emptyState.style.display = 'none';
+
+    // Construir URL com parâmetros
+    const params = new URLSearchParams();
+    if (turmaId) params.append('turma_id', turmaId);
+    if (busca) params.append('busca', busca);
+
+    // Fazer requisição AJAX com CSRF token
+    fetch(`/api/estudantes/filtrar/?${params.toString()}`, {
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            loadingState.style.display = 'none';
+
+            if (data.estudantes && data.estudantes.length > 0) {
+                renderizarEstudantes(data.estudantes);
+            } else {
                 emptyState.style.display = 'block';
-            });
-    }
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao carregar estudantes:', error);
+            loadingState.style.display = 'none';
+            emptyState.style.display = 'block';
+        });
+}
     
     // Função para renderizar a lista de estudantes
     function renderizarEstudantes(estudantes) {
