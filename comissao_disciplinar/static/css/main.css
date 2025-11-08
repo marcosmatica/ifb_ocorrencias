@@ -1277,7 +1277,6 @@ textarea.form-control {
         max-width: none;
     }
 }
-
 /* === Layout Principal === */
 .layout-wrapper {
     position: relative;
@@ -1316,12 +1315,29 @@ textarea.form-control {
     display: flex;
     flex-direction: column;
     margin-left: 0;
-    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Sidebar aberto: empurra conteúdo */
-.sidebar.open ~ .main-content {
+body.sidebar-open .main-content {
     margin-left: 260px;
+    width: calc(100% - 260px);
+}
+
+/* Overlay - esconde em desktop quando sidebar aberto */
+@media (min-width: 1025px) {
+    body.sidebar-open #sidebar-overlay {
+        display: none;
+    }
+}
+
+/* Mobile - sidebar sobrepõe */
+@media (max-width: 1024px) {
+    body.sidebar-open .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
 }
 
 /* Overlay */
