@@ -80,6 +80,17 @@ body {
     display: none !important;
 }
 
+/* === Layout Principal === */
+.layout-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Sidebar - sempre fixo e sobreposto */
 .sidebar {
     width: 260px;
     background: white;
@@ -88,48 +99,44 @@ body {
     height: 100vh;
     overflow-y: auto;
     z-index: 40;
+    left: 0;
+    top: 0;
     transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar.open {
     transform: translateX(0);
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Conteúdo principal - sem margem quando sidebar está oculto */
+/* Main content - sempre largura total */
 .main-content {
     flex: 1;
-    margin-left: 0;
+    margin-left: 0 !important;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    width: 100%;
 }
 
-/* Em desktop, podemos ajustar o conteúdo se necessário, mas sem margem */
-@media (min-width: 1025px) {
-    .sidebar {
-        /* No desktop, o sidebar ainda é fixo e sobreposto */
-        transform: translateX(-100%);
-    }
-
-    .sidebar.open {
-        transform: translateX(0);
-    }
-
-    /* Opcional: se quiser que o sidebar empurre o conteúdo em desktop, descomente abaixo */
-
-    .sidebar.open + .main-content {
-        margin-left: 260px;
-        transition: margin-left 0.3s ease-in-out;
-    }
-
+/* Overlay */
+#sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
 }
-.main-content {
-  flex: 1;
-  margin-left: 260px;
-  display: flex;
-  flex-direction: column;
+
+#sidebar-overlay:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+body.sidebar-open {
+    overflow: hidden;
 }
 
 /* === Header === */
@@ -1268,5 +1275,91 @@ textarea.form-control {
         left: 10px;
         width: auto;
         max-width: none;
+    }
+}
+
+/* === Reset Layout === */
+.layout-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar - sempre fixo e oculto por padrão */
+.sidebar {
+    width: 260px;
+    background: white;
+    border-right: 1px solid var(--gray-200);
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 40;
+    left: 0;
+    top: 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar aberto */
+.sidebar.open {
+    transform: translateX(0);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Main content - sempre ocupa toda largura */
+.main-content {
+    flex: 1;
+    margin-left: 0 !important;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: none;
+}
+
+/* Overlay do sidebar */
+#sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#sidebar-overlay:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Prevenir scroll quando sidebar aberto em mobile */
+body.sidebar-open {
+    overflow: hidden;
+}
+
+/* === Responsive === */
+@media (max-width: 1024px) {
+    /* Em mobile, comportamento igual */
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+}
+
+/* Desktop - sidebar sobrepõe o conteúdo */
+@media (min-width: 1025px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    /* Conteúdo nunca tem margem */
+    .main-content {
+        margin-left: 0 !important;
     }
 }

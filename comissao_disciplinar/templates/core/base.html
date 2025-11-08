@@ -72,40 +72,45 @@
             {% endif %}
         </div>
     </div>
-
+    <div id="sidebar-overlay" class="hidden"></div>
     <!-- Overlay para Sidebar Mobile -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
 </body>
    <script>
+    // ====================================
+    // JavaScript Corrigido para Sidebar
+    // Substitua o script no base.html
+    // ====================================
+
     // Estado global do sidebar
     let sidebarOpen = false;
-    // Toggle Sidebar - Versão para sidebar sempre oculto
+
+    // Toggle Sidebar
     function toggleSidebar() {
         console.log('🚀 toggleSidebar() executando...');
 
         const sidebar = document.getElementById('main-sidebar');
         const overlay = document.getElementById('sidebar-overlay');
 
-        if (!sidebar || !overlay) {
-            console.error('❌ Elementos do sidebar não encontrados!');
+        if (!sidebar) {
+            console.error('❌ Sidebar não encontrado!');
             return;
         }
 
-        const wasOpen = sidebar.classList.contains('open');
-        sidebarOpen = !wasOpen;
+        sidebarOpen = !sidebarOpen;
 
         if (sidebarOpen) {
             // Abrir sidebar
             sidebar.classList.add('open');
-            overlay.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; // Impede scroll do body
+            if (overlay) overlay.classList.remove('hidden');
+            document.body.classList.add('sidebar-open');
             console.log('✅ Sidebar ABERTO');
             closeAllDropdowns();
         } else {
             // Fechar sidebar
             sidebar.classList.remove('open');
-            overlay.classList.add('hidden');
-            document.body.style.overflow = ''; // Restaura scroll do body
+            if (overlay) overlay.classList.add('hidden');
+            document.body.classList.remove('sidebar-open');
             console.log('✅ Sidebar FECHADO');
         }
     }
@@ -120,57 +125,28 @@
         if (notifDropdown) {
             notifDropdown.classList.add('hidden');
             if (typeof notifDropdownOpen !== 'undefined') notifDropdownOpen = false;
-            console.log('✅ Dropdown notificações fechado');
         }
 
         if (userDropdown) {
             userDropdown.classList.add('hidden');
             if (typeof userDropdownOpen !== 'undefined') userDropdownOpen = false;
-            console.log('✅ Dropdown usuário fechado');
         }
     }
 
-    // Fechar sidebar ao clicar no overlay
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('📄 DOM carregado - Inicializando sidebar...');
-
-        const overlay = document.getElementById('sidebar-overlay');
-        if (overlay) {
-            overlay.addEventListener('click', function() {
-                console.log('🎯 Overlay clicado - Fechando sidebar');
-                toggleSidebar();
-            });
-        }
-
-        // Fechar sidebar ao clicar em um link (funciona em mobile e desktop)
+    // Fechar sidebar
+    function closeSidebar() {
         const sidebar = document.getElementById('main-sidebar');
-        if (sidebar) {
-            const links = sidebar.querySelectorAll('a');
-            links.forEach(link => {
-                link.addEventListener('click', function() {
-                    console.log('🔗 Link clicado no sidebar - Fechando');
-                    toggleSidebar();
-                });
-            });
+        const overlay = document.getElementById('sidebar-overlay');
+
+        if (sidebar && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            if (overlay) overlay.classList.add('hidden');
+            document.body.classList.remove('sidebar-open');
+            sidebarOpen = false;
+            console.log('✅ Sidebar FECHADO');
         }
-    });
+    }
 
-    // Fechar sidebar e dropdowns ao pressionar ESC
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            console.log('⌨️ Tecla ESC pressionada');
-
-            // Fecha sidebar
-            const sidebar = document.getElementById('main-sidebar');
-            if (sidebar && sidebar.classList.contains('open')) {
-                console.log('🚪 Fechando sidebar com ESC');
-                toggleSidebar();
-            }
-
-            // Fecha dropdowns
-            closeAllDropdowns();
-        }
-    });
     // Helper para obter CSRF token
     function getCookie(name) {
         let cookieValue = null;
@@ -187,13 +163,60 @@
         return cookieValue;
     }
 
-    // Debug adicional - verificar se tudo está carregado
+    // Inicialização quando DOM carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 DOM carregado - Inicializando sidebar...');
+
+        const overlay = document.getElementById('sidebar-overlay');
+        const sidebar = document.getElementById('main-sidebar');
+
+        // Fechar ao clicar no overlay
+        if (overlay) {
+            overlay.addEventListener('click', function(e) {
+                e.stopPropagation();
+                console.log('🎯 Overlay clicado');
+                closeSidebar();
+            });
+        }
+
+        // Fechar ao clicar em links do sidebar
+        if (sidebar) {
+            const links = sidebar.querySelectorAll('a');
+            links.forEach(link => {
+                link.addEventListener('click', function() {
+                    console.log('🔗 Link clicado');
+                    setTimeout(() => closeSidebar(), 150);
+                });
+            });
+        }
+
+        // Garantir que sidebar comece fechado
+        if (sidebar) {
+            sidebar.classList.remove('open');
+            sidebarOpen = false;
+        }
+        if (overlay) {
+            overlay.classList.add('hidden');
+        }
+
+        console.log('✅ Sidebar inicializado');
+    });
+
+    // Fechar com tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            console.log('⌨️ ESC pressionado');
+            closeSidebar();
+            closeAllDropdowns();
+        }
+    });
+
+    // Debug
     setTimeout(() => {
-        console.log('🔍 DEBUG FINAL:');
-        console.log('📍 Sidebar:', document.getElementById('main-sidebar'));
-        console.log('📍 Overlay:', document.getElementById('sidebar-overlay'));
-        console.log('📍 Botão sidebar:', document.querySelector('button[onclick*="toggleSidebar"]'));
-        console.log('📍 Função toggleSidebar:', typeof toggleSidebar);
+        console.log('🔍 DEBUG:');
+        console.log('Sidebar:', document.getElementById('main-sidebar'));
+        console.log('Overlay:', document.getElementById('sidebar-overlay'));
+        console.log('Botão:', document.querySelector('[onclick*="toggleSidebar"]'));
     }, 1000);
 </script>
 {% block extra_js %}{% endblock %}
