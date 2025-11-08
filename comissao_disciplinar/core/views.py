@@ -106,6 +106,36 @@ def dashboard(request):
 
     return render(request, 'core/dashboard.html', context)
 
+# core/views.py - Adicione esta função
+@login_required
+@user_passes_test(is_servidor)
+def estudante_list(request):
+    """Lista de estudantes"""
+    estudantes = Estudante.objects.select_related('turma', 'curso').order_by('nome')
+
+    # Filtros
+    busca = request.GET.get('q')
+    if busca:
+        estudantes = estudantes.filter(
+            Q(nome__icontains=busca) |
+            Q(matricula_sga__icontains=busca)
+        )
+
+    # Paginação
+    paginator = Paginator(estudantes, 50)
+    page = request.GET.get('page')
+    estudantes_page = paginator.get_page(page)
+
+    breadcrumbs_list = [
+        {'label': 'Dashboard', 'url': '/'},
+        {'label': 'Estudantes', 'url': ''}
+    ]
+
+    context = {
+        'estudantes': estudantes_page,
+        'breadcrumbs_list': breadcrumbs_list,
+    }
+    return render(request, 'core/estudante_list.html', context)
 
 @login_required
 def estudante_detail(request, matricula):

@@ -1,10 +1,90 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<!-- core/templates/core/estudante_list.html -->
+{% extends 'core/base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Lista de Estudantes{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">Estudantes</h1>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="mb-4">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Buscar por nome ou matrícula..." value="{{ request.GET.q }}">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Matrícula</th>
+                            <th>Nome</th>
+                            <th>Turma</th>
+                            <th>Curso</th>
+                            <th>Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for estudante in estudantes %}
+                        <tr>
+                            <td>{{ estudante.matricula_sga }}</td>
+                            <td>
+                                <a href="{% url 'core:estudante_detail' estudante.matricula_sga %}">
+                                    {{ estudante.nome }}
+                                </a>
+                            </td>
+                            <td>{{ estudante.turma.nome }}</td>
+                            <td>{{ estudante.curso.nome }}</td>
+                            <td>
+                                <span class="badge badge-{{ estudante.situacao|lower }}">
+                                    {{ estudante.get_situacao_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">Nenhum estudante encontrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if estudantes.has_other_pages %}
+            <nav aria-label="Paginação">
+                <ul class="pagination">
+                    {% if estudantes.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ estudantes.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Anterior</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in estudantes.paginator.page_range %}
+                    {% if estudantes.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if estudantes.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ estudantes.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Próxima</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

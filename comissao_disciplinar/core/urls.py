@@ -34,6 +34,7 @@ urlpatterns = [
     # Relatórios
     path('estudantes/<str:matricula>/relatorio/', views.relatorio_estudante, name='relatorio_estudante'),
     path('estudantes/<str:matricula>/', views.estudante_detail, name='estudante_detail'),
+    path('estudantes/', views.estudante_list, name='estudante_list'),
     #path('estudantes/<str:matricula>/editar/', views.estudante_edit, name='estudante_edit'),
 
     # Auth com recuperação de senha
