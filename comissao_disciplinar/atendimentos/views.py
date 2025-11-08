@@ -48,7 +48,11 @@ def atendimento_create(request):
     if request.method == 'POST':
         form = AtendimentoForm(request.POST, request.FILES, servidor=request.user.servidor)
         if form.is_valid():
-            atendimento = form.save()
+            # Salva o atendimento sem commit para adicionar o servidor_responsavel
+            atendimento = form.save(commit=False)
+            atendimento.servidor_responsavel = request.user.servidor  # Define o servidor logado como responsável
+            atendimento.save()
+            form.save_m2m()  # Salva relações ManyToMany
             messages.success(request, 'Atendimento registrado com sucesso!')
             return redirect('atendimentos:atendimento_detail', pk=atendimento.pk)
     else:
