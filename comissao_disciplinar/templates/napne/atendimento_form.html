@@ -1,166 +1,495 @@
-<!-- templates/napne/atendimento_form.html -->
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}{% if atendimento %}Editar{% else %}Novo{% endif %} Atendimento NAPNE{% endblock %}
+{% block title %}Novo Atendimento NAPNE{% endblock %}
+
+{% block header_title %}Registrar Novo Atendimento NAPNE{% endblock %}
 
 {% block content %}
-<div class="content-header">
-    <h1 class="page-title">{% if atendimento %}Editar{% else %}Novo{% endif %} Atendimento NAPNE</h1>
-    <div class="breadcrumb">
-        <a href="{% url 'napne:dashboard' %}">Dashboard</a>
-        <span class="separator">/</span>
-        <a href="{% url 'napne:atendimento_list' %}">Atendimentos</a>
-        <span class="separator">/</span>
-        <span class="active">{% if atendimento %}Editar{% else %}Novo{% endif %}</span>
-    </div>
-</div>
+<div class="container" style="max-width: 1000px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Formulário de Atendimento NAPNE</h2>
+            <p style="margin-top: 0.5rem; color: var(--gray-600); font-size: 0.875rem;">
+                Preencha os campos para registrar um novo atendimento do NAPNE.
+            </p>
+        </div>
 
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title">Dados do Atendimento</h2>
-    </div>
-    <div class="card-body">
-        <form method="post" class="space-y-6">
-            {% csrf_token %}
-            
-            {% if form.non_field_errors %}
-            <div class="alert alert-error">
-                {% for error in form.non_field_errors %}
-                <p>{{ error }}</p>
-                {% endfor %}
-            </div>
-            {% endif %}
+        <div class="card-body">
+            <form method="post" id="atendimento-form">
+                {% csrf_token %}
 
-            <!-- Busca de Estudante -->
-            <div class="bg-blue-50 p-4 rounded-lg">
-                <h3 class="text-lg font-semibold mb-3">Buscar Estudante</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        {{ form.busca_estudante.label_tag }}
-                        {{ form.busca_estudante }}
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- Informações Básicas -->
+                <h3 class="section-title">Informações Básicas</h3>
+                <div class="grid-2 mb-4">
+                    <div class="form-group">
+                        <label class="form-label">Data *</label>
+                        {{ form.data }}
+                        {% if form.data.errors %}
+                            <div class="form-error">{{ form.data.errors }}</div>
+                        {% endif %}
                     </div>
-                    <div>
-                        {{ form.turma_filtro.label_tag }}
-                        {{ form.turma_filtro }}
+
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Atendimento *</label>
+                        {{ form.tipo_atendimento }}
+                        {% if form.tipo_atendimento.errors %}
+                            <div class="form-error">{{ form.tipo_atendimento.errors }}</div>
+                        {% endif %}
                     </div>
                 </div>
-            </div>
 
-            <!-- Dados Principais -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {% for field in form %}
-                    {% if field.name not in 'busca_estudante turma_filtro necessidades_especificas detalhamento acoes resumo_atendimento' %}
-                    <div class="form-group {% if field.field.required %}required{% endif %}">
-                        <label for="{{ field.id_for_label }}" class="form-label">
-                            {{ field.label }}
-                        </label>
-                        {{ field }}
-                        {% if field.help_text %}
-                        <div class="form-help">{{ field.help_text }}</div>
+                <div class="grid-2 mb-4">
+                    <div class="form-group">
+                        <label class="form-label">Origem *</label>
+                        {{ form.origem }}
+                        {% if form.origem.errors %}
+                            <div class="form-error">{{ form.origem.errors }}</div>
                         {% endif %}
-                        {% if field.errors %}
-                        <div class="form-error">
-                            {% for error in field.errors %}
-                            <p>{{ error }}</p>
-                            {% endfor %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Status *</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                            <div class="form-error">{{ form.status.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Seção de Estudantes -->
+                <h3 class="section-title">Estudantes Envolvidos</h3>
+
+                <!-- Filtro e Busca de Estudantes -->
+                <div class="filter-section">
+                    <div class="filter-section-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                        </svg>
+                        Filtrar e Buscar Estudantes
+                    </div>
+
+                    <div class="grid-2" style="gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="turma-filtro-napne">Filtrar por Turma</label>
+                            {{ form.turma_filtro }}
                         </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="busca-estudante-napne">Buscar Estudante</label>
+                            <div class="search-box">
+                                {{ form.busca_estudante }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" id="aplicar-filtros-estudantes-napne" class="btn btn-primary btn-sm">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            Aplicar Filtros
+                        </button>
+                        <button type="button" id="limpar-filtros-estudantes-napne" class="clear-filters-btn">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label">Estudantes Selecionados</label>
+
+                    <div id="selection-counter-estudantes-napne" class="selection-counter" style="display: none;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span id="counter-text-estudantes-napne">0 estudantes selecionados</span>
+                    </div>
+
+                    <div class="students-selection" id="students-container-napne">
+                        <div id="loading-state-estudantes-napne" style="display: none; text-align: center; padding: 2rem;">
+                            <div class="loading-spinner"></div>
+                            <p style="margin-top: 1rem; color: var(--gray-600);">Carregando estudantes...</p>
+                        </div>
+
+                        <div id="empty-state-estudantes-napne" class="empty-state" style="display: none;">
+                            <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                            </svg>
+                            <p>Nenhum estudante encontrado</p>
+                            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Tente ajustar os filtros de busca</p>
+                        </div>
+
+                        <div id="students-list-napne">
+                            <!-- Os estudantes serão inseridos aqui dinamicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Campo oculto para armazenar os estudantes selecionados -->
+                    {{ form.estudante }}
+
+                    {% if form.estudante.errors %}
+                        <div class="form-error">{{ form.estudante.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Selecione um ou mais estudantes atendidos.
+                    </div>
+                </div>
+
+                <!-- Campo Turma (após seleção de estudantes) -->
+                <div class="form-group">
+                    <label class="form-label">Turma *</label>
+                    {{ form.turma }}
+                    {% if form.turma.errors %}
+                        <div class="form-error">{{ form.turma.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Informações do Laudo -->
+                <h3 class="section-title">Informações do Laudo</h3>
+                <div class="grid-2 mb-4">
+                    <div class="form-group">
+                        <label class="form-label">Laudo Prévio</label>
+                        {{ form.laudo_previo }}
+                        {% if form.laudo_previo.errors %}
+                            <div class="form-error">{{ form.laudo_previo.errors }}</div>
                         {% endif %}
                     </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
 
-            <!-- Necessidades Específicas -->
-            <div class="form-group">
-                <label class="form-label">{{ form.necessidades_especificas.label }}</label>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {% for checkbox in form.necessidades_especificas %}
-                    <label class="flex items-center space-x-2">
-                        {{ checkbox.tag }}
-                        <span class="text-sm">{{ checkbox.choice_label }}</span>
-                    </label>
-                    {% endfor %}
+                    <div class="form-group">
+                        <label class="form-label">Necessidades Específicas</label>
+                        <div class="necessidade-checkbox-group">
+                            {{ form.necessidades_especificas }}
+                        </div>
+                        {% if form.necessidades_especificas.errors %}
+                            <div class="form-error">{{ form.necessidades_especificas.errors }}</div>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
 
-            <!-- Campos de Texto -->
-            <div class="space-y-4">
-                <div class="form-group">
-                    <label for="{{ form.detalhamento.id_for_label }}" class="form-label">
-                        {{ form.detalhamento.label }}
-                    </label>
+                <!-- Detalhamento do Atendimento -->
+                <h3 class="section-title">Detalhamento do Atendimento</h3>
+                <div class="form-group mb-4">
+                    <label class="form-label">Detalhamento *</label>
                     {{ form.detalhamento }}
+                    {% if form.detalhamento.errors %}
+                        <div class="form-error">{{ form.detalhamento.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Descreva detalhadamente o atendimento realizado.
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="{{ form.acoes.id_for_label }}" class="form-label">
-                        {{ form.acoes.label }}
-                    </label>
+                <div class="form-group mb-4">
+                    <label class="form-label">Ações Realizadas *</label>
                     {{ form.acoes }}
+                    {% if form.acoes.errors %}
+                        <div class="form-error">{{ form.acoes.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Descreva as ações realizadas durante o atendimento.
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="{{ form.resumo_atendimento.id_for_label }}" class="form-label">
-                        {{ form.resumo_atendimento.label }}
-                    </label>
+                <div class="form-group mb-4">
+                    <label class="form-label">Resumo do Atendimento</label>
                     {{ form.resumo_atendimento }}
+                    {% if form.resumo_atendimento.errors %}
+                        <div class="form-error">{{ form.resumo_atendimento.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Resumo breve do atendimento (opcional).
+                    </div>
                 </div>
-            </div>
 
-            <!-- Opções -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <div class="flex items-center space-x-2">
-                    {{ form.publicar_ficha_aluno }}
-                    <label for="{{ form.publicar_ficha_aluno.id_for_label }}" class="form-label mb-0">
-                        {{ form.publicar_ficha_aluno.label }}
-                    </label>
+                <!-- Configurações -->
+                <div class="form-group mb-4">
+                    <div class="checkbox-group">
+                        {{ form.publicar_ficha_aluno }}
+                        <label for="{{ form.publicar_ficha_aluno.id_for_label }}" class="checkbox-label">
+                            <span class="checkbox-text">
+                                <strong>Publicar na ficha do aluno</strong>
+                                <span class="checkbox-description">Tornar este atendimento visível na ficha do estudante</span>
+                            </span>
+                        </label>
+                    </div>
+                    {% if form.publicar_ficha_aluno.errors %}
+                        <div class="form-error">{{ form.publicar_ficha_aluno.errors }}</div>
+                    {% endif %}
                 </div>
-            </div>
 
-            <div class="flex justify-end gap-3 pt-4 border-t">
-                <a href="{% if atendimento %}{% url 'napne:atendimento_detail' atendimento.pk %}{% else %}{% url 'napne:atendimento_list' %}{% endif %}" 
-                   class="btn btn-secondary">
-                    Cancelar
-                </a>
-                <button type="submit" class="btn btn-primary">
-                    {% if atendimento %}Atualizar{% else %}Cadastrar{% endif %} Atendimento
-                </button>
-            </div>
-        </form>
+                <!-- Botões -->
+                <div class="flex gap-2" style="justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                    <a href="{% url 'napne:atendimento_list' %}" class="btn btn-outline">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Registrar Atendimento
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+<style>
+.section-title {
+    margin: 2rem 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--ifb-verde);
+    color: var(--gray-800);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    background: var(--gray-50);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    flex: 1;
+}
+
+.checkbox-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.checkbox-description {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin-top: 0.25rem;
+}
+
+.necessidade-checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.necessidade-checkbox-group .form-check {
+    margin-bottom: 0.5rem;
+}
+
+/* Esconder o campo estudante original */
+#id_estudante {
+    display: none;
+}
+</style>
+{% endblock %}
 
 {% block extra_js %}
 <script>
-// Busca dinâmica de estudantes
 document.addEventListener('DOMContentLoaded', function() {
+    // ==================== ESTUDANTES NAPNE ====================
+    const turmaFiltroEstudantes = document.getElementById('turma-filtro-napne');
     const buscaEstudante = document.getElementById('busca-estudante-napne');
-    const turmaFiltro = document.getElementById('turma-filtro-napne');
+    const aplicarFiltrosEstudantes = document.getElementById('aplicar-filtros-estudantes-napne');
+    const limparFiltrosEstudantes = document.getElementById('limpar-filtros-estudantes-napne');
+    const studentsContainer = document.getElementById('students-list-napne');
+    const loadingStateEstudantes = document.getElementById('loading-state-estudantes-napne');
+    const emptyStateEstudantes = document.getElementById('empty-state-estudantes-napne');
+    const selectionCounterEstudantes = document.getElementById('selection-counter-estudantes-napne');
+    const counterTextEstudantes = document.getElementById('counter-text-estudantes-napne');
     const estudanteSelect = document.getElementById('id_estudante');
+    const turmaSelect = document.getElementById('id_turma');
 
-    function buscarEstudantes() {
-        const busca = buscaEstudante.value;
-        const turmaId = turmaFiltro.value;
+    let estudantesSelecionados = new Set();
+    let timeoutIdEstudantes = null;
 
-        if (busca.length >= 2 || turmaId) {
-            fetch(`{% url 'napne:api_estudantes' %}?busca=${encodeURIComponent(busca)}&turma_id=${turmaId}`)
-                .then(response => response.json())
-                .then(data => {
-                    estudanteSelect.innerHTML = '';
-                    data.estudantes.forEach(estudante => {
-                        const option = document.createElement('option');
-                        option.value = estudante.id;
-                        option.textContent = `${estudante.nome} - ${estudante.matricula} (${estudante.turma})`;
-                        estudanteSelect.appendChild(option);
-                    });
-                });
+    // Carregar estudantes inicialmente
+    carregarEstudantes();
+
+    // Aplicar filtros ao clicar no botão
+    aplicarFiltrosEstudantes.addEventListener('click', function() {
+        carregarEstudantes();
+    });
+
+    // Busca em tempo real (com debounce)
+    buscaEstudante.addEventListener('input', function() {
+        clearTimeout(timeoutIdEstudantes);
+        timeoutIdEstudantes = setTimeout(() => {
+            carregarEstudantes();
+        }, 500);
+    });
+
+    // Limpar filtros
+    limparFiltrosEstudantes.addEventListener('click', function() {
+        turmaFiltroEstudantes.value = '';
+        buscaEstudante.value = '';
+        carregarEstudantes();
+    });
+
+    // Filtrar automaticamente ao mudar a turma
+    turmaFiltroEstudantes.addEventListener('change', function() {
+        carregarEstudantes();
+    });
+
+    // Função para carregar estudantes via AJAX
+    function carregarEstudantes() {
+        const turmaId = turmaFiltroEstudantes.value;
+        const busca = buscaEstudante.value.trim();
+
+        // Mostrar loading
+        loadingStateEstudantes.style.display = 'block';
+        studentsContainer.innerHTML = '';
+        emptyStateEstudantes.style.display = 'none';
+
+        // Construir URL com parâmetros
+        const params = new URLSearchParams();
+        if (turmaId) params.append('turma_id', turmaId);
+        if (busca) params.append('busca', busca);
+
+        // Fazer requisição AJAX
+        fetch(`/api/estudantes/filtrar/?${params.toString()}`)
+            .then(response => response.json())
+            .then(data => {
+                loadingStateEstudantes.style.display = 'none';
+
+                if (data.estudantes && data.estudantes.length > 0) {
+                    renderizarEstudantes(data.estudantes);
+                } else {
+                    emptyStateEstudantes.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar estudantes:', error);
+                loadingStateEstudantes.style.display = 'none';
+                emptyStateEstudantes.style.display = 'block';
+            });
+    }
+
+    // Função para renderizar a lista de estudantes
+    function renderizarEstudantes(estudantes) {
+        studentsContainer.innerHTML = '';
+
+        estudantes.forEach(estudante => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'student-item';
+            if (estudantesSelecionados.has(estudante.id)) {
+                itemDiv.classList.add('selected');
+            }
+
+            itemDiv.innerHTML = `
+                <input type="checkbox"
+                       name="estudante_checkbox"
+                       value="${estudante.id}"
+                       id="estudante_${estudante.id}"
+                       class="student-checkbox"
+                       ${estudantesSelecionados.has(estudante.id) ? 'checked' : ''}>
+                <div class="student-info">
+                    <div class="student-name">${estudante.nome}</div>
+                    <div class="student-details">
+                        <span class="student-badge">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
+                            </svg>
+                            ${estudante.matricula}
+                        </span>
+                        <span class="student-badge">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            ${estudante.turma}
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            // Adicionar evento de clique no item inteiro
+            itemDiv.addEventListener('click', function(e) {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = itemDiv.querySelector('.student-checkbox');
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+
+            // Adicionar evento de mudança no checkbox
+            const checkbox = itemDiv.querySelector('.student-checkbox');
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    estudantesSelecionados.add(estudante.id);
+                    itemDiv.classList.add('selected');
+                } else {
+                    estudantesSelecionados.delete(estudante.id);
+                    itemDiv.classList.remove('selected');
+                }
+                atualizarCampoEstudante();
+                atualizarContadorEstudantes();
+            });
+
+            studentsContainer.appendChild(itemDiv);
+        });
+    }
+
+    // Função para atualizar o campo estudante oculto
+    function atualizarCampoEstudante() {
+        // Limpar o select
+        while (estudanteSelect.firstChild) {
+            estudanteSelect.removeChild(estudanteSelect.firstChild);
+        }
+
+        // Adicionar os estudantes selecionados
+        estudantesSelecionados.forEach(estudanteId => {
+            const option = document.createElement('option');
+            option.value = estudanteId;
+            option.selected = true;
+            estudanteSelect.appendChild(option);
+        });
+    }
+
+    // Função para atualizar o contador de selecionados
+    function atualizarContadorEstudantes() {
+        const count = estudantesSelecionados.size;
+        if (count > 0) {
+            selectionCounterEstudantes.style.display = 'inline-flex';
+            counterTextEstudantes.textContent = `${count} estudante${count > 1 ? 's' : ''} selecionado${count > 1 ? 's' : ''}`;
+        } else {
+            selectionCounterEstudantes.style.display = 'none';
         }
     }
 
-    buscaEstudante.addEventListener('input', buscarEstudantes);
-    turmaFiltro.addEventListener('change', buscarEstudantes);
+    // Definir data padrão
+    const dataInput = document.querySelector('input[type="date"]');
+    if (dataInput && !dataInput.value) {
+        const hoje = new Date().toISOString().split('T')[0];
+        dataInput.value = hoje;
+    }
+
+    // Validação do formulário
+    document.getElementById('atendimento-form').addEventListener('submit', function(e) {
+        if (estudantesSelecionados.size === 0) {
+            e.preventDefault();
+            alert('Por favor, selecione pelo menos um estudante.');
+            return false;
+        }
+    });
 });
 </script>
-{% endblock %}
 {% endblock %}
