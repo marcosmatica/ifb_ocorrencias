@@ -1319,10 +1319,51 @@ textarea.form-control {
                 width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Main content + filhos se ajustam com sidebar */
+.main-content,
+.main-content .header,
+.main-content footer {
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin-left: 0;
+}
+
 /* Sidebar aberto: empurra conteúdo */
 body.sidebar-open .main-content {
     margin-left: 260px;
     width: calc(100% - 260px);
+}
+
+body.sidebar-open .header {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+}
+
+body.sidebar-open footer {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+}
+
+/* Desktop - sem overlay */
+@media (min-width: 1025px) {
+    body.sidebar-open #sidebar-overlay {
+        display: none;
+    }
+}
+
+/* Mobile - sidebar sobrepõe */
+@media (max-width: 1024px) {
+    body.sidebar-open .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
 }
 
 /* Overlay - esconde em desktop quando sidebar aberto */
