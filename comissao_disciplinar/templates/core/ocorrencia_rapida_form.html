@@ -146,14 +146,14 @@
 
                 <!-- Botões -->
                 <div class="flex gap-2 justify-between mt-8 pt-6 border-t border-gray-200">
-                    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+                    <a href="{% url 'core:dashboard' %}" class="btn btn-outline">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                         </svg>
                         Voltar
                     </a>
                     <div class="flex gap-2">
-                        <a href="{% url 'ocorrencia_create' %}" class="btn btn-outline">
+                        <a href="{% url 'core:ocorrencia_create' %}" class="btn btn-outline">
                             Formulário Completo
                         </a>
                         <button type="submit" class="btn btn-primary">
@@ -181,7 +181,7 @@
             </ul>
             <p class="mt-4 text-gray-600 text-sm">
                 Para casos que envolvem evidências, testemunhas ou descrição detalhada, utilize o
-                <a href="{% url 'ocorrencia_create' %}" class="text-primary font-semibold">formulário completo</a>.
+                <a href="{% url 'core:ocorrencia_create' %}" class="text-primary font-semibold">formulário completo</a>.
             </p>
         </div>
     </div>
