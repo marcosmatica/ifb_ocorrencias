@@ -24,7 +24,7 @@
         <!-- Cards de Módulos -->
         <div class="home-grid">
             <!-- Ocorrências -->
-            <a href="{% url 'ocorrencia_list' %}" class="home-card">
+            <a href="{% url 'core:ocorrencia_list' %}" class="home-card">
                 <div class="home-card-icon">
                     <svg width="48" height="48" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"/>
@@ -65,7 +65,7 @@
 
             <!-- Comissão (apenas para membros) -->
             {% if is_membro_comissao %}
-            <a href="{% url 'comissao_dashboard' %}" class="home-card home-card-comissao">
+            <a href="{% url 'core:comissao_dashboard' %}" class="home-card home-card-comissao">
                 <div class="home-card-icon">
                     <svg width="48" height="48" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
@@ -85,13 +85,13 @@
         <div class="mt-5 pt-5 border-t border-gray-200">
             <h3 class="text-center text-lg font-semibold text-gray-700 mb-4">Acesso Rápido</h3>
             <div class="flex flex-wrap justify-center gap-3">
-                <a href="{% url 'ocorrencia_create' %}" class="btn btn-primary">
+                <a href="{% url 'core:ocorrencia_create' %}" class="btn btn-primary">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
                     </svg>
                     Nova Ocorrência
                 </a>
-                <a href="{% url 'ocorrencia_rapida_create' %}" class="btn btn-outline">
+                <a href="{% url 'core:ocorrencia_rapida_create' %}" class="btn btn-outline">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
                     </svg>
@@ -103,7 +103,7 @@
                     </svg>
                     Novo Atendimento
                 </a>
-                <a href="{% url 'dashboard' %}" class="btn btn-outline">
+                <a href="{% url 'core:dashboard' %}" class="btn btn-outline">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
                     </svg>
@@ -123,7 +123,7 @@
                 <a href="{% url 'login' %}">Login</a>
                 <span class="text-gray-400">•</span>
                 {% endif %}
-                <a href="{% url 'guia_regulamento_discente' %}" target="_blank">Regulamento Discente</a>
+                <a href="{% url 'core:guia_regulamento_discente' %}" target="_blank">Regulamento Discente</a>
                 <span class="text-gray-400">•</span>
                 <a href="https://remas.ifb.edu.br" target="_blank">Portal IFB</a>
                 <span class="text-gray-400">•</span>

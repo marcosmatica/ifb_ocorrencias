@@ -82,7 +82,7 @@
             <h2 class="card-title">Últimas Ocorrências</h2>
             <p class="text-sm text-gray-600 mt-1">10 registros mais recentes</p>
         </div>
-        <a href="{% url 'ocorrencia_list' %}" class="btn btn-outline btn-sm">
+        <a href="{% url 'core:ocorrencia_list' %}" class="btn btn-outline btn-sm">
             Ver Todas
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -132,7 +132,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{% url 'ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline btn-sm">
+                        <a href="{% url 'core:ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline btn-sm">
                             Ver
                         </a>
                     </td>
@@ -145,7 +145,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                             <p>Nenhuma ocorrência registrada</p>
-                            <a href="{% url 'ocorrencia_create' %}" class="btn btn-primary btn-sm mt-3">
+                            <a href="{% url 'core:ocorrencia_create' %}" class="btn btn-primary btn-sm mt-3">
                                 Registrar Primeira Ocorrência
                             </a>
                         </div>

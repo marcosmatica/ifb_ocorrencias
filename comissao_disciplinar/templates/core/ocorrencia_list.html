@@ -16,13 +16,13 @@
         <div class="card-header flex-between">
             <h2 class="card-title">Filtros</h2>
             <div class="flex gap-2">
-                <a href="{% url 'ocorrencia_create' %}" class="btn btn-primary btn-sm">
+                <a href="{% url 'core:ocorrencia_create' %}" class="btn btn-primary btn-sm">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
                     Nova Ocorrência
                 </a>
-                <a href="{% url 'ocorrencia_rapida_create' %}" class="btn btn-outline btn-sm">
+                <a href="{% url 'core:ocorrencia_rapida_create' %}" class="btn btn-outline btn-sm">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
@@ -31,7 +31,7 @@
             </div>
         </div>
         <div class="card-body">
-            <form method="get" action="{% url 'ocorrencia_list' %}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <form method="get" action="{% url 'core:ocorrencia_list' %}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- Busca Textual -->
                 <div class="form-group md:col-span-2 lg:col-span-3">
                     <label class="form-label">Buscar</label>
@@ -40,7 +40,7 @@
                            class="form-control"
                            placeholder="Buscar por descrição, nome do estudante ou matrícula..."
                            value="{{ busca }}"
-                           hx-get="{% url 'ocorrencia_list' %}"
+                           hx-get="{% url 'core:ocorrencia_list' %}"
                            hx-trigger="keyup changed delay:500ms"
                            hx-target="#results"
                            hx-include="[name='status'], [name='curso'], [name='turma'], [name='gravidade'], [name='data_inicio'], [name='data_fim']">
@@ -84,7 +84,7 @@
                         </svg>
                         Filtrar
                     </button>
-                    <a href="{% url 'ocorrencia_list' %}" class="btn btn-outline">Limpar</a>
+                    <a href="{% url 'core:ocorrencia_list' %}" class="btn btn-outline">Limpar</a>
                 </div>
             </form>
         </div>
@@ -163,7 +163,7 @@
                                 </td>
                                 <td>
                                     <div class="flex gap-1">
-                                        <a href="{% url 'ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline btn-sm" title="Ver Detalhes">
+                                        <a href="{% url 'core:ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline btn-sm" title="Ver Detalhes">
                                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
