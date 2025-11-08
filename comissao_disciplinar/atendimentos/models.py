@@ -1,7 +1,5 @@
-# atendimentos/models.py
-
 from django.db import models
-from core.models import Estudante, Servidor
+from core.models import Estudante, Servidor, Coordenacao
 
 
 class TipoAtendimento(models.Model):
@@ -9,35 +7,28 @@ class TipoAtendimento(models.Model):
     descricao = models.TextField(blank=True)
     ativo = models.BooleanField(default=True)
 
+    class Meta:
+        verbose_name = 'Tipo de Atendimento'
+        verbose_name_plural = 'Tipos de Atendimento'
+
     def __str__(self):
         return self.nome
 
 
 class SituacaoAtendimento(models.Model):
     nome = models.CharField(max_length=100)
-    cor = models.CharField(max_length=7, default='#6b7280')  # Hex color
+    cor = models.CharField(max_length=7, default='#6b7280')
     ativo = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'Situação de Atendimento'
+        verbose_name_plural = 'Situações de Atendimento'
 
     def __str__(self):
         return self.nome
 
-class Atendimento(models.Model):
-    COORDENACAO_CHOICES = [
-        ('CDPD', 'Coordenação Pedagógica'),
-        ('CC', 'Coordenação de Curso'),
-        ('CDRA', 'Coordenação de Registro Acadêmico'),
-        ('NAPNE', 'NAPNE'),
-        ('CDAE', 'Coordenação de Assistência Estudantil'),
-        ('CDAE_PEDAGOGICO', 'CDAE - Pedagógico'),
-        ('CDAE_ASSISTENCIA', 'CDAE - Assistência Estudantil'),
-        ('CDAE_PSICOLOGA', 'CDAE - Psicóloga'),
-        ('CDBA', 'Coordenação de Biblioteca'),
-        ('CGEN', 'Coordenação Geral'),
-        ('CGEN', 'Docente'),
-        ('DREP', 'Direção de Ensino'),
-        ('DG', 'Direção Geral'),
-    ]
 
+class Atendimento(models.Model):
     ORIGEM_CHOICES = [
         ('ESPONTANEO', 'Espontâneo'),
         ('ENCAMINHAMENTO', 'Encaminhamento'),
@@ -46,24 +37,34 @@ class Atendimento(models.Model):
         ('OUTRO', 'Outro'),
     ]
 
-    coordenacao = models.CharField(max_length=30, choices=COORDENACAO_CHOICES)
-    estudantes = models.ManyToManyField(Estudante, related_name='atendimentos')
-    servidor_responsavel = models.ForeignKey(Servidor, on_delete=models.PROTECT, related_name='atendimentos_realizados')
-    servidores_participantes = models.ManyToManyField(Servidor, related_name='atendimentos_participacao', blank=True)
+    # Coordenação usa choices do core
+    coordenacao = models.CharField(max_length=30, choices=Coordenacao.CHOICES)
 
+    # Relacionamentos com core
+    estudantes = models.ManyToManyField(Estudante, related_name='atendimentos')
+    servidor_responsavel = models.ForeignKey(
+        Servidor,
+        on_delete=models.PROTECT,
+        related_name='atendimentos_realizados'
+    )
+    servidores_participantes = models.ManyToManyField(
+        Servidor,
+        related_name='atendimentos_participacao',
+        blank=True
+    )
+
+    # Dados do atendimento
     data = models.DateField()
     hora = models.TimeField()
-
     tipo_atendimento = models.ForeignKey(TipoAtendimento, on_delete=models.PROTECT)
     situacao = models.ForeignKey(SituacaoAtendimento, on_delete=models.PROTECT)
     origem = models.CharField(max_length=30, choices=ORIGEM_CHOICES)
-
     informacoes = models.TextField()
     observacoes = models.TextField(blank=True)
     anexos = models.FileField(upload_to='atendimentos/', blank=True, null=True)
-
     publicar_ficha_aluno = models.BooleanField(default=False)
 
+    # Auditoria
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 
@@ -71,3 +72,6 @@ class Atendimento(models.Model):
         ordering = ['-data', '-hora']
         verbose_name = 'Atendimento'
         verbose_name_plural = 'Atendimentos'
+
+    def __str__(self):
+        return f"Atendimento #{self.id} - {self.data}"

@@ -36,7 +36,7 @@ def atendimento_list(request):
 
     context = {
         'atendimentos': atendimentos,
-        'coordenacoes': Atendimento.COORDENACAO_CHOICES,
+        #'coordenacoes': Atendimento.coordenacao.choices,
     }
     return render(request, 'atendimentos/atendimento_list.html', context)
 
