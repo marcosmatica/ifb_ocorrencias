@@ -270,17 +270,16 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                             </svg>
                             <div>Clique para selecionar um arquivo ou arraste aqui</div>
-                            <div style="margin-top: 0.25rem; color: var(--gray-500); font-size: 0.8125rem;">
+                                <div style="margin-top: 0.25rem; color: var(--gray-500); font-size: 0.8125rem;">
                                 PDF, imagens, documentos (máx. 10MB)
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {% if form.anexos.errors %}
+                        {% if form.anexos.errors %}
                         <div class="form-error">{{ form.anexos.errors }}</div>
-                    {% endif %}
+                        {% endif %}
                 </div>
-
-                <!-- Configurações -->
+                     <!-- Configurações -->
                 <div class="form-group mb-4">
                     <div class="checkbox-group">
                         {{ form.publicar_ficha_aluno }}
@@ -296,7 +295,7 @@
                     {% endif %}
                 </div>
 
-                <!-- Botões -->
+            <!-- Botões -->
                 <div class="flex gap-2" style="justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
                     <a href="{% url 'atendimentos:atendimento_list' %}" class="btn btn-outline">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -315,7 +314,6 @@
         </div>
     </div>
 </div>
-
 <style>
 .section-title {
     margin: 2rem 0 1rem 0;
@@ -359,7 +357,7 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Parte dos estudantes
+    // ==================== ESTUDANTES ====================
     const turmaFiltroEstudantes = document.getElementById('turma-filtro');
     const buscaEstudante = document.getElementById('busca-estudante');
     const aplicarFiltrosEstudantes = document.getElementById('aplicar-filtros-estudantes');
@@ -509,7 +507,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Parte dos servidores
+    // ==================== SERVIDORES ====================
     const buscaServidor = document.getElementById('busca-servidor');
     const aplicarFiltrosServidores = document.getElementById('aplicar-filtros-servidores');
     const limparFiltrosServidores = document.getElementById('limpar-filtros-servidores');

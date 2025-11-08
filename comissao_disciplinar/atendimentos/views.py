@@ -3,9 +3,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
+from django.db.models import Q
 from .models import Atendimento, TipoAtendimento, SituacaoAtendimento
 from .forms import AtendimentoForm
-from core.models import Estudante
+from core.models import Estudante, Servidor
 
 
 @login_required
@@ -36,7 +38,6 @@ def atendimento_list(request):
 
     context = {
         'atendimentos': atendimentos,
-        #'coordenacoes': Atendimento.coordenacao.choices,
     }
     return render(request, 'atendimentos/atendimento_list.html', context)
 
@@ -49,7 +50,7 @@ def atendimento_create(request):
         if form.is_valid():
             atendimento = form.save()
             messages.success(request, 'Atendimento registrado com sucesso!')
-            return redirect('atendimento_detail', pk=atendimento.pk)
+            return redirect('atendimentos:atendimento_detail', pk=atendimento.pk)
     else:
         form = AtendimentoForm(servidor=request.user.servidor)
 
@@ -71,7 +72,7 @@ def atendimento_detail(request, pk):
 
     if not pode_visualizar:
         messages.error(request, 'Você não tem permissão para visualizar este atendimento.')
-        return redirect('atendimento_list')
+        return redirect('atendimentos:atendimento_list')
 
     context = {'atendimento': atendimento}
     return render(request, 'atendimentos/atendimento_detail.html', context)

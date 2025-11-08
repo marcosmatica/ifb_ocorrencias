@@ -11,21 +11,22 @@ from .models import (
 from .forms import FichaEstudanteNAPNEForm, AtendimentoNAPNEForm, ObservacaoEncaminhamentoForm
 from core.models import Estudante
 
+
 @login_required
 def napne_dashboard(request):
     """Dashboard do NAPNE"""
     servidor = request.user.servidor
-    
+
     total_fichas = FichaEstudanteNAPNE.objects.count()
     total_atendimentos = AtendimentoNAPNE.objects.count()
     atendimentos_mes = AtendimentoNAPNE.objects.filter(
         data__month=timezone.now().month
     ).count()
-    
+
     ultimos_atendimentos = AtendimentoNAPNE.objects.select_related(
         'estudante', 'atendido_por', 'tipo_atendimento', 'status'
     ).order_by('-data')[:10]
-    
+
     context = {
         'total_fichas': total_fichas,
         'total_atendimentos': total_atendimentos,
@@ -41,12 +42,12 @@ def ficha_napne_list(request):
     fichas = FichaEstudanteNAPNE.objects.select_related(
         'estudante', 'turma', 'atendido_por'
     ).order_by('estudante__nome')
-    
+
     # Filtros
     turma = request.GET.get('turma')
     if turma:
         fichas = fichas.filter(turma_id=turma)
-    
+
     context = {'fichas': fichas}
     return render(request, 'napne/ficha_list.html', context)
 
@@ -62,7 +63,7 @@ def ficha_napne_create(request):
             return redirect('napne:ficha_detail', pk=ficha.pk)
     else:
         form = FichaEstudanteNAPNEForm()
-    
+
     return render(request, 'napne/ficha_form.html', {'form': form})
 
 
@@ -76,7 +77,7 @@ def ficha_napne_detail(request, pk):
     atendimentos = ficha.atendimentos.select_related(
         'atendido_por', 'tipo_atendimento', 'status'
     ).order_by('-data')
-    
+
     context = {
         'ficha': ficha,
         'atendimentos': atendimentos,
@@ -88,7 +89,7 @@ def ficha_napne_detail(request, pk):
 def ficha_napne_edit(request, pk):
     """Editar ficha NAPNE"""
     ficha = get_object_or_404(FichaEstudanteNAPNE, pk=pk)
-    
+
     if request.method == 'POST':
         form = FichaEstudanteNAPNEForm(request.POST, instance=ficha)
         if form.is_valid():
@@ -97,7 +98,7 @@ def ficha_napne_edit(request, pk):
             return redirect('napne:ficha_detail', pk=ficha.pk)
     else:
         form = FichaEstudanteNAPNEForm(instance=ficha)
-    
+
     context = {'form': form, 'ficha': ficha}
     return render(request, 'napne/ficha_form.html', context)
 
@@ -108,13 +109,13 @@ def atendimento_napne_list(request):
     atendimentos = AtendimentoNAPNE.objects.select_related(
         'estudante', 'turma', 'atendido_por', 'tipo_atendimento', 'status'
     ).order_by('-data')
-    
+
     # Filtros
     estudante = request.GET.get('estudante')
     data_inicio = request.GET.get('data_inicio')
     data_fim = request.GET.get('data_fim')
     status = request.GET.get('status')
-    
+
     if estudante:
         atendimentos = atendimentos.filter(estudante__matricula_sga=estudante)
     if data_inicio:
@@ -123,7 +124,7 @@ def atendimento_napne_list(request):
         atendimentos = atendimentos.filter(data__lte=data_fim)
     if status:
         atendimentos = atendimentos.filter(status_id=status)
-    
+
     context = {
         'atendimentos': atendimentos,
         'status_list': StatusAtendimentoNAPNE.objects.filter(ativo=True),
@@ -141,12 +142,12 @@ def atendimento_napne_create(request):
             atendimento.atendido_por = request.user.servidor
             atendimento.save()
             form.save_m2m()
-            
+
             messages.success(request, 'Atendimento NAPNE registrado com sucesso!')
             return redirect('napne:atendimento_detail', pk=atendimento.pk)
     else:
         form = AtendimentoNAPNEForm(servidor=request.user.servidor)
-    
+
     return render(request, 'napne/atendimento_form.html', {'form': form})
 
 
@@ -159,7 +160,7 @@ def atendimento_napne_detail(request, pk):
         ).prefetch_related('necessidades_especificas', 'observacoes_encaminhamento'),
         pk=pk
     )
-    
+
     context = {'atendimento': atendimento}
     return render(request, 'napne/atendimento_detail.html', context)
 
@@ -168,7 +169,7 @@ def atendimento_napne_detail(request, pk):
 def atendimento_napne_edit(request, pk):
     """Editar atendimento NAPNE"""
     atendimento = get_object_or_404(AtendimentoNAPNE, pk=pk)
-    
+
     if request.method == 'POST':
         form = AtendimentoNAPNEForm(request.POST, instance=atendimento, servidor=request.user.servidor)
         if form.is_valid():
@@ -177,7 +178,7 @@ def atendimento_napne_edit(request, pk):
             return redirect('napne:atendimento_detail', pk=atendimento.pk)
     else:
         form = AtendimentoNAPNEForm(instance=atendimento, servidor=request.user.servidor)
-    
+
     context = {'form': form, 'atendimento': atendimento}
     return render(request, 'napne/atendimento_form.html', context)
 
@@ -186,7 +187,7 @@ def atendimento_napne_edit(request, pk):
 def adicionar_encaminhamento(request, atendimento_pk):
     """Adicionar observação de encaminhamento"""
     atendimento = get_object_or_404(AtendimentoNAPNE, pk=atendimento_pk)
-    
+
     if request.method == 'POST':
         form = ObservacaoEncaminhamentoForm(request.POST)
         if form.is_valid():
@@ -197,36 +198,6 @@ def adicionar_encaminhamento(request, atendimento_pk):
             return redirect('napne:atendimento_detail', pk=atendimento.pk)
     else:
         form = ObservacaoEncaminhamentoForm()
-    
+
     context = {'form': form, 'atendimento': atendimento}
     return render(request, 'napne/encaminhamento_form.html', context)
-
-
-# API para busca de estudantes
-@login_required
-def api_buscar_estudantes_napne(request):
-    """API para buscar estudantes para o NAPNE"""
-    turma_id = request.GET.get('turma_id')
-    busca = request.GET.get('busca', '').strip()
-    
-    estudantes = Estudante.objects.filter(situacao='ATIVO')
-    
-    if turma_id:
-        estudantes = estudantes.filter(turma_id=turma_id)
-    
-    if busca:
-        estudantes = estudantes.filter(
-            Q(nome__icontains=busca) | Q(matricula_sga__icontains=busca)
-        )
-    
-    estudantes = estudantes.select_related('turma', 'curso').order_by('nome')[:50]
-    
-    data = [{
-        'id': e.id,
-        'nome': e.nome,
-        'matricula': e.matricula_sga,
-        'turma': e.turma.nome if e.turma else '',
-        'curso': e.curso.nome if e.curso else ''
-    } for e in estudantes]
-    
-    return JsonResponse({'estudantes': data})

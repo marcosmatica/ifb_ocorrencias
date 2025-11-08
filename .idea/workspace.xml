@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="" />
+    <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/atendimentos/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/atendimentos/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/napne/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/napne/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/atendimentos/atendimento_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/atendimentos/atendimento_form.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -114,7 +119,7 @@
       <workItem from="1762026394092" duration="2064000" />
       <workItem from="1762135422548" duration="1028000" />
       <workItem from="1762160859753" duration="6310000" />
-      <workItem from="1762569515715" duration="1374000" />
+      <workItem from="1762569515715" duration="2633000" />
     </task>
     <servers />
   </component>

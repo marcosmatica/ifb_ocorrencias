@@ -23,5 +23,5 @@ urlpatterns = [
     path('atendimentos/<int:atendimento_pk>/encaminhamento/', views.adicionar_encaminhamento, name='adicionar_encaminhamento'),
     
     # API
-    path('api/estudantes/', views.api_buscar_estudantes_napne, name='api_estudantes'),
+    #path('api/estudantes/', views.api_buscar_estudantes_napne, name='api_estudantes'),
 ]
