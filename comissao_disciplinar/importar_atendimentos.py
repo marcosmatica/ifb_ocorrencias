@@ -58,7 +58,7 @@ def importar_atendimentos_da_planilha(caminho_planilha):
                 print(f"Processando linha {index + 2}...")
 
                 # ========== BUSCAR ESTUDANTE ==========
-                nome_estudante = str(row['ALUNO']).strip()
+                nome_estudante = str(row['ALUNO']).replace('  ', ' ').strip()
                 turma_estudante = str(row['TURMA']).strip() if pd.notna(row['TURMA']) else None
 
                 # Buscar estudante por nome e turma
@@ -118,6 +118,7 @@ def importar_atendimentos_da_planilha(caminho_planilha):
                 # ========== DATAS ==========
                 # Data do atendimento
                 data_atendimento = row['DATA DO ATENDIMENTO']
+                print(data_atendimento)
                 if pd.isna(data_atendimento):
                     erros.append(f"Data do atendimento vazia para {nome_estudante}")
                     continue
@@ -125,32 +126,32 @@ def importar_atendimentos_da_planilha(caminho_planilha):
                 # Converter para datetime se for string
                 if isinstance(data_atendimento, str):
                     try:
-                        data_atendimento = datetime.strptime(data_atendimento, '%d/%m/%Y').date()
+                        data_atendimento = datetime.strptime(data_atendimento, '%d/%m/%Y %h:%m:%s').date()
                     except:
-                        data_atendimento = datetime.strptime(data_atendimento, '%Y-%m-%d').date()
+                        data_atendimento = datetime.strptime(data_atendimento, '%Y-%m-%d %h:%m:%s').date()
                 else:
                     # Se for objeto datetime do pandas
                     data_atendimento = data_atendimento.date()
 
                 # Data e hora (finalização/encaminhamento)
-                data_hora_str = row['DATA E HORA']
+                #data_hora_str = row['DATA E HORA']
                 hora_atendimento = None
 
-                if pd.notna(data_hora_str):
-                    if isinstance(data_hora_str, str):
-                        try:
+                #if pd.notna(data_hora_str):
+                #    if isinstance(data_hora_str, str):
+                #        try:
                             # Tentar extrair hora de string datetime
-                            dt = datetime.strptime(data_hora_str, '%d/%m/%Y %H:%M')
-                            hora_atendimento = dt.time()
-                        except:
-                            try:
+                #            dt = datetime.strptime(data_hora_str, '%d/%m/%Y %H:%M')
+                #            hora_atendimento = dt.time()
+                #        except:
+                #            try:
                                 # Tentar apenas hora
-                                hora_atendimento = datetime.strptime(data_hora_str, '%H:%M').time()
-                            except:
-                                hora_atendimento = None
-                    else:
+                #                hora_atendimento = datetime.strptime(data_hora_str, '%H:%M').time()
+                #            except:
+                #                hora_atendimento = None
+                #    else:
                         # Se for objeto datetime
-                        hora_atendimento = data_hora_str.time()
+                #        hora_atendimento = data_hora_str.time()
 
                 # Se não conseguiu extrair hora, usar hora padrão
                 if not hora_atendimento:
@@ -158,13 +159,13 @@ def importar_atendimentos_da_planilha(caminho_planilha):
 
                 # ========== INFORMAÇÕES ==========
                 informacoes = str(
-                    row['INFORMAÇÕES PARA FICHA, DO ALUNO OU ENCAMINHAMENTO A OUTROS SETORES']) if pd.notna(row[
-                                                                                                                'INFORMAÇÕES PARA FICHA, DO ALUNO OU ENCAMINHAMENTO A OUTROS SETORES']) else f"Atendimento de {nome_tipo} realizado em {data_atendimento.strftime('%d/%m/%Y')}"
+                    row['INFORMAÇÕES PARA FICHA DO ALUNO OU ENCAMINHAMENTO A OUTROS SETORES']) if pd.notna(row[
+                                                                                                                'INFORMAÇÕES PARA FICHA DO ALUNO OU ENCAMINHAMENTO A OUTROS SETORES']) else f"Atendimento de {nome_tipo} realizado em {data_atendimento.strftime('%d/%m/%Y')}"
 
                 # ========== PUBLICAR NA FICHA ==========
-                publicar_ficha_str = str(row['Ficha do aluno?']).strip().upper() if pd.notna(
-                    row['Ficha do aluno?']) else 'NÃO'
-                publicar_ficha = publicar_ficha_str in ['SIM', 'S', 'YES', 'Y', '1', 'VERDADEIRO', 'TRUE']
+                publicar_ficha_str = str(row['Ficha do estudante?']).strip().upper() if pd.notna(
+                    row['Ficha do estudante?']) else 'NÃO'
+                publicar_ficha = publicar_ficha_str in ['SIM', 'S', 'YES', 'Y', '1', 'VERDADEIRO', 'TRUE', 'verdadeiro']
 
                 # ========== CRIAR ATENDIMENTO ==========
                 atendimento = Atendimento(
