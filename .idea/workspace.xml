@@ -6,11 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/components/navbar.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/components/navbar.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/components/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/components/sidebar.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/registration/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/registration/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/ficha_aluno.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/ficha_aluno.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -122,7 +121,7 @@
       <workItem from="1762135422548" duration="1028000" />
       <workItem from="1762160859753" duration="6310000" />
       <workItem from="1762569515715" duration="3996000" />
-      <workItem from="1762610050948" duration="5574000" />
+      <workItem from="1762610050948" duration="7039000" />
     </task>
     <servers />
   </component>

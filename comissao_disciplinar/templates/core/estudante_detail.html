@@ -1,10 +1,181 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'core/base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Perfil do Estudante - {{ estudante.nome }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Cabeçalho -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">{{ estudante.nome }}</h1>
+            <p class="page-subtitle">Matrícula: {{ estudante.matricula_sga }} | Turma: {{ estudante.turma.nome }}</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'core:estudante_list' %}" class="btn btn-outline">
+                Voltar à Lista
+            </a>
+            <a href="{% url 'pedagogico:ficha_aluno' estudante.matricula_sga %}" class="btn btn-primary">
+                Ficha Completa
+            </a>
+        </div>
+    </div>
+
+    <!-- Informações Básicas -->
+    <div class="grid-2 mb-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Dados Pessoais</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-group">
+                    <label>Nome Completo:</label>
+                    <span>{{ estudante.nome }}</span>
+                </div>
+                <div class="info-group">
+                    <label>Matrícula SGA:</label>
+                    <span>{{ estudante.matricula_sga }}</span>
+                </div>
+                <div class="info-group">
+                    <label>Email:</label>
+                    <span>{{ estudante.email|default:"Não informado" }}</span>
+                </div>
+                <div class="info-group">
+                    <label>Telefone:</label>
+                    <span>{{ estudante.telefone|default:"Não informado" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Informações Acadêmicas</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-group">
+                    <label>Turma:</label>
+                    <span>{{ estudante.turma.nome }}</span>
+                </div>
+                <div class="info-group">
+                    <label>Curso:</label>
+                    <span>{{ estudante.curso.nome }}</span>
+                </div>
+                <div class="info-group">
+                    <label>Situação:</label>
+                    <span class="badge badge-{{ estudante.situacao|lower }}">
+                        {{ estudante.get_situacao_display }}
+                    </span>
+                </div>
+                <div class="info-group">
+                    <label>Data de Ingresso:</label>
+                    <span>{{ estudante.data_ingresso|date:"d/m/Y"|default:"Não informada" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas Rápidas -->
+    <div class="grid-3 mb-6">
+        <div class="stat-card">
+            <div class="stat-label">Total de Ocorrências</div>
+            <div class="stat-value">{{ estudante.ocorrencias.count }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Atendimentos</div>
+            <div class="stat-value">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Conselhos Participados</div>
+            <div class="stat-value">0</div>
+        </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">Ações Rápidas</h3>
+        </div>
+        <div class="card-body">
+            <div class="flex gap-2">
+                <a href="{% url 'core:ocorrencia_create' %}?estudante={{ estudante.matricula_sga }}" class="btn btn-primary">
+                    Registrar Ocorrência
+                </a>
+                <a href="#" class="btn btn-outline">
+                    Registrar Atendimento
+                </a>
+                <a href="{% url 'core:relatorio_estudante' estudante.matricula_sga %}" class="btn btn-outline">
+                    Gerar Relatório
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Últimas Ocorrências -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Últimas Ocorrências</h3>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            {% if estudante.ocorrencias.all %}
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Infração</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ocorrencia in estudante.ocorrencias.all|slice:":5" %}
+                        <tr>
+                            <td>{{ ocorrencia.data|date:"d/m/Y" }}</td>
+                            <td>{{ ocorrencia.descricao|truncatewords:10 }}</td>
+                            <td>
+                                {% if ocorrencia.infracao %}
+                                    {{ ocorrencia.infracao.codigo }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ ocorrencia.status|lower }}">
+                                    {{ ocorrencia.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-muted">
+                Nenhuma ocorrência registrada.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.info-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.info-group:last-child {
+    border-bottom: none;
+}
+
+.info-group label {
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.info-group span {
+    color: var(--gray-600);
+}
+</style>
+{% endblock %}

@@ -1,10 +1,113 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'core/base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Editar Estudante - {{ estudante.nome }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">Editar Estudante</h1>
+        <p class="page-subtitle">{{ estudante.nome }} - {{ estudante.matricula_sga }}</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="id_nome">Nome Completo *</label>
+                        <input type="text" name="nome" id="id_nome" class="form-control" 
+                               value="{{ form.nome.value|default:estudante.nome }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_matricula_sga">Matrícula SGA *</label>
+                        <input type="text" name="matricula_sga" id="id_matricula_sga" class="form-control" 
+                               value="{{ form.matricula_sga.value|default:estudante.matricula_sga }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_turma">Turma *</label>
+                        <select name="turma" id="id_turma" class="form-control" required>
+                            <option value="">Selecione a turma</option>
+                            {% for turma in turmas %}
+                            <option value="{{ turma.id }}" 
+                                    {% if turma.id == form.turma.value|default:estudante.turma.id %}selected{% endif %}>
+                                {{ turma.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_curso">Curso *</label>
+                        <select name="curso" id="id_curso" class="form-control" required>
+                            <option value="">Selecione o curso</option>
+                            {% for curso in cursos %}
+                            <option value="{{ curso.id }}" 
+                                    {% if curso.id == form.curso.value|default:estudante.curso.id %}selected{% endif %}>
+                                {{ curso.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_email">Email</label>
+                        <input type="email" name="email" id="id_email" class="form-control" 
+                               value="{{ form.email.value|default:estudante.email }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_telefone">Telefone</label>
+                        <input type="tel" name="telefone" id="id_telefone" class="form-control" 
+                               value="{{ form.telefone.value|default:estudante.telefone }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_situacao">Situação *</label>
+                        <select name="situacao" id="id_situacao" class="form-control" required>
+                            {% for choice in situacao_choices %}
+                            <option value="{{ choice.0 }}" 
+                                    {% if choice.0 == form.situacao.value|default:estudante.situacao %}selected{% endif %}>
+                                {{ choice.1 }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    <a href="{% url 'core:estudante_detail' estudante.matricula_sga %}" class="btn btn-outline">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    border-top: 1px solid var(--gray-200);
+    padding-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

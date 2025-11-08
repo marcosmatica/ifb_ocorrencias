@@ -115,16 +115,29 @@ def estudante_list(request):
 
     # Filtros
     busca = request.GET.get('q')
+    turma_id = request.GET.get('turma')
+    situacao = request.GET.get('situacao')
+
     if busca:
         estudantes = estudantes.filter(
             Q(nome__icontains=busca) |
             Q(matricula_sga__icontains=busca)
         )
 
+    if turma_id:
+        estudantes = estudantes.filter(turma_id=turma_id)
+
+    if situacao:
+        estudantes = estudantes.filter(situacao=situacao)
+
     # Paginação
     paginator = Paginator(estudantes, 50)
     page = request.GET.get('page')
     estudantes_page = paginator.get_page(page)
+
+    # Contexto para filtros
+    turmas = Turma.objects.all()
+    situacao_choices = Estudante.SITUACAO_CHOICES
 
     breadcrumbs_list = [
         {'label': 'Dashboard', 'url': '/'},
@@ -133,6 +146,8 @@ def estudante_list(request):
 
     context = {
         'estudantes': estudantes_page,
+        'turmas': turmas,
+        'situacao_choices': situacao_choices,
         'breadcrumbs_list': breadcrumbs_list,
     }
     return render(request, 'core/estudante_list.html', context)

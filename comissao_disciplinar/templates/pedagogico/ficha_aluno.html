@@ -34,6 +34,30 @@
         </div>
     </div>
 
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">Ações Rápidas</h3>
+        </div>
+        <div class="card-body">
+            <div class="flex gap-2 flex-wrap">
+                <a href="{% url 'core:ocorrencia_create' %}?estudante={{ estudante.matricula_sga }}"
+                   class="btn btn-primary">
+                    📝 Registrar Ocorrência
+                </a>
+                <a href="#" class="btn btn-outline">
+                    👥 Registrar Atendimento
+                </a>
+                <a href="{% url 'core:relatorio_estudante' estudante.matricula_sga %}"
+                   class="btn btn-outline">
+                    📊 Gerar Relatório
+                </a>
+                <a href="{% url 'core:estudante_list' %}" class="btn btn-outline">
+                    ↩️ Voltar à Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Abas -->
     <div class="tabs">
         <div class="tab-header">
