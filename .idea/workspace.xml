@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/atendimentos/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/atendimentos/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/urls.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,7 +117,7 @@
       <workItem from="1762135422548" duration="1028000" />
       <workItem from="1762160859753" duration="6310000" />
       <workItem from="1762569515715" duration="3996000" />
-      <workItem from="1762610050948" duration="3396000" />
+      <workItem from="1762610050948" duration="3708000" />
     </task>
     <servers />
   </component>

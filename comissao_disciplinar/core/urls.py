@@ -2,6 +2,8 @@ from django.urls import path, include
 from core import views
 from django.contrib.auth import views as auth_views
 
+app_name = 'core'  # Esta linha é crucial
+
 urlpatterns = [
     # Home
     path('', views.home, name='home'),
