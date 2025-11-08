@@ -116,6 +116,7 @@ class OcorrenciaRapidaForm(forms.ModelForm):
         ('UNIFORME', 'Sem uniforme'),
         ('RECUSA', 'Recusa a participar das atividades'),
         ('AUSENCIA', 'Ausência de sala'),
+        ('SAIDA', 'Saída Antecipada')
     ]
 
     tipo_rapido = forms.ChoiceField(
