@@ -1,0 +1,229 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Gerenciar Estudantes - {{ projeto.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Gerenciar Estudantes Participantes</h2>
+            <p class="text-muted mt-2">{{ projeto.titulo }}</p>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                {{ formset.management_form }}
+
+                <div id="formset-container">
+                    {% for form in formset %}
+                    <div class="formset-form border rounded-lg p-4 mb-4 {% if form.DELETE.value %}d-none{% endif %}">
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
+                        <div class="grid-2 gap-4 mb-4">
+                            <!-- Estudante -->
+                            <div class="form-group">
+                                <label class="form-label">Estudante *</label>
+                                {{ form.estudante }}
+                                {% if form.estudante.errors %}
+                                    <div class="form-error">{{ form.estudante.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Bolsista -->
+                            <div class="form-group">
+                                <div class="form-check mt-6">
+                                    {{ form.bolsista }}
+                                    <label class="form-check-label">É bolsista?</label>
+                                </div>
+                                {% if form.bolsista.errors %}
+                                    <div class="form-error">{{ form.bolsista.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="grid-3 gap-4 mb-4">
+                            <!-- Valor Bolsa -->
+                            <div class="form-group">
+                                <label class="form-label">Valor da Bolsa (R$)</label>
+                                {{ form.valor_bolsa }}
+                                {% if form.valor_bolsa.errors %}
+                                    <div class="form-error">{{ form.valor_bolsa.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Data Início -->
+                            <div class="form-group">
+                                <label class="form-label">Data Início *</label>
+                                {{ form.data_inicio }}
+                                {% if form.data_inicio.errors %}
+                                    <div class="form-error">{{ form.data_inicio.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Data Fim -->
+                            <div class="form-group">
+                                <label class="form-label">Data Fim</label>
+                                {{ form.data_fim }}
+                                {% if form.data_fim.errors %}
+                                    <div class="form-error">{{ form.data_fim.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Ativo -->
+                        <div class="form-group">
+                            <div class="form-check">
+                                {{ form.ativo }}
+                                <label class="form-check-label">Participação ativa</label>
+                            </div>
+                            {% if form.ativo.errors %}
+                                <div class="form-error">{{ form.ativo.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Delete Checkbox -->
+                        {% if form.instance.pk %}
+                        <div class="mt-3 flex-between">
+                            <div class="form-check">
+                                {{ form.DELETE }}
+                                <label class="form-check-label text-danger">Excluir esta participação</label>
+                            </div>
+                            <div class="text-sm text-muted">
+                                ID: {{ form.instance.pk }}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Hidden Fields -->
+                        {{ form.id }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Botões -->
+                <div class="form-actions">
+                    <button type="button" id="add-form" class="btn btn-outline">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Adicionar Outro
+                    </button>
+                    
+                    <div class="flex gap-2">
+                        <a href="{% url 'projetos:projeto_detail' projeto.pk %}" class="btn btn-outline">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            Salvar Participações
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formsetContainer = document.getElementById('formset-container');
+    const addButton = document.getElementById('add-form');
+    const totalForms = document.getElementById('id_participacaoestudante_set-TOTAL_FORMS');
+    let formCount = parseInt(totalForms.value);
+
+    // Adicionar estilos aos campos
+    function stylizeForm(form) {
+        const inputs = form.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            if (!input.classList.contains('form-control') && input.type !== 'checkbox') {
+                input.classList.add('form-control');
+            }
+            if (input.type === 'date') {
+                input.classList.add('modern-date-input');
+            }
+        });
+    }
+
+    // Estilizar forms existentes
+    document.querySelectorAll('.formset-form').forEach(stylizeForm);
+
+    // Adicionar novo form
+    addButton.addEventListener('click', function() {
+        const template = document.querySelector('.formset-form').cloneNode(true);
+        
+        // Limpar valores
+        template.querySelectorAll('input, select').forEach(input => {
+            if (input.type !== 'checkbox' && input.name !== 'DELETE') {
+                input.value = '';
+            }
+            if (input.type === 'checkbox') {
+                input.checked = false;
+            }
+        });
+
+        // Atualizar IDs e names
+        template.querySelectorAll('[id*="-"]').forEach(element => {
+            element.id = element.id.replace(/-\d+-/, `-${formCount}-`);
+        });
+        
+        template.querySelectorAll('[name*="-"]').forEach(element => {
+            element.name = element.name.replace(/-\d+-/, `-${formCount}-`);
+        });
+
+        // Remover hidden
+        template.classList.remove('d-none');
+        
+        // Adicionar ao container
+        formsetContainer.appendChild(template);
+        stylizeForm(template);
+        
+        // Atualizar contador
+        formCount++;
+        totalForms.value = formCount;
+    });
+
+    // Mostrar/ocultar valor da bolsa baseado no checkbox
+    formsetContainer.addEventListener('change', function(e) {
+        if (e.target.name && e.target.name.includes('bolsista')) {
+            const form = e.target.closest('.formset-form');
+            const valorBolsaField = form.querySelector('[name*="valor_bolsa"]');
+            
+            if (e.target.checked) {
+                valorBolsaField.required = true;
+            } else {
+                valorBolsaField.required = false;
+                valorBolsaField.value = '';
+            }
+        }
+    });
+
+    // Validação de datas
+    formsetContainer.addEventListener('change', function(e) {
+        if (e.target.name && (e.target.name.includes('data_inicio') || e.target.name.includes('data_fim'))) {
+            const form = e.target.closest('.formset-form');
+            const dataInicio = form.querySelector('[name*="data_inicio"]');
+            const dataFim = form.querySelector('[name*="data_fim"]');
+            
+            if (dataInicio.value && dataFim.value) {
+                const inicio = new Date(dataInicio.value);
+                const fim = new Date(dataFim.value);
+                
+                if (fim < inicio) {
+                    dataFim.setCustomValidity('Data fim não pode ser anterior à data início');
+                } else {
+                    dataFim.setCustomValidity('');
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

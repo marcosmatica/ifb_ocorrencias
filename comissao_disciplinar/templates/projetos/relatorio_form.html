@@ -1,0 +1,122 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Registrar Relatório - {{ projeto.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Registrar Entrega de Relatório</h2>
+            <p class="text-muted mt-2">{{ projeto.titulo }}</p>
+        </div>
+
+        <div class="card-body">
+            <!-- Informações do Projeto -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                <h3 class="font-semibold mb-2">Informações do Projeto</h3>
+                <div class="grid-2 text-sm">
+                    <div>
+                        <strong>Processo:</strong><br>
+                        {{ projeto.numero_processo }}
+                    </div>
+                    <div>
+                        <strong>Coordenador:</strong><br>
+                        {{ projeto.coordenador.nome }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status do Relatório -->
+            <div class="alert 
+                {% if projeto.relatorio_atrasado %}alert-danger
+                {% else %}alert-warning{% endif %} mb-4">
+                {% if projeto.relatorio_atrasado %}
+                    <strong>⚠️ Relatório Vencido</strong><br>
+                    Próximo relatório: {{ projeto.proximo_relatorio|date:"d/m/Y" }}
+                {% else %}
+                    <strong>📅 Próximo Relatório</strong><br>
+                    {{ projeto.proximo_relatorio|date:"d/m/Y" }}
+                {% endif %}
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label">Data de Entrega *</label>
+                    {{ form.data_entrega }}
+                    {% if form.data_entrega.errors %}
+                        <div class="form-error">{{ form.data_entrega.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Data em que o relatório foi entregue à coordenação
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Observações</label>
+                    {{ form.observacoes }}
+                    {% if form.observacoes.errors %}
+                        <div class="form-error">{{ form.observacoes.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Observações sobre o relatório entregue (opcional)
+                    </div>
+                </div>
+
+                <!-- Próximo Relatório Calculado -->
+                {% if projeto.periodicidade_relatorio %}
+                <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                    <h4 class="font-semibold text-blue-800">📅 Próximo Relatório</h4>
+                    <p class="text-sm text-blue-700 mt-1">
+                        Após o registro, o próximo relatório será calculado para 
+                        <strong>{{ projeto.periodicidade_relatorio }} meses</strong> após a data de entrega.
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Botões -->
+                <div class="form-actions">
+                    <a href="{% url 'projetos:projeto_detail' projeto.pk %}" class="btn btn-outline">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Registrar Entrega
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Adicionar classes aos campos
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        if (!input.classList.contains('form-control')) {
+            input.classList.add('form-control');
+        }
+    });
+
+    // Definir data padrão como hoje
+    const dataInput = document.querySelector('input[type="date"]');
+    if (dataInput && !dataInput.value) {
+        const hoje = new Date().toISOString().split('T')[0];
+        dataInput.value = hoje;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Editar{% else %}Novo{% endif %} Projeto{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">
+                {% if form.instance.pk %}
+                    Editar Projeto: {{ form.instance.titulo }}
+                {% else %}
+                    Cadastrar Novo Projeto
+                {% endif %}
+            </h2>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <!-- Informações Básicas -->
+                <div class="section-title">Informações Básicas</div>
+                <div class="grid-2 mb-4">
+                    <div class="form-group">
+                        <label class="form-label">Número do Processo *</label>
+                        {{ form.numero_processo }}
+                        {% if form.numero_processo.errors %}
+                            <div class="form-error">{{ form.numero_processo.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo *</label>
+                        {{ form.tipo }}
+                        {% if form.tipo.errors %}
+                            <div class="form-error">{{ form.tipo.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label">Título *</label>
+                    {{ form.titulo }}
+                    {% if form.titulo.errors %}
+                        <div class="form-error">{{ form.titulo.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Datas -->
+                <div class="section-title">Período de Execução</div>
+                <div class="grid-2 mb-4">
+                    <div class="form-group">
+                        <label class="form-label">Data Início *</label>
+                        {{ form.data_inicio }}
+                        {% if form.data_inicio.errors %}
+                            <div class="form-error">{{ form.data_inicio.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data Final *</label>
+                        {{ form.data_final }}
+                        {% if form.data_final.errors %}
+                            <div class="form-error">{{ form.data_final.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Classificação -->
+                <div class="section-title">Classificação</div>
+                <div class="grid-2 mb-4">
+                    <div class="form-group">
+                        <label class="form-label">Tema *</label>
+                        {{ form.tema }}
+                        {% if form.tema.errors %}
+                            <div class="form-error">{{ form.tema.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Área *</label>
+                        {{ form.area }}
+                        {% if form.area.errors %}
+                            <div class="form-error">{{ form.area.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Coordenação -->
+                <div class="section-title">Coordenação</div>
+                <div class="form-group mb-4">
+                    <label class="form-label">Coordenador *</label>
+                    {{ form.coordenador }}
+                    {% if form.coordenador.errors %}
+                        <div class="form-error">{{ form.coordenador.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Estudantes -->
+                <div class="form-group mb-4">
+                    <div class="form-check">
+                        {{ form.envolve_estudantes }}
+                        <label class="form-check-label">Envolve alunos pesquisadores/extensionistas?</label>
+                    </div>
+                    {% if form.envolve_estudantes.errors %}
+                        <div class="form-error">{{ form.envolve_estudantes.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Status e Relatórios -->
+                <div class="section-title">Status e Relatórios</div>
+                <div class="grid-2 mb-4">
+                    <div class="form-group">
+                        <label class="form-label">Situação</label>
+                        {{ form.situacao }}
+                        {% if form.situacao.errors %}
+                            <div class="form-error">{{ form.situacao.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Periodicidade (meses)</label>
+                        {{ form.periodicidade_relatorio }}
+                        {% if form.periodicidade_relatorio.errors %}
+                            <div class="form-error">{{ form.periodicidade_relatorio.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div class="form-group mb-4">
+                    <label class="form-label">Observações</label>
+                    {{ form.observacoes }}
+                    {% if form.observacoes.errors %}
+                        <div class="form-error">{{ form.observacoes.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Botões -->
+                <div class="form-actions">
+                    <a href="{% if form.instance.pk %}{% url 'projetos:projeto_detail' form.instance.pk %}{% else %}{% url 'projetos:projeto_list' %}{% endif %}" 
+                       class="btn btn-outline">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if form.instance.pk %}Atualizar{% else %}Salvar{% endif %} Projeto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Adicionar classes aos campos do formulário
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        if (!input.classList.contains('form-control') && 
+            !input.classList.contains('form-check-input') &&
+            input.type !== 'checkbox' && 
+            input.type !== 'radio') {
+            input.classList.add('form-control');
+        }
+    });
+
+    // Validação de datas
+    const dataInicio = document.querySelector('[name="data_inicio"]');
+    const dataFinal = document.querySelector('[name="data_final"]');
+
+    if (dataInicio && dataFinal) {
+        function validarDatas() {
+            if (dataInicio.value && dataFinal.value) {
+                const inicio = new Date(dataInicio.value);
+                const final = new Date(dataFinal.value);
+                
+                if (final < inicio) {
+                    dataFinal.setCustomValidity('Data final não pode ser anterior à data inicial');
+                } else {
+                    dataFinal.setCustomValidity('');
+                }
+            }
+        }
+
+        dataInicio.addEventListener('change', validarDatas);
+        dataFinal.addEventListener('change', validarDatas);
+    }
+});
+</script>
+{% endblock %}

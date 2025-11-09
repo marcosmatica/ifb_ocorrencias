@@ -1,0 +1,201 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Lista de Projetos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="page-header mb-5">
+        <div>
+            <h1 class="page-title">Projetos de Pesquisa e Extensão</h1>
+            <p class="page-subtitle">Gerencie todos os projetos cadastrados no sistema</p>
+        </div>
+        {% if is_coord_pesquisa_extensao %}
+        <a href="{% url 'projetos:projeto_create' %}" class="btn btn-primary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Novo Projeto
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Filtros -->
+    <div class="form-filter-container">
+        <form method="get" class="form-filter-grid">
+            <div class="form-group">
+                <label class="form-label">Situação</label>
+                {{ filtro_form.situacao }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tipo</label>
+                {{ filtro_form.tipo }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Coordenador</label>
+                {{ filtro_form.coordenador }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Ano</label>
+                {{ filtro_form.ano }}
+            </div>
+            <div class="form-group">
+                <div class="form-check">
+                    {{ filtro_form.relatorio_atrasado }}
+                    <label class="form-check-label">Apenas com relatório atrasado</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+                <a href="{% url 'projetos:projeto_list' %}" class="btn btn-outline">Limpar</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Busca -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="flex gap-2">
+                <input type="text" name="q" value="{{ busca }}" 
+                       class="form-control" placeholder="Buscar por título, processo, tema ou área...">
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="grid-3 mb-4">
+        <div class="stat-card">
+            <div class="stat-label">Total</div>
+            <div class="stat-value">{{ estatisticas.total }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Ativos</div>
+            <div class="stat-value">{{ estatisticas.ativos }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Com Atraso</div>
+            <div class="stat-value">{{ estatisticas.com_atraso }}</div>
+        </div>
+    </div>
+
+    <!-- Lista de Projetos -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Projetos Encontrados</h2>
+        </div>
+        <div class="card-body">
+            {% if projetos %}
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Processo</th>
+                            <th>Título</th>
+                            <th>Tipo</th>
+                            <th>Coordenador</th>
+                            <th>Situação</th>
+                            <th>Próximo Relatório</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for projeto in projetos %}
+                        <tr>
+                            <td>
+                                <strong>{{ projeto.numero_processo }}</strong>
+                            </td>
+                            <td>
+                                <div class="font-semibold">{{ projeto.titulo|truncatewords:8 }}</div>
+                                <div class="text-sm text-muted">{{ projeto.tema }}</div>
+                            </td>
+                            <td>
+                                <span class="badge {% if projeto.tipo == 'PESQUISA' %}badge-analise{% else %}badge-finalizada{% endif %}">
+                                    {{ projeto.get_tipo_display }}
+                                </span>
+                            </td>
+                            <td>{{ projeto.coordenador.nome }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if projeto.situacao == 'ATIVO' %}badge-finalizada
+                                    {% elif projeto.situacao == 'FINALIZADO' %}badge-arquivada
+                                    {% else %}badge-aguardando{% endif %}">
+                                    {{ projeto.get_situacao_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if projeto.proximo_relatorio %}
+                                    {% if projeto.relatorio_atrasado %}
+                                        <span class="text-danger font-semibold">
+                                            {{ projeto.proximo_relatorio|date:"d/m/Y" }} ⚠️
+                                        </span>
+                                    {% else %}
+                                        {{ projeto.proximo_relatorio|date:"d/m/Y" }}
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="flex gap-1">
+                                    <a href="{% url 'projetos:projeto_detail' projeto.pk %}" 
+                                       class="btn btn-sm btn-outline" title="Ver detalhes">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                    </a>
+                                    {% if projeto.user_can_edit %}
+                                        <a href="{% url 'projetos:projeto_edit' projeto.pk %}"
+                                           class="btn btn-sm btn-outline" title="Editar">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if projetos.has_other_pages %}
+            <div class="pagination">
+                {% if projetos.has_previous %}
+                    <a href="?page={{ projetos.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                       class="pagination-item">‹ Anterior</a>
+                {% endif %}
+
+                {% for num in projetos.paginator.page_range %}
+                    {% if projetos.number == num %}
+                        <span class="pagination-item active">{{ num }}</span>
+                    {% else %}
+                        <a href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                           class="pagination-item">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if projetos.has_next %}
+                    <a href="?page={{ projetos.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                       class="pagination-item">Próxima ›</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+                <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <p>Nenhum projeto encontrado</p>
+                <p class="text-sm text-muted mt-2">Tente ajustar os filtros de busca</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Excluir Projeto{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title text-danger">Excluir Projeto</h2>
+        </div>
+        
+        <div class="card-body">
+            <div class="alert alert-danger">
+                <strong>Atenção!</strong> Esta ação não pode ser desfeita.
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                <h3 class="font-semibold mb-2">{{ projeto.titulo }}</h3>
+                <div class="text-sm text-muted">
+                    <p><strong>Processo:</strong> {{ projeto.numero_processo }}</p>
+                    <p><strong>Coordenador:</strong> {{ projeto.coordenador.nome }}</p>
+                    <p><strong>Situação:</strong> {{ projeto.get_situacao_display }}</p>
+                </div>
+            </div>
+
+            <p class="mb-4">
+                Tem certeza que deseja excluir permanentemente este projeto? 
+                Todos os dados relacionados (participações, relatórios) serão perdidos.
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-actions">
+                    <a href="{% url 'projetos:projeto_detail' projeto.pk %}" class="btn btn-outline">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Confirmar Exclusão
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

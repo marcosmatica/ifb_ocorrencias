@@ -1,0 +1,121 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Definir Próximo Relatório - {{ projeto.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Definir Próximo Relatório Manualmente</h2>
+            <p class="text-muted mt-2">{{ projeto.titulo }}</p>
+        </div>
+
+        <div class="card-body">
+            <div class="alert alert-warning mb-4">
+                <strong>⚠️ Ação Restrita</strong><br>
+                Esta funcionalidade é destinada apenas para coordenadores de pesquisa/extensão 
+                em casos específicos que requeiram alteração manual das datas.
+            </div>
+
+            <!-- Informações Atuais -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                <h3 class="font-semibold mb-2">Situação Atual</h3>
+                <div class="grid-2 text-sm">
+                    <div>
+                        <strong>Último Relatório:</strong><br>
+                        {% if projeto.data_ultimo_relatorio %}
+                            {{ projeto.data_ultimo_relatorio|date:"d/m/Y" }}
+                        {% else %}
+                            <span class="text-muted">Nenhum</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <strong>Próximo Relatório:</strong><br>
+                        {% if projeto.proximo_relatorio %}
+                            {{ projeto.proximo_relatorio|date:"d/m/Y" }}
+                        {% else %}
+                            <span class="text-muted">Não definido</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mt-2 text-sm">
+                    <strong>Periodicidade:</strong> {{ projeto.periodicidade_relatorio }} meses
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="form-group">
+                    <label class="form-label">Nova Data do Próximo Relatório *</label>
+                    {{ form.proximo_relatorio }}
+                    {% if form.proximo_relatorio.errors %}
+                        <div class="form-error">{{ form.proximo_relatorio.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Defina a nova data para o próximo relatório
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Motivo da Alteração *</label>
+                    {{ form.motivo }}
+                    {% if form.motivo.errors %}
+                        <div class="form-error">{{ form.motivo.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">
+                        Explique o motivo para esta alteração manual da data
+                    </div>
+                </div>
+
+                <!-- Botões -->
+                <div class="form-actions">
+                    <a href="{% url 'projetos:projeto_detail' projeto.pk %}" class="btn btn-outline">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        Definir Nova Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Adicionar classes aos campos
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        if (!input.classList.contains('form-control')) {
+            input.classList.add('form-control');
+        }
+    });
+
+    // Validação: data não pode ser no passado
+    const dataInput = document.querySelector('input[type="date"]');
+    if (dataInput) {
+        dataInput.addEventListener('change', function() {
+            const hoje = new Date().toISOString().split('T')[0];
+            if (this.value < hoje) {
+                this.setCustomValidity('A data não pode ser no passado');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

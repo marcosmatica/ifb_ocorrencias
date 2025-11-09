@@ -1,0 +1,249 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ projeto.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header com Alertas -->
+    {% if alerta_relatorio %}
+    <div class="alert alert-{{ alerta_relatorio.tipo }} mb-4">
+        <strong>{{ alerta_relatorio.mensagem }}</strong>
+        {% if pode_editar %}
+        <div class="mt-2">
+            <a href="{% url 'projetos:relatorio_entregue' projeto.pk %}" class="btn btn-sm btn-primary">
+                Registrar Entrega
+            </a>
+            {% if is_coord_pesquisa_extensao %}
+            <a href="{% url 'projetos:definir_proximo_relatorio' projeto.pk %}" class="btn btn-sm btn-outline">
+                Alterar Data
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="flex-between">
+                <h1 class="card-title">{{ projeto.titulo }}</h1>
+                <div class="flex gap-2">
+                    {% if pode_editar %}
+                    <a href="{% url 'projetos:projeto_edit' projeto.pk %}" class="btn btn-outline">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        Editar
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'projetos:projeto_list' %}" class="btn btn-outline">
+                        Voltar
+                    </a>
+                </div>
+            </div>
+            <p class="text-muted mt-2">{{ projeto.tema }}</p>
+        </div>
+
+        <div class="card-body">
+            <!-- Informações Básicas -->
+            <div class="grid-2 gap-4 mb-6">
+                <div>
+                    <h3 class="section-title">Informações do Projeto</h3>
+                    <div class="info-grid">
+                        <div class="info-label">Número do Processo:</div>
+                        <div class="info-value">{{ projeto.numero_processo }}</div>
+                        
+                        <div class="info-label">Tipo:</div>
+                        <div class="info-value">
+                            <span class="badge {% if projeto.tipo == 'PESQUISA' %}badge-analise{% else %}badge-finalizada{% endif %}">
+                                {{ projeto.get_tipo_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="info-label">Situação:</div>
+                        <div class="info-value">
+                            <span class="badge 
+                                {% if projeto.situacao == 'ATIVO' %}badge-finalizada
+                                {% elif projeto.situacao == 'FINALIZADO' %}badge-arquivada
+                                {% else %}badge-aguardando{% endif %}">
+                                {{ projeto.get_situacao_display }}
+                            </span>
+                        </div>
+                        
+                        <div class="info-label">Período:</div>
+                        <div class="info-value">
+                            {{ projeto.data_inicio|date:"d/m/Y" }} a {{ projeto.data_final|date:"d/m/Y" }}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="section-title">Coordenação e Relatórios</h3>
+                    <div class="info-grid">
+                        <div class="info-label">Coordenador:</div>
+                        <div class="info-value">{{ projeto.coordenador.nome }}</div>
+                        
+                        <div class="info-label">Envolve Estudantes:</div>
+                        <div class="info-value">
+                            {% if projeto.envolve_estudantes %}Sim{% else %}Não{% endif %}
+                        </div>
+                        
+                        <div class="info-label">Último Relatório:</div>
+                        <div class="info-value">
+                            {% if projeto.data_ultimo_relatorio %}
+                                {{ projeto.data_ultimo_relatorio|date:"d/m/Y" }}
+                            {% else %}
+                                <span class="text-muted">Nenhum</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="info-label">Próximo Relatório:</div>
+                        <div class="info-value">
+                            {% if projeto.proximo_relatorio %}
+                                {% if projeto.relatorio_atrasado %}
+                                    <span class="text-danger font-semibold">
+                                        {{ projeto.proximo_relatorio|date:"d/m/Y" }} ⚠️
+                                    </span>
+                                {% else %}
+                                    {{ projeto.proximo_relatorio|date:"d/m/Y" }}
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ações -->
+            {% if pode_editar %}
+            <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                <h3 class="font-semibold mb-3">Ações do Projeto</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <a href="{% url 'projetos:participacao_servidor_edit' projeto.pk %}" class="btn btn-outline">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        Gerenciar Servidores
+                    </a>
+                    
+                    {% if projeto.envolve_estudantes %}
+                    <a href="{% url 'projetos:participacao_estudante_edit' projeto.pk %}" class="btn btn-outline">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        Gerenciar Estudantes
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'projetos:relatorio_entregue' projeto.pk %}" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Registrar Relatório
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Participações de Servidores -->
+            <div class="mb-6">
+                <h3 class="section-title">Servidores Participantes</h3>
+                {% if participacoes_servidor %}
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Servidor</th>
+                                <th>Semestre</th>
+                                <th>Horas Semanais</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for participacao in participacoes_servidor %}
+                            <tr>
+                                <td>{{ participacao.servidor.nome }}</td>
+                                <td>{{ participacao.semestre }}</td>
+                                <td>{{ participacao.horas_semanais }}h</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Nenhum servidor participante cadastrado.</p>
+                {% endif %}
+            </div>
+
+            <!-- Participações de Estudantes -->
+            {% if projeto.envolve_estudantes %}
+            <div class="mb-6">
+                <h3 class="section-title">Estudantes Participantes</h3>
+                {% if participacoes_estudante %}
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Estudante</th>
+                                <th>Bolsista</th>
+                                <th>Valor Bolsa</th>
+                                <th>Período</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for participacao in participacoes_estudante %}
+                            <tr>
+                                <td>{{ participacao.estudante.nome }}</td>
+                                <td>
+                                    {% if participacao.bolsista %}
+                                        <span class="badge badge-finalizada">Sim</span>
+                                    {% else %}
+                                        <span class="badge badge-arquivada">Não</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if participacao.valor_bolsa %}
+                                        R$ {{ participacao.valor_bolsa }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ participacao.data_inicio|date:"d/m/Y" }}
+                                    {% if participacao.data_fim %}
+                                        a {{ participacao.data_fim|date:"d/m/Y" }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if participacao.ativo %}
+                                        <span class="badge badge-finalizada">Ativo</span>
+                                    {% else %}
+                                        <span class="badge badge-arquivada">Inativo</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Nenhum estudante participante cadastrado.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Observações -->
+            {% if projeto.observacoes %}
+            <div>
+                <h3 class="section-title">Observações</h3>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    {{ projeto.observacoes|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

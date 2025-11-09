@@ -1,0 +1,147 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Projetos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="page-header mb-5">
+        <div>
+            <h1 class="page-title">Dashboard de Projetos</h1>
+            <p class="page-subtitle">Visão geral dos projetos de pesquisa e extensão</p>
+        </div>
+        {% if is_coord %}
+        <a href="{% url 'projetos:projeto_create' %}" class="btn btn-primary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Novo Projeto
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="stats-grid mb-6">
+        <div class="stat-card">
+            <div class="stat-label">Total de Projetos</div>
+            <div class="stat-value">{{ stats.total }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Projetos Ativos</div>
+            <div class="stat-value">{{ stats.ativos }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Finalizados</div>
+            <div class="stat-value">{{ stats.finalizados }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Com Atraso</div>
+            <div class="stat-value">{{ stats.com_atraso }}</div>
+        </div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="grid-2 gap-4">
+        <!-- Projetos com Atraso -->
+        {% if projetos_atrasados %}
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title text-danger">⚠️ Relatórios Atrasados</h2>
+            </div>
+            <div class="card-body">
+                {% for projeto in projetos_atrasados %}
+                <div class="alert alert-danger mb-3">
+                    <strong>{{ projeto.titulo }}</strong><br>
+                    <small>Coordenador: {{ projeto.coordenador.nome }}</small><br>
+                    <small>Vencido em: {{ projeto.proximo_relatorio|date:"d/m/Y" }}</small>
+                    <div class="mt-2">
+                        <a href="{% url 'projetos:projeto_detail' projeto.pk %}" class="btn btn-sm btn-outline">
+                            Ver Detalhes
+                        </a>
+                        <a href="{% url 'projetos:relatorio_entregue' projeto.pk %}" class="btn btn-sm btn-primary">
+                            Registrar Entrega
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Próximos Relatórios -->
+        {% if projetos_alerta %}
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title text-warning">📅 Próximos Relatórios</h2>
+            </div>
+            <div class="card-body">
+                {% for projeto in projetos_alerta %}
+                <div class="alert alert-warning mb-3">
+                    <strong>{{ projeto.titulo }}</strong><br>
+                    <small>Coordenador: {{ projeto.coordenador.nome }}</small><br>
+                    <small>Próximo relatório: {{ projeto.proximo_relatorio|date:"d/m/Y" }}</small>
+                    <div class="mt-2">
+                        <a href="{% url 'projetos:projeto_detail' projeto.pk %}" class="btn btn-sm btn-outline">
+                            Ver Detalhes
+                        </a>
+                        <a href="{% url 'projetos:relatorio_entregue' projeto.pk %}" class="btn btn-sm btn-primary">
+                            Registrar Entrega
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="card mt-6">
+        <div class="card-header">
+            <h2 class="card-title">Ações Rápidas</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid-3">
+                <a href="{% url 'projetos:projeto_list' %}" class="action-card">
+                    <div class="action-card-icon" style="background: var(--ifb-verde);">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                    <div class="action-card-title">Listar Projetos</div>
+                    <div class="action-card-description">
+                        Visualize todos os projetos cadastrados no sistema
+                    </div>
+                </a>
+
+                {% if is_coord %}
+                <a href="{% url 'projetos:projeto_create' %}" class="action-card">
+                    <div class="action-card-icon" style="background: var(--ifb-verde);">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </div>
+                    <div class="action-card-title">Novo Projeto</div>
+                    <div class="action-card-description">
+                        Cadastre um novo projeto de pesquisa ou extensão
+                    </div>
+                </a>
+                {% endif %}
+
+                <a href="{% url 'projetos:projeto_list' %}?relatorio_atrasado=on" class="action-card">
+                    <div class="action-card-icon" style="background: #ef4444;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                        </svg>
+                    </div>
+                    <div class="action-card-title">Relatórios Atrasados</div>
+                    <div class="action-card-description">
+                        Verifique projetos com relatórios pendentes
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
