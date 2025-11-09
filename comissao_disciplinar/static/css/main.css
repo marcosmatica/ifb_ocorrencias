@@ -1455,3 +1455,92 @@ body.sidebar-open {
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 }
+
+/* === Correções para Layout Sidebar === */
+
+/* Garantir que header e footer herdem corretamente */
+body.sidebar-open .main-content .header,
+body.sidebar-open .main-content footer {
+    width: 100%;
+    margin-left: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Overlay com pointer-events corretos */
+#sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#sidebar-overlay:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Sidebar mobile comportamento */
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+        box-shadow: none;
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    }
+
+    body.sidebar-open .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    /* Permitir scroll no conteúdo quando sidebar aberto em mobile */
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    body.sidebar-open .main-content .content {
+        pointer-events: none;
+        user-select: none;
+    }
+}
+
+/* Sidebar desktop comportamento */
+@media (min-width: 1025px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    }
+
+    body.sidebar-open .main-content {
+        margin-left: 260px;
+        width: calc(100% - 260px);
+    }
+
+    /* Remover overlay em desktop */
+    body.sidebar-open #sidebar-overlay {
+        display: none !important;
+    }
+}
+
+/* Garantir transição suave para todos os elementos */
+.main-content,
+.main-content .header,
+.main-content .content,
+.main-content footer {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Container deve se ajustar corretamente */
+body.sidebar-open .container {
+    max-width: min(calc(1280px - 260px), 100%);
+}

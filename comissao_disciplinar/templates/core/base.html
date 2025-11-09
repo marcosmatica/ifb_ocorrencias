@@ -73,8 +73,8 @@
         </div>
     </div>
     <div id="sidebar-overlay" class="hidden"></div>
-    <!-- Overlay para Sidebar Mobile -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
+    <!-- Overlay para Sidebar Mobile
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div> -->
 </body>
    <script>
    // Estado global do sidebar
@@ -82,10 +82,9 @@
 
     // Toggle Sidebar
     function toggleSidebar() {
-        console.log('🚀 toggleSidebar() executando...');
-
         const sidebar = document.getElementById('main-sidebar');
         const overlay = document.getElementById('sidebar-overlay');
+        const mainContent = document.querySelector('.main-content');
 
         if (!sidebar) {
             console.error('❌ Sidebar não encontrado!');
@@ -99,21 +98,30 @@
             sidebar.classList.add('open');
             if (overlay) overlay.classList.remove('hidden');
             document.body.classList.add('sidebar-open');
-            console.log('✅ Sidebar ABERTO');
+
+            // Fechar dropdowns
             closeAllDropdowns();
         } else {
             // Fechar sidebar
+            closeSidebar();
+        }
+    }
+
+    // Fechar sidebar
+    function closeSidebar() {
+        const sidebar = document.getElementById('main-sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        if (sidebar && sidebar.classList.contains('open')) {
             sidebar.classList.remove('open');
             if (overlay) overlay.classList.add('hidden');
             document.body.classList.remove('sidebar-open');
-            console.log('✅ Sidebar FECHADO');
+            sidebarOpen = false;
         }
     }
 
     // Fechar todos os dropdowns
     function closeAllDropdowns() {
-        console.log('🔒 Fechando todos os dropdowns...');
-
         const notifDropdown = document.getElementById('notifications-dropdown');
         const userDropdown = document.getElementById('user-menu-dropdown');
 
@@ -128,91 +136,43 @@
         }
     }
 
-    // Fechar sidebar
-    function closeSidebar() {
-        const sidebar = document.getElementById('main-sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-
-        if (sidebar && sidebar.classList.contains('open')) {
-            sidebar.classList.remove('open');
-            if (overlay) overlay.classList.add('hidden');
-            document.body.classList.remove('sidebar-open');
-            sidebarOpen = false;
-            console.log('✅ Sidebar FECHADO');
-        }
-    }
-
-    // Helper para obter CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
     // Inicialização quando DOM carregar
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('📄 DOM carregado - Inicializando sidebar...');
-
         const overlay = document.getElementById('sidebar-overlay');
         const sidebar = document.getElementById('main-sidebar');
 
-        // Fechar ao clicar no overlay
+        // Fechar ao clicar no overlay (apenas mobile)
         if (overlay) {
             overlay.addEventListener('click', function(e) {
-                e.stopPropagation();
-                console.log('🎯 Overlay clicado');
-                closeSidebar();
+                if (window.innerWidth <= 1024) {
+                    closeSidebar();
+                }
             });
         }
 
-        // Fechar ao clicar em links do sidebar
+        // Fechar sidebar ao clicar em links (apenas mobile)
         if (sidebar) {
             const links = sidebar.querySelectorAll('a');
             links.forEach(link => {
                 link.addEventListener('click', function() {
-                    console.log('🔗 Link clicado');
-                    setTimeout(() => closeSidebar(), 150);
+                    if (window.innerWidth <= 1024) {
+                        setTimeout(() => closeSidebar(), 150);
+                    }
                 });
             });
         }
 
         // Garantir que sidebar comece fechado
-        if (sidebar) {
-            sidebar.classList.remove('open');
-            sidebarOpen = false;
-        }
-        if (overlay) {
-            overlay.classList.add('hidden');
-        }
-
-        console.log('✅ Sidebar inicializado');
+        closeSidebar();
     });
 
     // Fechar com tecla ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            console.log('⌨️ ESC pressionado');
             closeSidebar();
             closeAllDropdowns();
         }
     });
-
-    // Debug
-    setTimeout(() => {
-        console.log('🔍 DEBUG:');
-        console.log('Sidebar:', document.getElementById('main-sidebar'));
-        console.log('Overlay:', document.getElementById('sidebar-overlay'));
-        console.log('Botão:', document.querySelector('[onclick*="toggleSidebar"]'));
-    }, 1000);
 </script>
 {% block extra_js %}{% endblock %}
 </html>
