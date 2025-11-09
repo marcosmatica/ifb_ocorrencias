@@ -57,6 +57,16 @@
                 </svg>
                 <span>Pedagógico</span>
             </a>
+
+            <a href="{% url 'napne:dashboard' %}" class="nav-item {% if 'napne' in request.path %}active{% endif %}">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <!-- Ícone de laço de quebra-cabeça -->
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 7h2a2 2 0 012 2v1.5a1.5 1.5 0 01-3 0V7zM10 7H8a2 2 0 00-2 2v1.5a1.5 1.5 0 003 0V7zM12 12v2m0 4a2 2 0 100-4 2 2 0 000 4z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.5 9.5l-2 2M15.5 9.5l2 2M9.5 15.5l2-2M12.5 15.5l2 2"/>
+                </svg>
+                <span>NAPNE</span>
+            </a>
         </div>
 
         {% if user.is_authenticated and user.servidor and user.servidor.membro_comissao_disciplinar %}
