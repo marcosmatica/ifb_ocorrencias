@@ -485,3 +485,39 @@ input[type="range"].form-control::-moz-range-track {
         width: 100%;
     }
 }
+
+/* === Estilos para campos select não estilizados === */
+.form-group select:not(.form-control) {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    background-color: white;
+    font-size: 0.875rem;
+    color: var(--gray-800);
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px;
+}
+
+.form-group select:not(.form-control):focus {
+    outline: none;
+    border-color: var(--ifb-verde);
+    box-shadow: 0 0 0 3px rgba(0, 102, 51, 0.1);
+}
+
+.form-group select:not(.form-control):hover {
+    border-color: var(--gray-400);
+}
+
+/* Estados de erro para selects não estilizados */
+.form-group select:not(.form-control):invalid {
+    border-color: var(--error);
+}
+
+.form-group select:not(.form-control).error {
+    border-color: var(--error);
+}
