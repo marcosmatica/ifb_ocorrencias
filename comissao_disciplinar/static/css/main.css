@@ -112,11 +112,13 @@ body {
 
 /* Main content - sempre largura total */
 .main-content {
-    flex: 1;
-    margin-left: 0 !important;
+    position: relative;
     width: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
+    margin-left: 0;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Overlay */
@@ -135,12 +137,12 @@ body {
     pointer-events: auto;
 }
 
-body.sidebar-open {
-    overflow: hidden;
+body.sidebar-open .content {
+    margin-left: 0; /* Já está dentro de main-content que tem margin */
 }
 
 /* === Header === */
-.header {
+.header, footer {
   background: white;
   border-bottom: 1px solid var(--gray-200);
   padding: var(--spacing-md) var(--spacing-xl);
@@ -150,6 +152,8 @@ body.sidebar-open {
   position: sticky;
   top: 0;
   z-index: 30;
+  width: 100%;
+  max-width: 100%; /* Remove qualquer max-width anterior */
 }
 
 .header-title {
@@ -213,13 +217,17 @@ body.sidebar-open {
 
 /* === Content Area === */
 .content {
-  padding: var(--spacing-xl);
-  flex: 1;
+    position: relative;
+    z-index: 1; /* Fica acima do sidebar */
+    width: 100%;
+    padding: var(--spacing-xl);
+    flex: 1;
 }
 
 .container {
-  max-width: 1280px;
-  margin: 0 auto;
+    max-width: min(1280px, 100%); /* Usa o menor valor */
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
 }
 
 /* === Cards === */
@@ -741,9 +749,11 @@ textarea.form-control {
     transform: translateX(0);
   }
 
-  .main-content {
-    margin-left: 0;
-  }
+  .main-content .content {
+    width: 100%;
+    max-width: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
   .grid-3 {
     grid-template-columns: repeat(2, 1fr);
@@ -761,8 +771,12 @@ textarea.form-control {
   }
 
   .content {
-    padding: var(--spacing-md);
-  }
+    position: relative;
+    z-index: 1; /* Fica acima do sidebar */
+    width: 100%;
+    padding: var(--spacing-xl);
+    flex: 1;
+    }
 
   .table-container {
     margin: 0 -1rem;
@@ -1328,11 +1342,13 @@ textarea.form-control {
 }
 
 .main-content {
+    position: relative;
     width: 100%;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     margin-left: 0;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Sidebar aberto: empurra conteúdo */
@@ -1342,13 +1358,18 @@ body.sidebar-open .main-content {
 }
 
 body.sidebar-open .header {
+     width: 100%; /* Herda do main-content que já tem calc(100% - 260px) */
+    margin-left: 0; /* Remove qualquer margin extra */
+}
+
+body.sidebar-open .body {
     margin-left: 260px;
     width: calc(100% - 260px);
 }
 
 body.sidebar-open footer {
-    margin-left: 260px;
-    width: calc(100% - 260px);
+    width: 100%; /* Herda do main-content que já tem calc(100% - 260px) */
+    margin-left: 0; /* Remove qualquer margin extra */
 }
 
 /* Desktop - sem overlay */
@@ -1425,6 +1446,12 @@ body.sidebar-open {
 
     /* Conteúdo nunca tem margem */
     .main-content {
-        margin-left: 0 !important;
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin-left: 0;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 }
