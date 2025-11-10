@@ -152,6 +152,7 @@ def estudante_list(request):
     }
     return render(request, 'core/estudante_list.html', context)
 
+
 @login_required
 def estudante_detail(request, matricula):
     """Detalhes completos do estudante"""
@@ -164,9 +165,29 @@ def estudante_detail(request, matricula):
              request.user.servidor.pode_visualizar_ficha_aluno)
     )
 
+    # Buscar dados adicionais
+    from atendimentos.models import Atendimento
+    from pedagogico.models import InformacaoEstudanteConselho
+
+    atendimentos = Atendimento.objects.filter(
+        estudantes=estudante,
+        publicar_ficha_aluno=True
+    )[:5]
+
+    total_atendimentos = Atendimento.objects.filter(
+        estudantes=estudante
+    ).count()
+
+    total_conselhos = InformacaoEstudanteConselho.objects.filter(
+        estudante=estudante
+    ).count()
+
     context = {
         'estudante': estudante,
         'pode_ver_ficha': pode_ver_ficha,
+        'atendimentos': atendimentos,
+        'total_atendimentos': total_atendimentos,
+        'total_conselhos': total_conselhos,
     }
     return render(request, 'core/estudante_detail.html', context)
 
@@ -246,18 +267,8 @@ def ocorrencia_rapida_create(request):
     if request.method == 'POST':
         form = OcorrenciaRapidaForm(request.POST, servidor=servidor)
         if form.is_valid():
-            ocorrencia = form.save(commit=False)
-            ocorrencia.responsavel_registro = servidor
-            ocorrencia.curso = form.cleaned_data['turma'].curso
-
-            # Mapear tipo rápido para descrição
-            tipo_map = dict(OcorrenciaRapidaForm.TIPOS_RAPIDOS)
-            ocorrencia.descricao = f"{tipo_map[form.cleaned_data['tipo_rapido']]}"
-
-            ocorrencia.save()
-            form.save_m2m()
-
-            messages.success(request, 'Ocorrência registrada rapidamente!')
+            ocorrencia = form.save()
+            messages.success(request, 'Ocorrência rápida registrada com sucesso!')
             return redirect('dashboard')
     else:
         form = OcorrenciaRapidaForm(servidor=servidor)
@@ -641,13 +652,41 @@ def relatorios_estatisticas(request):
 
     # Estatísticas gerais
     total_ocorrencias = Ocorrencia.objects.count()
-    ocorrencias_por_mes = Ocorrencia.objects.filter(
-        data__gte=timezone.now().date() - timedelta(days=365)
-    ).extra({'month': "EXTRACT(month FROM data)"}).values('month').annotate(total=Count('id'))
+    total_ocorrencias_rapidas = OcorrenciaRapida.objects.count()
+
+    # Calcular percentuais
+    total_geral = total_ocorrencias + total_ocorrencias_rapidas
+    percentual_ocorrencias = round((total_ocorrencias / total_geral * 100), 1) if total_geral > 0 else 0
+    percentual_rapidas = round((total_ocorrencias_rapidas / total_geral * 100), 1) if total_geral > 0 else 0
+
+    # Tipos de ocorrências rápidas mais comuns
+    from django.db.models import Count
+    tipos_rapidos_mais_comuns = OcorrenciaRapida.objects.values(
+        'tipo_rapido'
+    ).annotate(
+        total=Count('id')
+    ).order_by('-total')[:5]
+
+    # Adicionar display names para os tipos
+    tipo_map = dict(OcorrenciaRapida.TIPOS_RAPIDOS)
+    for tipo in tipos_rapidos_mais_comuns:
+        tipo['tipo_rapido__display'] = tipo_map.get(tipo['tipo_rapido'], tipo['tipo_rapido'])
+
+    # Média mensal (últimos 6 meses)
+    from datetime import datetime, timedelta
+    seis_meses_atras = datetime.now().date() - timedelta(days=180)
+    ocorrencias_ultimos_meses = Ocorrencia.objects.filter(
+        data__gte=seis_meses_atras
+    ).count()
+    media_mensal = round(ocorrencias_ultimos_meses / 6, 1)
 
     context = {
         'total_ocorrencias': total_ocorrencias,
-        'ocorrencias_por_mes': list(ocorrencias_por_mes),
+        'total_ocorrencias_rapidas': total_ocorrencias_rapidas,
+        'percentual_ocorrencias': percentual_ocorrencias,
+        'percentual_rapidas': percentual_rapidas,
+        'tipos_rapidos_mais_comuns': tipos_rapidos_mais_comuns,
+        'media_mensal': media_mensal,
         'breadcrumbs_list': breadcrumbs_list,
     }
     return render(request, 'core/relatorios_estatisticas.html', context)
@@ -826,3 +865,190 @@ def api_filtrar_servidores(request):
     } for s in servidores]
 
     return JsonResponse({'servidores': data})
+
+
+# core/views.py - Adicione estas views
+
+@login_required
+@user_passes_test(is_servidor)
+def ocorrencia_rapida_list(request):
+    """Lista de ocorrências rápidas"""
+    ocorrencias = OcorrenciaRapida.objects.select_related(
+        'responsavel_registro', 'turma', 'turma__curso'
+    ).prefetch_related('estudantes').order_by('-criado_em')
+
+    # Filtros
+    data_inicio = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
+    tipo_rapido = request.GET.get('tipo_rapido')
+    turma_id = request.GET.get('turma')
+    busca = request.GET.get('q')
+
+    if data_inicio:
+        ocorrencias = ocorrencias.filter(data__gte=data_inicio)
+    if data_fim:
+        ocorrencias = ocorrencias.filter(data__lte=data_fim)
+    if tipo_rapido:
+        ocorrencias = ocorrencias.filter(tipo_rapido=tipo_rapido)
+    if turma_id:
+        ocorrencias = ocorrencias.filter(turma_id=turma_id)
+    if busca:
+        ocorrencias = ocorrencias.filter(
+            Q(estudantes__nome__icontains=busca) |
+            Q(estudantes__matricula_sga__icontains=busca) |
+            Q(descricao__icontains=busca)
+        ).distinct()
+
+    # Paginação
+    paginator = Paginator(ocorrencias, 20)
+    page = request.GET.get('page')
+    ocorrencias_page = paginator.get_page(page)
+
+    breadcrumbs_list = [
+        {'label': 'Dashboard', 'url': '/dashboard/'},
+        {'label': 'Ocorrências Rápidas', 'url': ''}
+    ]
+
+    context = {
+        'ocorrencias': ocorrencias_page,
+        'tipos_rapidos': OcorrenciaRapida.TIPOS_RAPIDOS,
+        'turmas': Turma.objects.all().distinct(),
+        'breadcrumbs_list': breadcrumbs_list,
+    }
+
+    return render(request, 'core/ocorrencia_rapida_list.html', context)
+
+
+@login_required
+@user_passes_test(is_servidor)
+def ocorrencia_rapida_detail(request, pk):
+    """Detalhes de uma ocorrência rápida"""
+    ocorrencia = get_object_or_404(
+        OcorrenciaRapida.objects.select_related(
+            'responsavel_registro', 'turma', 'turma__curso'
+        ).prefetch_related('estudantes'),
+        pk=pk
+    )
+
+    # Verificar permissão para editar (apenas o responsável pelo registro ou comissão)
+    if hasattr(request.user, 'servidor'):
+        pode_editar = (
+                request.user.servidor == ocorrencia.responsavel_registro or
+                request.user.servidor.membro_comissao_disciplinar
+        )
+    else:
+        pode_editar = False
+
+    breadcrumbs_list = [
+        {'label': 'Dashboard', 'url': '/dashboard/'},
+        {'label': 'Ocorrências Rápidas', 'url': '/ocorrencias-rapidas/'},
+        {'label': f'Ocorrência Rápida #{ocorrencia.id}', 'url': ''}
+    ]
+
+    context = {
+        'ocorrencia': ocorrencia,
+        'pode_editar': pode_editar,
+        'breadcrumbs_list': breadcrumbs_list,
+    }
+
+    return render(request, 'core/ocorrencia_rapida_detail.html', context)
+
+
+@login_required
+@user_passes_test(is_servidor)
+def ocorrencia_rapida_dashboard(request):
+    """Dashboard específico para ocorrências rápidas"""
+    # Estatísticas gerais
+    total_ocorrencias_rapidas = OcorrenciaRapida.objects.count()
+
+    # Ocorrências de hoje
+    hoje = timezone.now().date()
+    hoje_count = OcorrenciaRapida.objects.filter(data=hoje).count()
+
+    # Ocorrências da semana (últimos 7 dias)
+    semana_passada = hoje - timedelta(days=7)
+    semana_count = OcorrenciaRapida.objects.filter(data__gte=semana_passada).count()
+
+    # Tipo mais comum
+    from django.db.models import Count
+    tipo_mais_comum = OcorrenciaRapida.objects.values('tipo_rapido').annotate(
+        total=Count('id')
+    ).order_by('-total').first()
+
+    tipo_mais_comum_nome = tipo_mais_comum['tipo_rapido'] if tipo_mais_comum else 'N/A'
+    tipo_mais_comum_count = tipo_mais_comum['total'] if tipo_mais_comum else 0
+
+    # Dados para gráficos
+    # Tipos de ocorrência (últimos 30 dias)
+    data_limite = hoje - timedelta(days=30)
+    tipos_data = list(OcorrenciaRapida.objects.filter(
+        data__gte=data_limite
+    ).values('tipo_rapido').annotate(total=Count('id')).order_by('-total'))
+
+    # Ocorrências por dia (últimas 2 semanas)
+    duas_semanas = hoje - timedelta(days=14)
+    dados_diarios = list(OcorrenciaRapida.objects.filter(
+        data__gte=duas_semanas
+    ).values('data').annotate(total=Count('id')).order_by('data'))
+
+    # Últimas ocorrências
+    ultimas_ocorrencias = list(OcorrenciaRapida.objects.select_related(
+        'responsavel_registro', 'turma', 'turma__curso'
+    ).prefetch_related('estudantes').order_by('-criado_em')[:10])
+
+    # Turmas com mais ocorrências (mês atual)
+    from datetime import datetime
+    primeiro_dia_mes = datetime.now().replace(day=1).date()
+    turmas_top = list(OcorrenciaRapida.objects.filter(
+        data__gte=primeiro_dia_mes
+    ).values('turma__nome', 'turma__curso__nome').annotate(
+        total=Count('id')
+    ).order_by('-total')[:5])
+
+    breadcrumbs_list = [
+        {'label': 'Dashboard', 'url': '/dashboard/'},
+        {'label': 'Ocorrências Rápidas - Dashboard', 'url': ''}
+    ]
+
+    context = {
+        'total_ocorrencias_rapidas': total_ocorrencias_rapidas,
+        'hoje_count': hoje_count,
+        'semana_count': semana_count,
+        'tipo_mais_comum': tipo_mais_comum_nome,
+        'tipo_mais_comum_count': tipo_mais_comum_count,
+        'tipos_data': tipos_data,
+        'dados_diarios': dados_diarios,
+        'ultimas_ocorrencias': ultimas_ocorrencias,
+        'turmas_top': turmas_top,
+        'breadcrumbs_list': breadcrumbs_list,
+    }
+
+    return render(request, 'core/ocorrencia_rapida_dashboard.html', context)
+
+
+@login_required
+@user_passes_test(is_servidor)
+def ocorrencia_rapida_delete(request, pk):
+    """Exclui uma ocorrência rápida"""
+    ocorrencia = get_object_or_404(OcorrenciaRapida, pk=pk)
+
+    # Verificar permissão (apenas o responsável pelo registro ou comissão)
+    if hasattr(request.user, 'servidor'):
+        pode_excluir = (
+                request.user.servidor == ocorrencia.responsavel_registro or
+                request.user.servidor.membro_comissao_disciplinar
+        )
+    else:
+        pode_excluir = False
+
+    if not pode_excluir:
+        messages.error(request, 'Você não tem permissão para excluir esta ocorrência.')
+        return redirect('ocorrencia_rapida_detail', pk=pk)
+
+    if request.method == 'POST':
+        ocorrencia.delete()
+        messages.success(request, 'Ocorrência rápida excluída com sucesso!')
+        return redirect('ocorrencia_rapida_list')
+
+    # Se não for POST, redirecionar para detalhes
+    return redirect('ocorrencia_rapida_detail', pk=pk)

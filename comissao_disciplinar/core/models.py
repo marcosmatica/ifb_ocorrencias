@@ -566,6 +566,67 @@ class PreferenciaNotificacao(models.Model):
 
 
 # ====================
+# OCORRÊNCIAS RÁPIDAS
+# ====================
+
+class OcorrenciaRapida(models.Model):
+    TIPOS_RAPIDOS = [
+        ('ATRASO', 'Atraso'),
+        ('CELULAR', 'Uso indevido de celular'),
+        ('UNIFORME', 'Sem uniforme'),
+        ('RECUSA', 'Recusa a participar das atividades'),
+        ('AUSENCIA', 'Ausência de sala'),
+        ('SAIDA', 'Saída Antecipada')
+    ]
+
+    # Dados básicos
+    data = models.DateField(default=timezone.now)
+    horario = models.TimeField()
+    turma = models.ForeignKey(Turma, on_delete=models.PROTECT)
+    estudantes = models.ManyToManyField(Estudante, related_name='ocorrencias_rapidas')
+    tipo_rapido = models.CharField(max_length=15, choices=TIPOS_RAPIDOS)
+
+    # Descrição gerada automaticamente
+    descricao = models.TextField(blank=True)
+
+    # Registro
+    responsavel_registro = models.ForeignKey(
+        Servidor,
+        on_delete=models.PROTECT,
+        related_name='ocorrencias_rapidas_registradas'
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    # Auditlog
+    history = AuditlogHistoryField()
+
+    class Meta:
+        verbose_name = "Ocorrência Rápida"
+        verbose_name_plural = "Ocorrências Rápidas"
+        ordering = ['-data', '-horario']
+
+    def __str__(self):
+        return f"Ocorrência Rápida #{self.id} - {self.data} - {self.get_tipo_rapido_display()}"
+
+    def save(self, *args, **kwargs):
+        """Gera descrição automaticamente baseada no tipo rápido"""
+        if not self.descricao:
+            tipo_map = dict(self.TIPOS_RAPIDOS)
+            self.descricao = f"{tipo_map[self.tipo_rapido]}"
+
+        # Define o curso automaticamente baseado na turma
+        if self.turma and not hasattr(self, '_curso'):
+            self._curso = self.turma.curso
+
+        super().save(*args, **kwargs)
+
+    @property
+    def curso(self):
+        """Propriedade para compatibilidade com as views existentes"""
+        return self.turma.curso if self.turma else None
+
+# ====================
 # REGISTRO NO AUDITLOG
 # ====================
 
@@ -573,3 +634,4 @@ auditlog.register(Ocorrencia)
 auditlog.register(Estudante)
 auditlog.register(ComissaoProcessoDisciplinar)
 auditlog.register(DocumentoGerado)
+auditlog.register(OcorrenciaRapida)

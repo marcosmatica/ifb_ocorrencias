@@ -459,8 +459,10 @@ def ficha_aluno(request, matricula):
         return redirect('core:estudante_list')
 
     from atendimentos.models import Atendimento
+    from core.models import OcorrenciaRapida
 
     ocorrencias = estudante.ocorrencias.all()
+    ocorrencias_rapidas = OcorrenciaRapida.objects.filter(estudantes=estudante)
     atendimentos = Atendimento.objects.filter(
         estudantes=estudante,
         publicar_ficha_aluno=True
@@ -471,14 +473,17 @@ def ficha_aluno(request, matricula):
     ).select_related('conselho').order_by('-conselho__data_realizacao')
 
     total_ocorrencias = ocorrencias.count()
+    total_ocorrencias_rapidas = ocorrencias_rapidas.count()
     total_atendimentos = atendimentos.count()
 
     context = {
         'estudante': estudante,
         'ocorrencias': ocorrencias[:10],
+        'ocorrencias_rapidas': ocorrencias_rapidas[:10],
         'atendimentos': atendimentos[:10],
         'conselhos_info': conselhos_info,
         'total_ocorrencias': total_ocorrencias,
+        'total_ocorrencias_rapidas': total_ocorrencias_rapidas,
         'total_atendimentos': total_atendimentos,
     }
     return render(request, 'pedagogico/ficha_aluno.html', context)

@@ -19,10 +19,14 @@
     </div>
 
     <!-- Resumo -->
-    <div class="grid-3 mb-6">
+    <div class="grid-4 mb-6">
         <div class="stat-card">
             <div class="stat-label">Total de Ocorrências</div>
             <div class="stat-value">{{ total_ocorrencias }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Ocorrências Rápidas</div>
+            <div class="stat-value">{{ total_ocorrencias_rapidas }}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Atendimentos</div>
@@ -44,6 +48,10 @@
                    class="btn btn-primary">
                     📝 Registrar Ocorrência
                 </a>
+                <a href="{% url 'core:ocorrencia_rapida_create' %}?estudante={{ estudante.matricula_sga }}"
+                   class="btn btn-outline">
+                    ⚡ Ocorrência Rápida
+                </a>
                 <a href="{% url 'atendimentos:atendimento_create' %}" class="btn btn-outline">
                     👥 Registrar Atendimento
                 </a>
@@ -62,6 +70,7 @@
     <div class="tabs">
         <div class="tab-header">
             <button class="tab-link active" onclick="openTab(event, 'ocorrencias')">Ocorrências</button>
+            <button class="tab-link" onclick="openTab(event, 'ocorrencias_rapidas')">Ocorrências Rápidas</button>
             <button class="tab-link" onclick="openTab(event, 'atendimentos')">Atendimentos</button>
             <button class="tab-link" onclick="openTab(event, 'conselhos')">Conselhos</button>
         </div>
@@ -115,6 +124,53 @@
                     {% else %}
                     <div class="text-center py-4 text-muted">
                         Nenhuma ocorrência registrada.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Ocorrências Rápidas -->
+        <div id="ocorrencias_rapidas" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Últimas Ocorrências Rápidas</h3>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    {% if ocorrencias_rapidas %}
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Turma</th>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ocorrencia in ocorrencias_rapidas %}
+                                <tr>
+                                    <td>{{ ocorrencia.data|date:"d/m/Y" }}</td>
+                                    <td>{{ ocorrencia.turma.nome }}</td>
+                                    <td>{{ ocorrencia.get_tipo_rapido_display }}</td>
+                                    <td>{{ ocorrencia.descricao|truncatewords:10 }}</td>
+                                    <td>
+                                        <a href="{% url 'core:ocorrencia_rapida_detail' ocorrencia.pk %}"
+                                           class="btn btn-sm btn-outline"
+                                           title="Ver detalhes da ocorrência rápida">
+                                            🔍 Ver
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        Nenhuma ocorrência rápida registrada.
                     </div>
                     {% endif %}
                 </div>
@@ -224,19 +280,38 @@
 <style>
 .tabs { margin-top: 1rem; }
 .tab-header { display: flex; border-bottom: 1px solid var(--gray-200); }
-.tab-link { 
-    padding: 0.75rem 1.5rem; 
-    background: none; 
+.tab-link {
+    padding: 0.75rem 1.5rem;
+    background: none;
     border: none;
     border-bottom: 2px solid transparent;
     cursor: pointer;
 }
-.tab-link.active { 
-    border-bottom-color: var(--ifb-verde); 
+.tab-link.active {
+    border-bottom-color: var(--ifb-verde);
     color: var(--ifb-verde);
 }
 .tab-content { display: none; padding: 1rem 0; }
 .tab-content.active { display: block; }
+
+/* Grid responsivo para 4 colunas */
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 
 <script>

@@ -1,0 +1,177 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Ocorrências Rápidas{% endblock %}
+
+{% block header_title %}Ocorrências Rápidas{% endblock %}
+
+{% block breadcrumb %}
+    {% include 'core/components/breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Filtros e Busca -->
+    <div class="card mb-6">
+        <div class="card-header flex-between">
+            <h2 class="card-title">Filtros</h2>
+            <div class="flex gap-2">
+                <a href="{% url 'core:ocorrencia_rapida_create' %}" class="btn btn-primary btn-sm">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Nova Ocorrência Rápida
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Data Início -->
+                <div class="form-group">
+                    <label class="form-label">Data Início</label>
+                    <input type="date" name="data_inicio" class="form-control" value="{{ request.GET.data_inicio }}">
+                </div>
+
+                <!-- Data Fim -->
+                <div class="form-group">
+                    <label class="form-label">Data Fim</label>
+                    <input type="date" name="data_fim" class="form-control" value="{{ request.GET.data_fim }}">
+                </div>
+
+                <!-- Tipo Rápido -->
+                <div class="form-group">
+                    <label class="form-label">Tipo</label>
+                    <select name="tipo_rapido" class="form-control">
+                        <option value="">Todos os tipos</option>
+                        {% for value, label in tipos_rapidos %}
+                        <option value="{{ value }}" {% if request.GET.tipo_rapido == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Turma -->
+                <div class="form-group">
+                    <label class="form-label">Turma</label>
+                    <select name="turma" class="form-control">
+                        <option value="">Todas as turmas</option>
+                        {% for turma in turmas %}
+                        <option value="{{ turma.id }}" {% if request.GET.turma == turma.id|stringformat:"s" %}selected{% endif %}>
+                            {{ turma.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Busca Textual -->
+                <div class="form-group md:col-span-2 lg:col-span-4">
+                    <label class="form-label">Buscar</label>
+                    <input type="search"
+                           name="q"
+                           class="form-control"
+                           placeholder="Buscar por estudante, matrícula ou descrição..."
+                           value="{{ request.GET.q }}">
+                </div>
+
+                <div class="form-group md:col-span-2 lg:col-span-4 flex gap-2 justify-end">
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                        </svg>
+                        Filtrar
+                    </button>
+                    <a href="{% url 'core:ocorrencia_rapida_list' %}" class="btn btn-outline">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="card">
+        <div class="card-header flex-between">
+            <h2 class="card-title">
+                Ocorrências Rápidas
+                <span class="text-gray-500 font-normal text-sm">
+                    ({{ ocorrencias.paginator.count }} total)
+                </span>
+            </h2>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Data/Hora</th>
+                            <th>Tipo</th>
+                            <th>Estudante(s)</th>
+                            <th>Turma</th>
+                            <th>Registrado por</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ocorrencia in ocorrencias %}
+                        <tr>
+                            <td><strong>#{{ ocorrencia.id }}</strong></td>
+                            <td>
+                                {{ ocorrencia.data|date:"d/m/Y" }}<br>
+                                <small class="text-gray-600">{{ ocorrencia.horario|time:"H:i" }}</small>
+                            </td>
+                            <td>
+                                <span class="badge badge-info">
+                                    {{ ocorrencia.get_tipo_rapido_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% for estudante in ocorrencia.estudantes.all %}
+                                    <div class="text-sm">{{ estudante.nome }}</div>
+                                    <small class="text-gray-600">{{ estudante.matricula_sga }}</small>
+                                    {% if not forloop.last %}<hr class="my-1">{% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {{ ocorrencia.turma.nome }}<br>
+                                <small class="text-gray-600">{{ ocorrencia.turma.curso.nome }}</small>
+                            </td>
+                            <td>
+                                {{ ocorrencia.responsavel_registro.nome }}<br>
+                                <small class="text-gray-600">{{ ocorrencia.criado_em|date:"d/m/Y" }}</small>
+                            </td>
+                            <td>
+                                <div class="flex gap-1">
+                                    <a href="{% url 'core:ocorrencia_rapida_detail' ocorrencia.pk %}" class="btn btn-outline btn-sm" title="Ver Detalhes">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center p-12 text-gray-500">
+                                <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="mx-auto mb-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                <div class="text-lg font-medium mb-2">
+                                    Nenhuma ocorrência rápida encontrada
+                                </div>
+                                <div>Tente ajustar os filtros ou criar uma nova ocorrência.</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Paginação -->
+        {% if ocorrencias.has_other_pages %}
+            {% include 'core/components/pagination.html' with page_obj=ocorrencias %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

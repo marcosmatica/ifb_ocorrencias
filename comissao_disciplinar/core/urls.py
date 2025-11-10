@@ -31,6 +31,11 @@ urlpatterns = [
     path('ocorrencias/<int:pk>/comissao/', views.comissao_create, name='comissao_create'),
     path('ocorrencias/<int:pk>/documento/<str:tipo>/', views.gerar_documento, name='gerar_documento'),
 
+    path('ocorrencias-rapidas/', views.ocorrencia_rapida_list, name='ocorrencia_rapida_list'),
+    path('ocorrencias-rapidas/dashboard/', views.ocorrencia_rapida_dashboard, name='ocorrencia_rapida_dashboard'),
+    path('ocorrencias-rapidas/<int:pk>/', views.ocorrencia_rapida_detail, name='ocorrencia_rapida_detail'),
+    path('ocorrencias-rapidas/<int:pk>/excluir/', views.ocorrencia_rapida_delete, name='ocorrencia_rapida_delete'),
+
     # Relatórios
     path('estudantes/<str:matricula>/relatorio/', views.relatorio_estudante, name='relatorio_estudante'),
     path('estudantes/<str:matricula>/', views.estudante_detail, name='estudante_detail'),

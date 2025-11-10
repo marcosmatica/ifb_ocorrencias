@@ -81,6 +81,19 @@ class DocumentoGeradoAdmin(admin.ModelAdmin):
     list_display = ['ocorrencia', 'tipo_documento', 'data_geracao', 'assinado']
     list_filter = ['tipo_documento', 'assinado']
 
+
+@admin.register(OcorrenciaRapida)
+class OcorrenciaRapidaAdmin(admin.ModelAdmin):
+    list_display = ['id', 'data', 'horario', 'turma', 'tipo_rapido', 'responsavel_registro']
+    list_filter = ['tipo_rapido', 'data', 'turma__curso__campus']
+    search_fields = ['estudantes__nome', 'estudantes__matricula_sga', 'descricao']
+    date_hierarchy = 'data'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'turma', 'turma__curso', 'responsavel_registro'
+        ).prefetch_related('estudantes')
+
 """
 SECRET_KEY=your-secret-key-here
 DEBUG=True

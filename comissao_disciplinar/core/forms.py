@@ -5,7 +5,7 @@ from crispy_forms.layout import Layout, Submit, Row, Column, Div
 from .models import (
     Ocorrencia, Estudante, Responsavel, NotificacaoOficial,
     Recurso, ComissaoProcessoDisciplinar, DocumentoGerado, Curso, Turma, Infracao,
-    Servidor
+    Servidor, OcorrenciaRapida
 )
 
 
@@ -109,22 +109,8 @@ class OcorrenciaForm(forms.ModelForm):
 
 
 class OcorrenciaRapidaForm(forms.ModelForm):
-    """Formulário simplificado para ocorrências simples/frequentes"""
-    TIPOS_RAPIDOS = [
-        ('ATRASO', 'Atraso'),
-        ('CELULAR', 'Uso indevido de celular'),
-        ('UNIFORME', 'Sem uniforme'),
-        ('RECUSA', 'Recusa a participar das atividades'),
-        ('AUSENCIA', 'Ausência de sala'),
-        ('SAIDA', 'Saída Antecipada')
-    ]
+    """Formulário simplificado para ocorrências simples/frequentes usando o novo model"""
 
-    tipo_rapido = forms.ChoiceField(
-        choices=TIPOS_RAPIDOS,
-        label='Tipo de Ocorrência',
-        widget=forms.RadioSelect(attrs={'class': 'tipo-rapido-radio'})
-    )
-    
     # Campo de busca para estudantes
     busca_estudante = forms.CharField(
         required=False,
@@ -137,7 +123,7 @@ class OcorrenciaRapidaForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Ocorrencia
+        model = OcorrenciaRapida
         fields = ['data', 'horario', 'turma', 'estudantes', 'tipo_rapido']
         widgets = {
             'data': forms.DateInput(attrs={
@@ -155,16 +141,26 @@ class OcorrenciaRapidaForm(forms.ModelForm):
             'estudantes': forms.CheckboxSelectMultiple(attrs={
                 'class': 'estudante-checkbox'
             }),
+            'tipo_rapido': forms.RadioSelect(attrs={'class': 'tipo-rapido-radio'})
         }
 
     def __init__(self, *args, **kwargs):
         self.servidor = kwargs.pop('servidor', None)
         super().__init__(*args, **kwargs)
-        
+
         # Ordenar estudantes
         self.fields['estudantes'].queryset = Estudante.objects.all().order_by('nome')
         self.helper = FormHelper()
         self.helper.form_method = 'post'
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.servidor:
+            instance.responsavel_registro = self.servidor
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
 
 
 class DefesaForm(forms.Form):

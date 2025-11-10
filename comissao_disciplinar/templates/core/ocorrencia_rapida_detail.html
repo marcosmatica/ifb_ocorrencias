@@ -1,0 +1,235 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Ocorrência Rápida #{{ ocorrencia.id }}{% endblock %}
+
+{% block header_title %}Ocorrência Rápida #{{ ocorrencia.id }}{% endblock %}
+
+{% block breadcrumb %}
+    {% include 'core/components/breadcrumb.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header com Tipo e Ações -->
+    <div class="flex-between mb-6">
+        <div class="flex items-center gap-4">
+            <h1 class="text-3xl font-bold">
+                Ocorrência Rápida #{{ ocorrencia.id }}
+            </h1>
+            <span class="badge badge-info text-lg">
+                {{ ocorrencia.get_tipo_rapido_display }}
+            </span>
+        </div>
+
+        <div class="flex gap-2">
+            <button class="btn btn-outline btn-sm" onclick="window.print()">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+                Imprimir
+            </button>
+        </div>
+    </div>
+
+    <!-- Grid Principal -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Coluna Principal (2/3) -->
+        <div class="lg:col-span-2">
+            <!-- Informações Básicas -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h2 class="card-title">Informações da Ocorrência Rápida</h2>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="font-semibold text-gray-700 text-sm">Data</label>
+                            <p class="mt-1">{{ ocorrencia.data|date:"d/m/Y" }}</p>
+                        </div>
+                        <div>
+                            <label class="font-semibold text-gray-700 text-sm">Horário</label>
+                            <p class="mt-1">{{ ocorrencia.horario|time:"H:i" }}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="font-semibold text-gray-700 text-sm">Curso</label>
+                            <p class="mt-1">{{ ocorrencia.turma.curso.nome }}</p>
+                        </div>
+                        <div>
+                            <label class="font-semibold text-gray-700 text-sm">Turma</label>
+                            <p class="mt-1">{{ ocorrencia.turma.nome }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="font-semibold text-gray-700 text-sm">Tipo de Ocorrência</label>
+                        <div class="mt-2 p-3 bg-blue-50 rounded-md border-l-4 border-blue-500">
+                            <div class="font-semibold">{{ ocorrencia.get_tipo_rapido_display }}</div>
+                            <div class="mt-1 text-sm text-gray-600">
+                                {% if ocorrencia.tipo_rapido == 'ATRASO' %}
+                                    Estudante chegou atrasado à aula
+                                {% elif ocorrencia.tipo_rapido == 'CELULAR' %}
+                                    Uso de celular durante a aula sem autorização
+                                {% elif ocorrencia.tipo_rapido == 'UNIFORME' %}
+                                    Estudante sem uniforme escolar
+                                {% elif ocorrencia.tipo_rapido == 'RECUSA' %}
+                                    Recusa em participar das atividades propostas
+                                {% elif ocorrencia.tipo_rapido == 'AUSENCIA' %}
+                                    Saída da sala sem autorização
+                                {% elif ocorrencia.tipo_rapido == 'SAIDA' %}
+                                    Saída antecipada mediante autorização
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="font-semibold text-gray-700 text-sm">Estudantes Envolvidos</label>
+                        <div class="mt-2 flex flex-col gap-2">
+                            {% for estudante in ocorrencia.estudantes.all %}
+                            <div class="p-3 bg-gray-50 rounded-md flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
+                                    {{ estudante.nome|slice:":1" }}
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold">{{ estudante.nome }}</div>
+                                    <div class="text-gray-600 text-sm">
+                                        Matrícula: {{ estudante.matricula_sga }} | {{ estudante.email }}
+                                    </div>
+                                </div>
+                                <a href="{% url 'core:relatorio_estudante' estudante.matricula_sga %}" class="btn btn-outline btn-sm">
+                                    Ver Histórico
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {% if ocorrencia.descricao %}
+                    <div class="mb-4">
+                        <label class="font-semibold text-gray-700 text-sm">Descrição Automática</label>
+                        <div class="mt-2 p-3 bg-gray-50 rounded-md">{{ ocorrencia.descricao }}</div>
+                    </div>
+                    {% endif %}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="font-semibold text-gray-700 text-sm">Registrado por</label>
+                            <p class="mt-1">{{ ocorrencia.responsavel_registro.nome }}</p>
+                        </div>
+                        <div>
+                            <label class="font-semibold text-gray-700 text-sm">Data de Registro</label>
+                            <p class="mt-1">{{ ocorrencia.criado_em|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar (1/3) -->
+        <div>
+            <!-- Ações Rápidas -->
+            {% if pode_editar %}
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h2 class="card-title">Ações</h2>
+                </div>
+                <div class="card-body">
+                    <div class="flex flex-col gap-2">
+                        <a href="{% url 'core:ocorrencia_create' %}" class="btn btn-primary btn-sm">
+                            Converter em Ocorrência Completa
+                        </a>
+                        <button class="btn btn-outline btn-sm" onclick="document.getElementById('excluir-modal').classList.remove('hidden')">
+                            Excluir
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Informações da Turma -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h2 class="card-title">Informações da Turma</h2>
+                </div>
+                <div class="card-body">
+                    <div class="space-y-3">
+                        <div>
+                            <label class="font-semibold text-gray-700 text-sm">Curso</label>
+                            <p class="mt-1">{{ ocorrencia.turma.curso.nome }}</p>
+                        </div>
+                        <div>
+                            <label class="font-semibold text-gray-700 text-sm">Turma</label>
+                            <p class="mt-1">{{ ocorrencia.turma.nome }}</p>
+                        </div>
+                        <div>
+                            <label class="font-semibold text-gray-700 text-sm">Ano/Semestre</label>
+                            <p class="mt-1">{{ ocorrencia.turma.ano }}/{{ ocorrencia.turma.semestre }}</p>
+                        </div>
+                        {% if ocorrencia.turma.sala %}
+                        <div>
+                            <label class="font-semibold text-gray-700 text-sm">Sala</label>
+                            <p class="mt-1">{{ ocorrencia.turma.sala }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas Rápidas -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Estatísticas</h2>
+                </div>
+                <div class="card-body">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Total de estudantes:</span>
+                            <span class="font-semibold">{{ ocorrencia.estudantes.count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Tipo:</span>
+                            <span class="badge badge-info">{{ ocorrencia.get_tipo_rapido_display }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Registro:</span>
+                            <span class="text-sm">{{ ocorrencia.criado_em|timesince }} atrás</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Excluir -->
+<div id="excluir-modal" class="modal-overlay hidden">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="text-xl font-semibold">Excluir Ocorrência Rápida</h3>
+            <button onclick="document.getElementById('excluir-modal').classList.add('hidden')" class="border-none bg-transparent cursor-pointer text-gray-500">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Tem certeza que deseja excluir esta ocorrência rápida? Esta ação não pode ser desfeita.</p>
+        </div>
+        <div class="modal-footer">
+            <button onclick="document.getElementById('excluir-modal').classList.add('hidden')" class="btn btn-outline">
+                Cancelar
+            </button>
+            <form method="post" action="{% url 'core:ocorrencia_rapida_delete' ocorrencia.pk %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    Confirmar Exclusão
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

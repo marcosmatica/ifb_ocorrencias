@@ -1,0 +1,279 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Ocorrências Rápidas{% endblock %}
+
+{% block header_title %}Dashboard - Ocorrências Rápidas{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="stats-grid mb-5">
+    <div class="stat-card">
+        <div class="stat-label">Total de Ocorrências Rápidas</div>
+        <div class="stat-value">{{ total_ocorrencias_rapidas }}</div>
+        <div class="stat-change positive">Registros simplificados</div>
+    </div>
+
+    <div class="stat-card" style="border-left-color: #eab308;">
+        <div class="stat-label">Hoje</div>
+        <div class="stat-value">{{ hoje_count }}</div>
+        <div class="stat-change">Registradas hoje</div>
+    </div>
+
+    <div class="stat-card" style="border-left-color: #3b82f6;">
+        <div class="stat-label">Esta Semana</div>
+        <div class="stat-value">{{ semana_count }}</div>
+        <div class="stat-change">Últimos 7 dias</div>
+    </div>
+
+    <div class="stat-card" style="border-left-color: #8b5cf6;">
+        <div class="stat-label">Tipo Mais Comum</div>
+        <div class="stat-value">{{ tipo_mais_comum }}</div>
+        <div class="stat-change">{{ tipo_mais_comum_count }} registros</div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+    <!-- Tipos de Ocorrência -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Distribuição por Tipo</h2>
+            <p class="text-sm text-gray-600 mt-1">Últimos 30 dias</p>
+        </div>
+        <div class="card-body">
+            {% if tipos_data %}
+            <canvas id="tiposChart" style="max-height: 300px;"></canvas>
+            {% else %}
+            <div class="empty-state">
+                <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <p>Nenhum dado disponível</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Ocorrências por Dia -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Ocorrências por Dia</h2>
+            <p class="text-sm text-gray-600 mt-1">Últimas 2 semanas</p>
+        </div>
+        <div class="card-body">
+            {% if dados_diarios %}
+            <canvas id="diarioChart" style="max-height: 300px;"></canvas>
+            {% else %}
+            <div class="empty-state">
+                <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <p>Nenhum dado disponível</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Últimas Ocorrências Rápidas -->
+<div class="card">
+    <div class="card-header flex-between">
+        <div>
+            <h2 class="card-title">Últimas Ocorrências Rápidas</h2>
+            <p class="text-sm text-gray-600 mt-1">10 registros mais recentes</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'core:ocorrencia_rapida_list' %}" class="btn btn-outline btn-sm">
+                Ver Todas
+            </a>
+            <a href="{% url 'core:ocorrencia_rapida_create' %}" class="btn btn-primary btn-sm">
+                Nova Ocorrência Rápida
+            </a>
+        </div>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Data/Hora</th>
+                    <th>Tipo</th>
+                    <th>Estudante(s)</th>
+                    <th class="hidden md:table-cell">Turma</th>
+                    <th class="hidden lg:table-cell">Registrado por</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ocorrencia in ultimas_ocorrencias %}
+                <tr>
+                    <td class="font-semibold">#{{ ocorrencia.id }}</td>
+                    <td class="whitespace-nowrap">
+                        {{ ocorrencia.data|date:"d/m/Y" }}<br>
+                        <small class="text-gray-600">{{ ocorrencia.horario|time:"H:i" }}</small>
+                    </td>
+                    <td>
+                        <span class="badge badge-info">
+                            {{ ocorrencia.get_tipo_rapido_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% for estudante in ocorrencia.estudantes.all|slice:":2" %}
+                            <div class="text-sm">{{ estudante.nome|truncatewords:2 }}</div>
+                            <small class="text-gray-600">{{ estudante.matricula_sga }}</small>
+                            {% if not forloop.last %}<hr class="my-1">{% endif %}
+                        {% endfor %}
+                        {% if ocorrencia.estudantes.count > 2 %}
+                            <span class="text-gray-500 text-xs">+{{ ocorrencia.estudantes.count|add:"-2" }} mais</span>
+                        {% endif %}
+                    </td>
+                    <td class="hidden md:table-cell">
+                        <div class="text-sm">{{ ocorrencia.turma.nome }}</div>
+                        <div class="text-xs text-gray-600">{{ ocorrencia.turma.curso.nome|truncatewords:2 }}</div>
+                    </td>
+                    <td class="hidden lg:table-cell">
+                        <div class="text-sm">{{ ocorrencia.responsavel_registro.nome|truncatewords:2 }}</div>
+                        <div class="text-xs text-gray-600">{{ ocorrencia.criado_em|date:"d/m/Y" }}</div>
+                    </td>
+                    <td>
+                        <a href="{% url 'core:ocorrencia_rapida_detail' ocorrencia.pk %}" class="btn btn-outline btn-sm">
+                            Ver
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            <p>Nenhuma ocorrência rápida registrada</p>
+                            <a href="{% url 'core:ocorrencia_rapida_create' %}" class="btn btn-primary btn-sm mt-3">
+                                Registrar Primeira Ocorrência Rápida
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Turmas com Mais Ocorrências -->
+<div class="card mt-6">
+    <div class="card-header">
+        <h2 class="card-title">Turmas com Mais Ocorrências Rápidas</h2>
+        <p class="text-sm text-gray-600 mt-1">Top 5 do mês atual</p>
+    </div>
+    <div class="card-body">
+        {% if turmas_top %}
+        <div class="space-y-4">
+            {% for turma in turmas_top %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                <div class="flex-1">
+                    <div class="font-semibold">{{ turma.turma__nome }}</div>
+                    <div class="text-sm text-gray-600">{{ turma.turma__curso__nome }}</div>
+                </div>
+                <div class="text-right">
+                    <div class="font-bold text-lg text-primary">{{ turma.total }}</div>
+                    <div class="text-xs text-gray-500">ocorrências</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p>Nenhum dado disponível</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if tipos_data or dados_diarios %}
+<script>
+// Gráfico de Tipos
+{% if tipos_data %}
+const tiposCtx = document.getElementById('tiposChart');
+new Chart(tiposCtx, {
+    type: 'pie',
+    data: {
+        labels: [
+            {% for item in tipos_data %}
+                '{{ item.tipo_rapido }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for item in tipos_data %}
+                    {{ item.total }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(6, 182, 212, 0.8)'
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+{% endif %}
+
+// Gráfico Diário
+{% if dados_diarios %}
+const diarioCtx = document.getElementById('diarioChart');
+new Chart(diarioCtx, {
+    type: 'line',
+    data: {
+        labels: [
+            {% for item in dados_diarios %}
+                '{{ item.data|date:"d/m" }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Ocorrências por Dia',
+            data: [
+                {% for item in dados_diarios %}
+                    {{ item.total }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(0, 102, 51, 0.1)',
+            borderColor: 'rgba(0, 102, 51, 0.8)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endif %}
+{% endblock %}

@@ -37,11 +37,19 @@
                 Módulos
             </div>
 
-            <a href="{% url 'core:ocorrencia_list' %}" class="nav-item {% if 'ocorrencia' in request.path %}active{% endif %}">
+            <a href="{% url 'core:ocorrencia_list' %}" class="nav-item {% if 'ocorrencia' in request.path and 'rapida' not in request.path %}active{% endif %}">
                 <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                 </svg>
                 <span>Ocorrências</span>
+            </a>
+
+            <!-- ADICIONAR AQUI O LINK PARA OCORRÊNCIAS RÁPIDAS -->
+            <a href="{% url 'core:ocorrencia_rapida_list' %}" class="nav-item {% if 'ocorrencia-rapida' in request.path or 'rapida' in request.path %}active{% endif %}">
+                <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span>Ocorrências Rápidas</span>
             </a>
 
             <a href="{% url 'atendimentos:atendimento_list' %}" class="nav-item {% if 'atendimento' in request.path %}active{% endif %}">
@@ -51,7 +59,6 @@
                 <span>Atendimentos</span>
             </a>
 
-            <!-- ADICIONAR AQUI O LINK PARA PROJETOS -->
             <a href="{% url 'projetos:projeto_list' %}" class="nav-item {% if 'projetos' in request.path %}active{% endif %}">
                 <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
@@ -68,7 +75,6 @@
 
             <a href="{% url 'napne:dashboard' %}" class="nav-item {% if 'napne' in request.path %}active{% endif %}">
                 <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <!-- Ícone de laço de quebra-cabeça -->
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 7h2a2 2 0 012 2v1.5a1.5 1.5 0 01-3 0V7zM10 7H8a2 2 0 00-2 2v1.5a1.5 1.5 0 003 0V7zM12 12v2m0 4a2 2 0 100-4 2 2 0 000 4z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.5 9.5l-2 2M15.5 9.5l2 2M9.5 15.5l2-2M12.5 15.5l2 2"/>

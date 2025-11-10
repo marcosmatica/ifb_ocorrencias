@@ -5,10 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/ifb_ocorrencias.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ifb_ocorrencias.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/pedagogico/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/pedagogico/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/components/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/components/sidebar.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/ficha_aluno.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/ficha_aluno.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,8 +29,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="HTML File" />
         <option value="Python Script" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
