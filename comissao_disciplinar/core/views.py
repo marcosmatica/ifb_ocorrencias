@@ -536,7 +536,7 @@ def notificacao_marcar_todas_lidas(request):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True})
 
-    return redirect('notificacoes_list')
+    return redirect('core:notificacoes_list')
 
 
 @login_required
@@ -555,7 +555,7 @@ def preferencias_notificacao(request):
         preferencias.save()
 
         messages.success(request, 'Preferências de notificação atualizadas!')
-        return redirect('preferencias_notificacao')
+        return redirect('core:preferencias_notificacao')
 
     return render(request, 'core/preferencias_notificacao.html', {'preferencias': preferencias})
 
