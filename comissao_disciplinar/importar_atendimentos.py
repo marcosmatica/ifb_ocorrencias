@@ -1,264 +1,160 @@
-import pandas as pd
 import os
 import django
+import csv
 from datetime import datetime
-import sys
+from django.db import transaction
 
-# Configurar o ambiente Django
+# Configuração do Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ocorrencias_ifb.settings')
 django.setup()
 
 from atendimentos.models import Atendimento, TipoAtendimento, SituacaoAtendimento
-from core.models import Estudante, Servidor
+from core.models import Estudante, Servidor, Coordenacao
 
 
-def importar_atendimentos_da_planilha(caminho_planilha):
+def importar_saidas_antecipadas(caminho_arquivo):
     """
-    Importa atendimentos de uma planilha Excel para o sistema
+    Importa atendimentos de saída antecipada do arquivo CSV
     """
-    try:
-        # Ler a planilha
-        df = pd.read_excel(caminho_planilha)
-        print(f"Planilha carregada com {len(df)} registros")
 
-        # Mapeamento de origens para as opções do modelo
-        mapeamento_origem = {
-            'ESPONTÂNEO': 'ESPONTANEO',
-            'ESPONTANEA': 'ESPONTANEO',
-            'ESPONTÂNEA': 'ESPONTANEO',
-            'ENCAMINHAMENTO': 'ENCAMINHAMENTO',
-            'SOLICITAÇÃO DOCENTE': 'SOLICITACAO_DOCENTE',
-            'SOLICITAÇÃO DE DOCENTE': 'SOLICITACAO_DOCENTE',
-            'SOLICITAÇÃO COORDENAÇÃO': 'SOLICITACAO_COORDENACAO',
-            'SOLICITAÇÃO DE COORDENAÇÃO': 'SOLICITACAO_COORDENACAO',
-            'OUTRO': 'OUTRO',
-            'OUTROS': 'OUTRO'
-        }
+    # Obter ou criar tipo de atendimento para Saída Antecipada
+    tipo_atendimento, created = TipoAtendimento.objects.get_or_create(
+        nome='Saída Antecipada',
+        defaults={'descricao': 'Registro de saída antecipada do aluno', 'ativo': True}
+    )
 
-        # Mapeamento de coordenações/setores
-        mapeamento_coordenacao = {
-            'CDPD': 'CDPD',
-            'CDAE': 'CDAE',
-            'NAPNE': 'NAPNE',
-            'PEDAGÓGICA': 'CPED',
-            'COORDENAÇÃO PEDAGÓGICA': 'CPED',
-            'COORDENAÇÃO DE CURSO': 'CC',
-            'COORDENAÇÃO GERAL': 'CGEN',
-            'DIRETORIA DE ENSINO': 'DREP',
-            'DIRETORIA GERAL': 'DG',
-            'PSICOLOGIA': 'PSIC',
-            'ASSISTÊNCIA SOCIAL': 'ASOC'
-        }
+    # Obter ou criar situação para Concluído
+    situacao, created = SituacaoAtendimento.objects.get_or_create(
+        nome='Concluído',
+        defaults={'cor': '#28a745', 'ativo': True}
+    )
 
-        atendimentos_criados = 0
+    with open(caminho_arquivo, 'r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  # Pular cabeçalho
+
+        atendimentos_importados = 0
         erros = []
 
-        for index, row in df.iterrows():
+        for linha_num, linha in enumerate(reader, start=2):
             try:
-                print(f"Processando linha {index + 2}...")
+                # Pular linhas vazias
+                if not linha or len(linha) < 8 or not linha[2].strip():
+                    continue
 
-                # ========== BUSCAR ESTUDANTE ==========
-                nome_estudante = str(row['ALUNO']).replace('  ', ' ').strip()
-                turma_estudante = str(row['TURMA']).strip() if pd.notna(row['TURMA']) else None
+                # Extrair dados da linha
+                nome_estudante = linha[2].strip()
+                turma_estudante = linha[3].strip() if len(linha) > 3 else ''
+                data_hora_str = linha[4].strip() if len(linha) > 4 else ''
+                origem_str = linha[5].strip() if len(linha) > 5 else ''
+                servidor_str = linha[6].strip() if len(linha) > 6 else ''
+                observacoes = linha[7].strip() if len(linha) > 7 else ''
 
-                # Buscar estudante por nome e turma
+                # Processar data e hora
+                if data_hora_str:
+                    try:
+                        data_hora = datetime.strptime(data_hora_str, '%d/%m/%Y %H:%M:%S')
+                        data = data_hora.date()
+                        hora = data_hora.time()
+                    except ValueError:
+                        print(f"Erro na linha {linha_num}: Formato de data inválido - {data_hora_str}")
+                        continue
+                else:
+                    continue
+
+                # Buscar estudante
                 estudantes = Estudante.objects.filter(nome__icontains=nome_estudante)
-                if turma_estudante:
-                    estudantes = estudantes.filter(turma__nome__icontains=turma_estudante)
-
                 if not estudantes.exists():
-                    erros.append(f"Estudante não encontrado: {nome_estudante} - Turma: {turma_estudante}")
+                    print(f"Estudante não encontrado na linha {linha_num}: {nome_estudante}")
+                    erros.append(f"Linha {linha_num}: Estudante '{nome_estudante}' não encontrado")
                     continue
 
                 estudante = estudantes.first()
                 if estudantes.count() > 1:
-                    print(f"Aviso: Múltiplos estudantes encontrados para {nome_estudante}. Usando o primeiro.")
+                    print(f"⚠️  Múltiplos estudantes encontrados para '{nome_estudante}'. Usando o primeiro.")
 
-                # ========== BUSCAR SERVIDOR RESPONSÁVEL ==========
-                nome_servidor = str(row['PROFISSIONAL RESPONSÁVEL PELO ATENDIMENTO']).strip()
+                # Buscar servidor responsável
+                # Extrair nome do servidor (remover cargo entre parênteses)
+                nome_servidor = servidor_str.split('(')[0].strip() if '(' in servidor_str else servidor_str
                 servidores = Servidor.objects.filter(nome__icontains=nome_servidor)
 
                 if not servidores.exists():
-                    # Tentar criar um servidor temporário se não existir
-                    servidor, created = Servidor.objects.get_or_create(
-                        nome=nome_servidor,
-                        defaults={
-                            'email': f"{nome_servidor.lower().replace(' ', '.')}@ifb.edu.br",
-                            'coordenacao': 'CDAE',
-                            'ativo': True
-                        }
-                    )
-                    if created:
-                        print(f"Servidor criado: {servidor.nome}")
-                else:
-                    servidor = servidores.first()
-
-                # ========== TIPO DE ATENDIMENTO ==========
-                nome_tipo = str(row['TIPO DE ATENDIMENTO']).strip()
-                tipo_atendimento, created = TipoAtendimento.objects.get_or_create(
-                    nome=nome_tipo,
-                    defaults={'descricao': f'Tipo de atendimento: {nome_tipo}', 'ativo': True}
-                )
-
-                # ========== SITUAÇÃO DO ATENDIMENTO ==========
-                nome_situacao = str(row['SITUAÇÃO DO ATENDIMENTO']).strip()
-                situacao_atendimento, created = SituacaoAtendimento.objects.get_or_create(
-                    nome=nome_situacao,
-                    defaults={'ativo': True}
-                )
-
-                # ========== ORIGEM ==========
-                origem_str = str(row['ORIGEM DO ATENDIMENTO']).strip().upper()
-                origem = mapeamento_origem.get(origem_str, 'OUTRO')
-
-                # ========== COORDENAÇÃO/SETOR ==========
-                setor_str = str(row['SETOR']).strip().upper() if pd.notna(row['SETOR']) else 'OUTRO'
-                coordenacao = mapeamento_coordenacao.get(setor_str, 'OUTRO')
-
-                # ========== DATAS ==========
-                # Data do atendimento
-                data_atendimento = row['DATA DO ATENDIMENTO']
-                print(data_atendimento)
-                if pd.isna(data_atendimento):
-                    erros.append(f"Data do atendimento vazia para {nome_estudante}")
+                    print(f"Servidor não encontrado na linha {linha_num}: {nome_servidor}")
+                    erros.append(f"Linha {linha_num}: Servidor '{nome_servidor}' não encontrado")
                     continue
 
-                # Converter para datetime se for string
-                if isinstance(data_atendimento, str):
-                    try:
-                        data_atendimento = datetime.strptime(data_atendimento, '%d/%m/%Y %h:%m:%s').date()
-                    except:
-                        data_atendimento = datetime.strptime(data_atendimento, '%Y-%m-%d %h:%m:%s').date()
-                else:
-                    # Se for objeto datetime do pandas
-                    data_atendimento = data_atendimento.date()
+                servidor_responsavel = servidores.first()
+                if servidores.count() > 1:
+                    print(f"⚠️  Múltiplos servidores encontrados para '{nome_servidor}'. Usando o primeiro.")
 
-                # Data e hora (finalização/encaminhamento)
-                #data_hora_str = row['DATA E HORA']
-                hora_atendimento = None
+                # Mapear origem
+                origem_map = {
+                    'Presencial (responsável)': 'PRESENCIAL',
+                    'Presencial (próprio aluno)': 'PRESENCIAL',
+                    'Presencial (aluno maior de idade)': 'PRESENCIAL',
+                    'Contato telefônico': 'CONTATO_TELEFONICO',
+                    'Whatsapp': 'CONTATO_WHATSAPP',
+                    'Encaminhamento': 'ENCAMINHAMENTO'
+                }
 
-                #if pd.notna(data_hora_str):
-                #    if isinstance(data_hora_str, str):
-                #        try:
-                            # Tentar extrair hora de string datetime
-                #            dt = datetime.strptime(data_hora_str, '%d/%m/%Y %H:%M')
-                #            hora_atendimento = dt.time()
-                #        except:
-                #            try:
-                                # Tentar apenas hora
-                #                hora_atendimento = datetime.strptime(data_hora_str, '%H:%M').time()
-                #            except:
-                #                hora_atendimento = None
-                #    else:
-                        # Se for objeto datetime
-                #        hora_atendimento = data_hora_str.time()
+                origem = origem_map.get(origem_str, 'OUTRO')
 
-                # Se não conseguiu extrair hora, usar hora padrão
-                if not hora_atendimento:
-                    hora_atendimento = datetime.strptime('08:00', '%H:%M').time()
+                # Determinar coordenação (CDAE)
+                coordenacao = 'CDAE'
 
-                # ========== INFORMAÇÕES ==========
-                informacoes = str(
-                    row['INFORMAÇÕES PARA FICHA DO ALUNO OU ENCAMINHAMENTO A OUTROS SETORES']) if pd.notna(row[
-                                                                                                                'INFORMAÇÕES PARA FICHA DO ALUNO OU ENCAMINHAMENTO A OUTROS SETORES']) else f"Atendimento de {nome_tipo} realizado em {data_atendimento.strftime('%d/%m/%Y')}"
+                # Criar informações do atendimento
+                informacoes = f"""Saída antecipada do estudante {nome_estudante}
+Turma: {turma_estudante}
+Origem: {origem_str}
+Observações: {observacoes}
+Importado automaticamente do sistema anterior"""
 
-                # ========== PUBLICAR NA FICHA ==========
-                publicar_ficha_str = str(row['Ficha do estudante?']).strip().upper() if pd.notna(
-                    row['Ficha do estudante?']) else 'NÃO'
-                publicar_ficha = publicar_ficha_str in ['SIM', 'S', 'YES', 'Y', '1', 'VERDADEIRO', 'TRUE', 'verdadeiro']
+                # Criar atendimento
+                with transaction.atomic():
+                    atendimento = Atendimento(
+                        coordenacao=coordenacao,
+                        data=data,
+                        hora=hora,
+                        tipo_atendimento=tipo_atendimento,
+                        situacao=situacao,
+                        origem=origem,
+                        informacoes=informacoes,
+                        observacoes=observacoes,
+                        servidor_responsavel=servidor_responsavel,
+                        publicar_ficha_aluno=True
+                    )
+                    atendimento.save()
 
-                # ========== CRIAR ATENDIMENTO ==========
-                atendimento = Atendimento(
-                    coordenacao=coordenacao,
-                    servidor_responsavel=servidor,
-                    data=data_atendimento,
-                    hora=hora_atendimento,
-                    tipo_atendimento=tipo_atendimento,
-                    situacao=situacao_atendimento,
-                    origem=origem,
-                    informacoes=informacoes,
-                    publicar_ficha_aluno=publicar_ficha,
-                )
+                    # Adicionar estudante ao atendimento
+                    atendimento.estudantes.add(estudante)
 
-                atendimento.save()
-
-                # Adicionar estudante ao atendimento
-                atendimento.estudantes.add(estudante)
-
-                # Adicionar servidor responsável como participante também
-                atendimento.servidores_participantes.add(servidor)
-
-                atendimentos_criados += 1
-                print(f"✅ Atendimento {atendimentos_criados} criado: {estudante.nome} - {data_atendimento}")
+                    atendimentos_importados += 1
+                    print(f"✅ Atendimento importado: {nome_estudante} - {data}")
 
             except Exception as e:
-                erro_msg = f"Erro na linha {index + 2}: {str(e)}"
+                erro_msg = f"Erro na linha {linha_num}: {str(e)}"
+                print(erro_msg)
                 erros.append(erro_msg)
-                print(f"❌ {erro_msg}")
                 continue
 
-        # Relatório final
-        print("\n" + "=" * 50)
-        print("RELATÓRIO DE IMPORTAÇÃO")
-        print("=" * 50)
-        print(f"✅ Atendimentos criados com sucesso: {atendimentos_criados}")
-        print(f"❌ Erros encontrados: {len(erros)}")
+    # Relatório final
+    print(f"\n{'=' * 50}")
+    print("RELATÓRIO DE IMPORTAÇÃO")
+    print(f"{'=' * 50}")
+    print(f"✅ Atendimentos importados com sucesso: {atendimentos_importados}")
+    print(f"❌ Erros encontrados: {len(erros)}")
 
-        if erros:
-            print("\nDetalhes dos erros:")
-            for erro in erros:
-                print(f"  - {erro}")
-
-        return atendimentos_criados, erros
-
-    except Exception as e:
-        print(f"Erro ao processar planilha: {str(e)}")
-        return 0, [str(e)]
+    if erros:
+        print(f"\nErros detalhados:")
+        for erro in erros:
+            print(f"  - {erro}")
 
 
-def verificar_pre_importacao(caminho_planilha):
-    """
-    Verifica a planilha antes da importação
-    """
-    print("🔍 Verificando planilha...")
+if __name__ == '__main__':
+    caminho_csv = r'C:\Users\marco\OneDrive\Área de Trabalho\importar_atendimentos.csv'  # Ajuste o caminho se necessário
 
-    df = pd.read_excel(caminho_planilha)
-
-    print(f"Total de registros: {len(df)}")
-    print(f"Colunas encontradas: {list(df.columns)}")
-
-    # Verificar valores únicos em colunas importantes
-    print("\nValores únicos em colunas importantes:")
-    print(f"Tipo de Atendimento: {df['TIPO DE ATENDIMENTO'].unique()}")
-    print(f"Situação: {df['SITUAÇÃO DO ATENDIMENTO'].unique()}")
-    print(f"Origem: {df['ORIGEM DO ATENDIMENTO'].unique()}")
-    print(f"Setor: {df['SETOR'].unique()}")
-
-    # Verificar dados faltantes
-    print("\nDados faltantes:")
-    for coluna in df.columns:
-        faltantes = df[coluna].isna().sum()
-        if faltantes > 0:
-            print(f"  {coluna}: {faltantes} valores faltantes")
-
-
-# USO DO SCRIPT
-if __name__ == "__main__":
-    # Caminho para a planilha - AJUSTE ESTE CAMINHO
-    caminho_planilha = r"C:\Users\marco\OneDrive\Área de Trabalho\importar_atendimentos.xlsx"
-
-    # Verificar antes de importar
-    verificar_pre_importacao(caminho_planilha)
-
-    # Confirmar importação
-    resposta = input("\nDeseja prosseguir com a importação? (s/n): ")
-    if resposta.lower() in ['s', 'sim', 'y', 'yes']:
-        print("\n🚀 Iniciando importação...")
-        sucesso, erros = importar_atendimentos_da_planilha(caminho_planilha)
-
-        if sucesso > 0:
-            print(f"\n🎉 Importação concluída! {sucesso} atendimentos importados.")
-        else:
-            print("\n❌ Nenhum atendimento foi importado devido a erros.")
+    if not os.path.exists(caminho_csv):
+        print(f"❌ Arquivo não encontrado: {caminho_csv}")
     else:
-        print("Importação cancelada.")
+        print("Iniciando importação de saídas antecipadas...")
+        importar_saidas_antecipadas(caminho_csv)
