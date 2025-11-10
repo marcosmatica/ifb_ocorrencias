@@ -18,6 +18,7 @@ class Projeto(models.Model):
     TIPO_CHOICES = [
         ('PESQUISA', 'Pesquisa'),
         ('EXTENSAO', 'Extensão'),
+        ('GRI', 'Gestão e Representação Institucional')
     ]
 
     # Identificação

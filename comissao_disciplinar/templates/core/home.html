@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}Sistema de Ocorrências - IFB Recanto das Emas{% endblock %}
+{% block title %}Sistema DREP/CGEN - IFB Recanto das Emas{% endblock %}
 
 {% block content %}
 <div class="home-hero">
@@ -15,7 +15,7 @@
 
         <!-- Header -->
         <div class="home-header">
-            <h1 class="home-title">Sistema de Ocorrências</h1>
+            <h1 class="home-title">Sistema Unificado de Coordenações DREP</h1>
             <p class="home-subtitle">
                 Instituto Federal de Brasília - Campus Recanto das Emas
             </p>
@@ -50,9 +50,22 @@
                 </p>
             </a>
 
+            <!-- Projetos -->
+            <a href="{% url 'projetos:projeto_list' %}" class="home-card">
+                <div class="home-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);">
+                    <svg width="48" height="48" fill="currentColor" viewBox="0 0 20 20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    </svg>
+                </div>
+                <h3 class="home-card-title">Projetos</h3>
+                <p class="home-card-description">
+                    Gerencie projetos de pesquisa e extensão, acompanhe relatórios e participe de atividades acadêmicas.
+                </p>
+            </a>
+
             <!-- Pedagógico -->
             <a href="{% url 'pedagogico:conselho_list' %}" class="home-card">
-                <div class="home-card-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);">
+                <div class="home-card-icon" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
                     <svg width="48" height="48" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
                     </svg>
@@ -63,21 +76,20 @@
                 </p>
             </a>
 
-            <!-- Comissão (apenas para membros) -->
-            {% if is_membro_comissao %}
-            <a href="{% url 'core:comissao_dashboard' %}" class="home-card home-card-comissao">
-                <div class="home-card-icon">
+            <!-- NAPNE -->
+            <a href="{% url 'napne:dashboard' %}" class="home-card">
+                <div class="home-card-icon" style="background: linear-gradient(135deg, #d946ef 0%, #e879f9 100%);">
                     <svg width="48" height="48" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
-                        <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 7h2a2 2 0 012 2v1.5a1.5 1.5 0 01-3 0V7zM10 7H8a2 2 0 00-2 2v1.5a1.5 1.5 0 003 0V7zM12 12v2m0 4a2 2 0 100-4 2 2 0 000 4z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.5 9.5l-2 2M15.5 9.5l2 2M9.5 15.5l2-2M12.5 15.5l2 2"/>
                     </svg>
                 </div>
-                <h3 class="home-card-title">Comissão Disciplinar</h3>
+                <h3 class="home-card-title">NAPNE</h3>
                 <p class="home-card-description">
-                    Dashboard exclusivo para membros da comissão disciplinar com processos e julgamentos.
+                    Núcleo de Apoio às Pessoas com Necessidades Específicas - Inclusão e acessibilidade educacional.
                 </p>
             </a>
-            {% endif %}
         </div>
 
         <!-- Acesso Rápido (Servidores) -->
@@ -103,11 +115,11 @@
                     </svg>
                     Novo Atendimento
                 </a>
-                <a href="{% url 'core:dashboard' %}" class="btn btn-outline">
+                <a href="{% url 'projetos:dashboard' %}" class="btn btn-outline">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
                     </svg>
-                    Dashboard
+                    Dashboard Projetos
                 </a>
             </div>
         </div>

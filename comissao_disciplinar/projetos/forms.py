@@ -2,6 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import inlineformset_factory, modelformset_factory
 from crispy_forms.helper import FormHelper
+from django.db import models
 from crispy_forms.layout import Layout, Submit, Row, Column, Div
 from .models import Projeto, ParticipacaoServidor, ParticipacaoEstudante
 from core.models import Servidor, Estudante
