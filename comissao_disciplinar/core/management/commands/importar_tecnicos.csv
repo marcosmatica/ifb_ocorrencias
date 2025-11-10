@@ -1,0 +1,22 @@
+usuario,Nome,email,senha,funcao,coordenacao,comissao_disciplinar,registrar_atendimento,ficha_aluno
+1760356,Ana Paula Santiago Seixas Andrade,1760356@etfbsb.edu.br,1760356,Técnico Educacional,Coordenação Pedagógica,FALSE,TRUE,TRUE
+3406745,Andrea Argolo Vieira,3406745@etfbsb.edu.br,3406745,Técnico Educacional,Coordenação de Registro Acadêmico,FALSE,TRUE,TRUE
+3285099,Antonio Carlos Lima da Silva,3285099@etfbsb.edu.br,3285099,Técnico Educacional,"Direção de Ensino, Pesquisa e Extensão",FALSE,TRUE,TRUE
+1862677,Carine da Costa Alencar,1862677@etfbsb.edu.br,1862677,Técnico Educacional,Coordenação Geral,TRUE,TRUE,TRUE
+1896808,Caroline Anderson Correa Gomes,1896808@etfbsb.edu.br,1896808,Técnico Educacional,Coordenação de Assistência Estudantil,FALSE,TRUE,TRUE
+1291590,Claudio Ferreira de Sousa,1291590@etfbsb.edu.br,1291590,Técnico Educacional,"Direção de Ensino, Pesquisa e Extensão",FALSE,TRUE,TRUE
+3353212,Douglas Silva dos Santos,3353212@etfbsb.edu.br,3353212,Técnico Educacional,Coordenação de Registro Acadêmico,FALSE,TRUE,TRUE
+2067308,Elizabeth Leandro Silva da Costa,2067308@etfbsb.edu.br,2067308,Técnico Educacional,Coordenação de Biblioteca,FALSE,TRUE,TRUE
+2067363,Felipe Serra,2067363@etfbsb.edu.br,2067363,Técnico Educacional,Coordenação Pedagógica,TRUE,TRUE,TRUE
+1855410,Flavia Silva Neves,1855410@etfbsb.edu.br,1855410,Técnico Educacional,Coordenação de Assistência Estudantil,FALSE,TRUE,TRUE
+2068570,Francisco Rosemberg Leite da Costa,2068570@etfbsb.edu.br,2068570,Técnico Educacional,Coordenação de Assistência Estudantil,FALSE,TRUE,TRUE
+2055500,Gisele Gomes Campos,2055500@etfbsb.edu.br,2055500,Técnico Educacional,Coordenação de Biblioteca,FALSE,TRUE,TRUE
+2343576,Givanildo Pereira da Silva,2343576@etfbsb.edu.br,2343576,Técnico Educacional,Coordenação de Registro Acadêmico,FALSE,TRUE,TRUE
+1050693,Hellen Hernandes dos Santos,1050693@etfbsb.edu.br,1050693,Técnico Educacional,Coordenação de Assistência Estudantil,TRUE,TRUE,TRUE
+3353418,Jaconaazar Souza Silva,3353418@etfbsb.edu.br,3353418,Técnico Educacional,"Direção de Ensino, Pesquisa e Extensão",FALSE,TRUE,TRUE
+2262106,Luciana Castelo Branco Teles,2262106@etfbsb.edu.br,2262106,Técnico Educacional,Direção Geral,FALSE,TRUE,TRUE
+3001658,Ludimila Duque de Castro,3001658@etfbsb.edu.br,3001658,Técnico Educacional,NAPNE,FALSE,TRUE,TRUE
+1508793,Maristela Lopes Rodrigues de Lacerda,1508793@etfbsb.edu.br,1508793,Técnico Educacional,Coordenação Pedagógica,FALSE,TRUE,TRUE
+1801763,Melina Ribeiro Salgado,1801763@etfbsb.edu.br,1801763,Técnico Educacional,Coordenação Geral,TRUE,TRUE,TRUE
+1806559,Wakila Nieble Rodrigues de Mesquita,1806559@etfbsb.edu.br,1806559,Técnico Educacional,Coordenação Geral,FALSE,TRUE,TRUE
+1948190,Wyara Viana Silva,1948190@etfbsb.edu.br,1948190,Técnico Educacional,Coordenação de Registro Acadêmico,FALSE,TRUE,TRUE

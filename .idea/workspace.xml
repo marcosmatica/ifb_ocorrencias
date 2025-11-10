@@ -5,19 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/ifb_ocorrencias.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ifb_ocorrencias.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/pedagogico/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/pedagogico/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/pedagogico/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/pedagogico/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/pedagogico/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/pedagogico/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/pedagogico/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/pedagogico/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/conselho_estudante_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/conselho_estudante_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/conselho_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/conselho_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/conselho_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/conselho_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/disciplina_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/disciplina_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/disciplina_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/disciplina_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/disciplina_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/disciplina_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/ficha_aluno.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/ficha_aluno.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,34 +40,38 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Django Server.ifb_ocorrencias.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.importar_atendimentos.executor": "Run",
-    "Python.importar_disciplinas.executor": "Run",
-    "Python.importar_projetos.executor": "Run",
-    "Python.inserir_dados.executor": "Run",
-    "Python.models.executor": "Run",
-    "Python.settings.executor": "Run",
-    "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "django.template.preview.state": "SHOW_EDITOR",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/marco/OneDrive/Documentos/GitHub/ifb_ocorrencias/comissao_disciplinar/staticfiles/css",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Django Server.ifb_ocorrencias.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.importar_atendimentos.executor&quot;: &quot;Run&quot;,
+    &quot;Python.importar_disciplinas.executor&quot;: &quot;Run&quot;,
+    &quot;Python.importar_projetos.executor&quot;: &quot;Run&quot;,
+    &quot;Python.inserir_dados.executor&quot;: &quot;Run&quot;,
+    &quot;Python.models.executor&quot;: &quot;Run&quot;,
+    &quot;Python.settings.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultAutoModeForALLUsers.v1&quot;: &quot;true&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;django.template.preview.state&quot;: &quot;SHOW_EDITOR&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/3353645/Documents/GitHub/ifb_ocorrencias&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\marco\OneDrive\Documentos\GitHub\ifb_ocorrencias\comissao_disciplinar\staticfiles\css" />
@@ -111,8 +106,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-PY-252.27397.106" />
-        <option value="bundled-python-sdk-4e2b1448bda8-9a97661f3031-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.27397.106" />
+        <option value="bundled-python-sdk-164cda30dcd9-0af03a5fa574-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.26830.99" />
       </set>
     </attachedChunks>
   </component>
