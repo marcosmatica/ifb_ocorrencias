@@ -44,7 +44,7 @@
                    class="btn btn-primary">
                     📝 Registrar Ocorrência
                 </a>
-                <a href="#" class="btn btn-outline">
+                <a href="{% url 'atendimentos:atendimento_create' %}" class="btn btn-outline">
                     👥 Registrar Atendimento
                 </a>
                 <a href="{% url 'core:relatorio_estudante' estudante.matricula_sga %}"
@@ -82,6 +82,7 @@
                                     <th>Descrição</th>
                                     <th>Infração</th>
                                     <th>Status</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -98,6 +99,13 @@
                                         <span class="badge badge-{{ ocorrencia.status|lower }}">
                                             {{ ocorrencia.get_status_display }}
                                         </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'core:ocorrencia_detail' ocorrencia.pk %}"
+                                           class="btn btn-sm btn-outline"
+                                           title="Ver detalhes da ocorrência">
+                                            🔍 Ver
+                                        </a>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -129,6 +137,7 @@
                                     <th>Coordenação</th>
                                     <th>Tipo</th>
                                     <th>Informações</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -138,6 +147,13 @@
                                     <td>{{ atendimento.get_coordenacao_display }}</td>
                                     <td>{{ atendimento.tipo_atendimento.nome }}</td>
                                     <td>{{ atendimento.informacoes|truncatewords:15 }}</td>
+                                    <td>
+                                        <a href="{% url 'atendimentos:atendimento_detail' atendimento.pk %}"
+                                           class="btn btn-sm btn-outline"
+                                           title="Ver detalhes do atendimento">
+                                            🔍 Ver
+                                        </a>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -168,6 +184,7 @@
                                     <th>Turma</th>
                                     <th>Observações</th>
                                     <th>Encaminhamentos</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -180,6 +197,13 @@
                                         {% if info.encaminhamento_cdpd %}CDPD {% endif %}
                                         {% if info.encaminhamento_cdae %}CDAE {% endif %}
                                         {% if info.encaminhamento_napne %}NAPNE {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'pedagogico:conselho_detail' info.conselho.pk %}"
+                                           class="btn btn-sm btn-outline"
+                                           title="Ver detalhes do conselho">
+                                            🔍 Ver
+                                        </a>
                                     </td>
                                 </tr>
                                 {% endfor %}

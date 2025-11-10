@@ -1,0 +1,231 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Painel do Conselho - {{ conselho.turma.nome }} {{ conselho.periodo }}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb">
+    <a class="breadcrumb-item" href="{% url 'pedagogico:conselho_list' %}">Conselhos</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-item active">{{ conselho.turma.nome }} - {{ conselho.periodo }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title">Conselho de Classe</h1>
+        <p class="page-subtitle">{{ conselho.turma.nome }} - {{ conselho.periodo }}</p>
+    </div>
+    <div class="flex gap-3">
+        {% if eh_coordenacao %}
+        <a href="{% url 'pedagogico:conselho_detail' conselho.pk %}" class="btn btn-outline">Visão Detalhada</a>
+        {% if conselho.aberto %}
+            <a href="{% url 'pedagogico:conselho_fechar' conselho.pk %}" class="btn btn-danger"
+               onclick="return confirm('Tem certeza que deseja fechar o conselho?')">Fechar Conselho</a>
+        {% else %}
+            <a href="{% url 'pedagogico:conselho_reabrir' conselho.pk %}" class="btn btn-success">Reabrir Conselho</a>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Status do Conselho -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-primary">{{ conselho.data_realizacao|date:"d/m/Y" }}</div>
+                <div class="text-sm text-muted">Data de Realização</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold {% if conselho.aberto %}text-success{% else %}text-danger{% endif %}">
+                    {{ conselho.aberto|yesno:"Aberto,Fechado" }}
+                </div>
+                <div class="text-sm text-muted">Status</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-primary">{{ total_disciplinas }}</div>
+                <div class="text-sm text-muted">Disciplinas</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-primary">{{ total_estudantes }}</div>
+                <div class="text-sm text-muted">Estudantes</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Disciplinas da Turma -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="card-title">Disciplinas da Turma</h2>
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Disciplina</th>
+                        <th>Docente</th>
+                        <th>Perfil da Turma</th>
+                        <th>Observações Estudantes</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dt in disciplinas_turma %}
+                    <tr>
+                        <td>
+                            <strong>{{ dt.disciplina.nome }}</strong>
+                            <div class="text-sm text-muted">{{ dt.disciplina.codigo }}</div>
+                        </td>
+                        <td>
+                            {% if dt.docente %}
+                                {{ dt.docente.nome }}
+                            {% elif conselho.aberto %}
+                                <a href="{% url 'pedagogico:conselho_docente_assumir' conselho.pk dt.pk %}"
+                                   class="btn btn-sm btn-outline"
+                                   onclick="return confirm('Assumir esta disciplina?')">
+                                    Assumir Disciplina
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Sem docente</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% with obs=dt.observacaodocenteturma_set.first %}
+                                {% if obs %}
+                                    <span class="badge badge-success">✅ Preenchido</span>
+                                {% else %}
+                                    <span class="badge badge-warning">❌ Pendente</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            {% with total=dt.observacaodocenteestudante_set.count %}
+                                <span class="{% if total == total_estudantes %}text-success{% else %}text-warning{% endif %}">
+                                    {{ total }}/{{ total_estudantes }}
+                                </span>
+                            {% endwith %}
+                        </td>
+                        <td>
+                            {% if dt.docente == request.user.servidor or eh_coordenacao %}
+                                <div class="flex gap-2">
+                                    <a href="{% url 'pedagogico:conselho_docente_preencher_turma' conselho.pk dt.pk %}"
+                                       class="btn btn-sm btn-outline">Perfil da Turma</a>
+                                    <a href="{% url 'pedagogico:conselho_docente_preencher_estudantes' conselho.pk dt.pk %}"
+                                       class="btn btn-sm btn-primary">Observar Estudantes</a>
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Estudantes NAPNE -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Estudantes NAPNE</h2>
+            <span class="selection-counter">{{ estudantes_napne|length }} estudantes</span>
+        </div>
+        <div class="card-body">
+            <div class="students-selection">
+                {% for estudante in estudantes_napne %}
+                <div class="student-item napne-highlight">
+                    <div class="student-info">
+                        <div class="student-name">{{ estudante.nome }}</div>
+                        <div class="student-details">
+                            <span class="student-badge">
+                                🎯 {{ estudante.ficha_napne.necessidade_especifica }}
+                            </span>
+                            {% with obs_count=estudante.informacaoestudanteconselho.observacoes_docentes.count %}
+                                <span class="{% if obs_count == total_disciplinas %}text-success{% else %}text-warning{% endif %}">
+                                    {{ obs_count }}/{{ total_disciplinas }} observações
+                                </span>
+                            {% endwith %}
+                        </div>
+                    </div>
+                    {% if eh_coordenacao %}
+                    <div>
+                        <a href="{% url 'pedagogico:conselho_estudante_edit' conselho.pk estudante.id %}"
+                           class="btn btn-sm btn-outline">Editar</a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <p>Nenhum estudante NAPNE nesta turma</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Estudantes Regulares -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Estudantes Regulares</h2>
+            <span class="selection-counter">{{ estudantes_regulares|length }} estudantes</span>
+        </div>
+        <div class="card-body">
+            <div class="students-selection">
+                {% for estudante in estudantes_regulares %}
+                <div class="student-item">
+                    <div class="student-info">
+                        <div class="student-name">{{ estudante.nome }}</div>
+                        <div class="student-details">
+                            {% with obs_count=estudante.informacaoestudanteconselho.observacoes_docentes.count %}
+                                <span class="{% if obs_count == total_disciplinas %}text-success{% else %}text-warning{% endif %}">
+                                    {{ obs_count }}/{{ total_disciplinas }} observações
+                                </span>
+                            {% endwith %}
+                        </div>
+                    </div>
+                    {% if eh_coordenacao %}
+                    <div>
+                        <a href="{% url 'pedagogico:conselho_estudante_edit' conselho.pk estudante.id %}"
+                           class="btn btn-sm btn-outline">Editar</a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <p>Nenhum estudante regular nesta turma</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estatísticas -->
+<div class="card mt-6">
+    <div class="card-header">
+        <h2 class="card-title">Estatísticas de Preenchimento</h2>
+    </div>
+    <div class="card-body">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-primary">{{ obs_turma_preenchidas }}/{{ total_disciplinas }}</div>
+                <div class="text-muted">Perfis de Turma Preenchidos</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-primary">{{ obs_napne_preenchidas }}/{{ total_obs_napne_esperadas }}</div>
+                <div class="text-muted">Observações NAPNE</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-primary">
+                    {% widthratio obs_napne_preenchidas total_obs_napne_esperadas 100 %}%
+                </div>
+                <div class="text-muted">Completude Geral</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

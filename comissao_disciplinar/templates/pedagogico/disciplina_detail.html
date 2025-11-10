@@ -1,107 +1,213 @@
 {% extends 'core/base.html' %}
 {% load static %}
 
-{% block title %}{{ disciplina.nome }}{% endblock %}
+{% block title %}Detalhes do Conselho - {{ conselho.turma.nome }} {{ conselho.periodo }}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb">
+    <a class="breadcrumb-item" href="{% url 'pedagogico:conselho_list' %}">Conselhos</a>
+    <a class="breadcrumb-item" href="{% url 'pedagogico:conselho_painel' conselho.pk %}">{{ conselho.turma.nome }}</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-item active">Detalhes</span>
+</nav>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">{{ disciplina.nome }}</h1>
-            <p class="page-subtitle">{{ disciplina.codigo }} - {{ disciplina.curso.nome }}</p>
-        </div>
-        <div class="flex gap-2">
-            <a href="{% url 'pedagogico:disciplina_list' %}" class="btn btn-outline">Voltar</a>
-            <a href="#" class="btn btn-primary">Editar</a>
-        </div>
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title">Detalhes do Conselho</h1>
+        <p class="page-subtitle">{{ conselho.turma.nome }} - {{ conselho.periodo }}</p>
     </div>
+    <div class="flex gap-3">
+        <a href="{% url 'pedagogico:conselho_painel' conselho.pk %}" class="btn btn-outline">Voltar ao Painel</a>
+        {% if conselho.aberto %}
+            <a href="{% url 'pedagogico:conselho_fechar' conselho.pk %}" class="btn btn-danger"
+               onclick="return confirm('Tem certeza que deseja fechar o conselho?')">Fechar Conselho</a>
+        {% else %}
+            <a href="{% url 'pedagogico:conselho_reabrir' conselho.pk %}" class="btn btn-success">Reabrir Conselho</a>
+        {% endif %}
+    </div>
+</div>
 
-    <div class="grid-2">
-        <!-- Informações Básicas -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Informações da Disciplina</h3>
-            </div>
-            <div class="card-body">
+<!-- Informações Gerais do Conselho -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="card-title">Informações Gerais</h2>
+    </div>
+    <div class="card-body">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="section-title">Dados do Conselho</h3>
                 <div class="info-grid">
-                    <div class="info-label">Código:</div>
-                    <div class="info-value">{{ disciplina.codigo }}</div>
+                    <div class="info-label">Turma:</div>
+                    <div class="info-value">{{ conselho.turma.nome }}</div>
 
-                    <div class="info-label">Curso:</div>
-                    <div class="info-value">{{ disciplina.curso.nome }}</div>
+                    <div class="info-label">Período:</div>
+                    <div class="info-value">{{ conselho.periodo }}</div>
 
-                    <div class="info-label">Carga Horária:</div>
-                    <div class="info-value">{{ disciplina.carga_horaria }} horas</div>
+                    <div class="info-label">Data de Realização:</div>
+                    <div class="info-value">{{ conselho.data_realizacao|date:"d/m/Y" }}</div>
 
                     <div class="info-label">Status:</div>
                     <div class="info-value">
-                        {% if disciplina.ativa %}
-                            <span class="badge badge-success">Ativa</span>
+                        <span class="badge {% if conselho.aberto %}badge-success{% else %}badge-secondary{% endif %}">
+                            {{ conselho.aberto|yesno:"Aberto,Fechado" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="section-title">Participantes</h3>
+                <div class="info-grid">
+                    <div class="info-label">Coordenação do Curso:</div>
+                    <div class="info-value">
+                        {% if conselho.coordenacao_curso %}
+                            {{ conselho.coordenacao_curso.nome }}
                         {% else %}
-                            <span class="badge badge-danger">Inativa</span>
+                            <span class="text-muted">Não definido</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="info-label">Coordenação Pedagógica:</div>
+                    <div class="info-value">
+                        {% if conselho.coordenacao_pedagogica %}
+                            {{ conselho.coordenacao_pedagogica.nome }}
+                        {% else %}
+                            <span class="text-muted">Não definido</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="info-label">Docentes Participantes:</div>
+                    <div class="info-value">
+                        {% if conselho.docentes_participantes.all %}
+                            <ul class="list-disc list-inside text-sm">
+                                {% for docente in conselho.docentes_participantes.all %}
+                                <li>{{ docente.nome }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <span class="text-muted">Nenhum docente participante</span>
                         {% endif %}
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Ementa -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Ementa</h3>
-            </div>
-            <div class="card-body">
-                {% if disciplina.ementa %}
-                    <p>{{ disciplina.ementa|linebreaks }}</p>
-                {% else %}
-                    <p class="text-muted">Nenhuma ementa cadastrada.</p>
-                {% endif %}
-            </div>
-        </div>
     </div>
+</div>
 
-    <!-- Turmas que oferecem esta disciplina -->
-    <div class="card mt-4">
-        <div class="card-header">
-            <h3 class="card-title">Turmas com esta Disciplina</h3>
-        </div>
-        <div class="card-body" style="padding: 0;">
-            <div class="table-container">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Turma</th>
-                            <th>Período</th>
-                            <th>Docente</th>
-                            <th>Ano</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Dados dinâmicos seriam carregados aqui -->
-                        <tr>
-                            <td colspan="4" class="text-center py-4 text-muted">
-                                Nenhuma turma encontrada para esta disciplina.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+<!-- Informações da Turma (preenchidas pela coordenação) -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="card-title">Informações da Turma</h2>
+    </div>
+    <div class="card-body">
+        <div class="grid grid-cols-1 gap-4">
+            <div class="form-group">
+                <label class="form-label">Perfil da Turma</label>
+                <div class="form-control" style="min-height: 100px; background: var(--gray-50);">
+                    {{ conselho.perfil_turma|default:"Não preenchido" }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Informações Gerais</label>
+                <div class="form-control" style="min-height: 80px; background: var(--gray-50);">
+                    {{ conselho.informacoes_gerais|default:"Não preenchido" }}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label class="form-label">Pontos Positivos</label>
+                    <div class="form-control" style="min-height: 80px; background: var(--gray-50);">
+                        {{ conselho.pontos_positivos|default:"Não preenchido" }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Pontos de Atenção</label>
+                    <div class="form-control" style="min-height: 80px; background: var(--gray-50);">
+                        {{ conselho.pontos_atencao|default:"Não preenchido" }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Encaminhamentos</label>
+                <div class="form-control" style="min-height: 80px; background: var(--gray-50);">
+                    {{ conselho.encaminhamentos|default:"Não preenchido" }}
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<style>
-.info-grid {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 0.75rem;
-}
-.info-label {
-    font-weight: 600;
-    color: var(--gray-700);
-}
-.info-value {
-    color: var(--gray-900);
-}
-</style>
+<!-- Lista de Estudantes com Observações -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Observações dos Estudantes</h2>
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Estudante</th>
+                        <th>Status</th>
+                        <th>Observações Gerais</th>
+                        <th>Encaminhamentos</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for info in informacoes_estudantes %}
+                    <tr class="{% if info.eh_napne %}napne-highlight{% endif %}">
+                        <td>
+                            <strong>{{ info.estudante.nome }}</strong>
+                            {% if info.eh_napne %}
+                            <div>
+                                <span class="badge badge-warning">NAPNE</span>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% with total_obs=info.observacoes_docentes.count %}
+                                <span class="badge {% if total_obs > 0 %}badge-success{% else %}badge-warning{% endif %}">
+                                    {{ total_obs }} obs.
+                                </span>
+                            {% endwith %}
+                        </td>
+                        <td>
+                            <div class="text-sm" style="max-height: 60px; overflow: hidden;">
+                                {{ info.observacoes_gerais|default:"Sem observações"|truncatewords:20 }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex flex-wrap gap-1">
+                                {% if info.necessita_acompanhamento %}
+                                    <span class="badge badge-warning">Acompanhamento</span>
+                                {% endif %}
+                                {% if info.encaminhamento_cdpd %}
+                                    <span class="badge badge-danger">CDPD</span>
+                                {% endif %}
+                                {% if info.encaminhamento_cdae %}
+                                    <span class="badge badge-warning">CDAE</span>
+                                {% endif %}
+                                {% if info.encaminhamento_napne %}
+                                    <span class="badge badge-success">NAPNE</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'pedagogico:conselho_estudante_edit' conselho.pk info.estudante.id %}"
+                               class="btn btn-sm btn-primary">Editar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

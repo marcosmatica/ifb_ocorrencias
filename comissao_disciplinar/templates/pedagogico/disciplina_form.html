@@ -1,70 +1,95 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% load crispy_forms_tags %}
 
-{% block title %}{% if form.instance.pk %}Editar Disciplina{% else %}Nova Disciplina{% endif %}{% endblock %}
+{% block title %}{% if form.instance.pk %}Editar{% else %}Nova{% endif %} Disciplina{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb">
+    <a class="breadcrumb-item" href="{% url 'pedagogico:disciplina_list' %}">Disciplinas</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-item active">{% if form.instance.pk %}Editar{% else %}Nova{% endif %} Disciplina</span>
+</nav>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <h1 class="page-title">
-            {% if form.instance.pk %}
-                Editar Disciplina
-            {% else %}
-                Nova Disciplina
-            {% endif %}
-        </h1>
-    </div>
-
-    <div class="card">
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                
-                <div class="grid-2">
-                    <div class="form-group">
-                        {{ form.nome|as_crispy_field }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.codigo|as_crispy_field }}
-                    </div>
-                </div>
-
-                <div class="grid-2">
-                    <div class="form-group">
-                        {{ form.curso|as_crispy_field }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.carga_horaria|as_crispy_field }}
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.ementa|as_crispy_field }}
-                </div>
-
-                <div class="form-group">
-                    {{ form.ativa|as_crispy_field }}
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        {% if form.instance.pk %}Atualizar{% else %}Criar{% endif %} Disciplina
-                    </button>
-                    <a href="{% url 'pedagogico:disciplina_list' %}" class="btn btn-outline">Cancelar</a>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="page-header mb-4">
+    <h1 class="page-title">{% if form.instance.pk %}Editar{% else %}Nova{% endif %} Disciplina</h1>
 </div>
 
-<style>
-.form-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--gray-200);
-}
-</style>
+<form method="post">
+    {% csrf_token %}
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Informações da Disciplina</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Nome</label>
+                    {{ form.nome }}
+                    {% if form.nome.errors %}
+                    <div class="form-error">{{ form.nome.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Código</label>
+                    {{ form.codigo }}
+                    {% if form.codigo.errors %}
+                    <div class="form-error">{{ form.codigo.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Curso</label>
+                    {{ form.curso }}
+                    {% if form.curso.errors %}
+                    <div class="form-error">{{ form.curso.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Carga Horária</label>
+                    {{ form.carga_horaria }}
+                    {% if form.carga_horaria.errors %}
+                    <div class="form-error">{{ form.carga_horaria.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Bimestres Ativos</label>
+                    {{ form.bimestres_ativos }}
+                    {% if form.bimestres_ativos.errors %}
+                    <div class="form-error">{{ form.bimestres_ativos.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">Exemplo: 1,2,3,4 ou 1,3</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-check">
+                        {{ form.ativa }}
+                        <span class="form-check-label">Disciplina Ativa</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Ementa</label>
+                {{ form.ementa }}
+                {% if form.ementa.errors %}
+                <div class="form-error">{{ form.ementa.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    {% if form.instance.pk %}Atualizar{% else %}Criar{% endif %} Disciplina
+                </button>
+                <a href="{% url 'pedagogico:disciplina_list' %}" class="btn btn-outline">Cancelar</a>
+            </div>
+        </div>
+    </div>
+</form>
 {% endblock %}

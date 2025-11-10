@@ -1,0 +1,105 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Observações dos Estudantes - {{ disciplina_turma.disciplina.nome }}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb">
+    <a class="breadcrumb-item" href="{% url 'pedagogico:conselho_list' %}">Conselhos</a>
+    <a class="breadcrumb-item" href="{% url 'pedagogico:conselho_painel' conselho.pk %}">{{ conselho.turma.nome }}</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-item active">Observações - {{ disciplina_turma.disciplina.nome }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title">Observações dos Estudantes</h1>
+        <p class="page-subtitle">
+            {{ disciplina_turma.disciplina.nome }} - {{ conselho.turma.nome }} ({{ conselho.periodo }})
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'pedagogico:conselho_painel' conselho.pk %}" class="btn btn-outline">Voltar ao Painel</a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="card-title">Instruções</h2>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <strong>Estudantes NAPNE (amarelo):</strong> Preencha obrigatoriamente ambos os campos (observação geral e adaptações NAPNE)<br>
+                <strong>Estudantes regulares:</strong> Preencha pelo menos a observação geral
+            </div>
+        </div>
+    </div>
+
+    {% for dado in dados_estudantes %}
+    <div class="card mb-4 {% if dado.eh_napne %}napne-highlight{% endif %}">
+        <div class="card-header">
+            <h3 class="card-title">
+                {{ dado.estudante.nome }}
+                {% if dado.eh_napne %}
+                <span class="badge badge-warning ml-2">NAPNE</span>
+                {% if dado.necessidade %}
+                <span class="text-sm text-muted ml-2">({{ dado.necessidade }})</span>
+                {% endif %}
+                {% endif %}
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Observação Geral -->
+                <div class="form-group">
+                    <label class="form-label form-label-required">
+                        Observações sobre o estudante
+                    </label>
+                    <textarea
+                        name="observacao_{{ dado.estudante.id }}"
+                        class="form-control"
+                        rows="4"
+                        placeholder="Elogios, encaminhamentos, observações quanto às formas de aprender e ser do estudante..."
+                        required>{{ dado.obs_docente.observacao }}</textarea>
+                    <div class="form-help">
+                        Descreva o desenvolvimento humano, intelectual, social, emocional e aspectos comportamentais
+                    </div>
+                </div>
+
+                <!-- Observação NAPNE (apenas para estudantes NAPNE) -->
+                {% if dado.eh_napne %}
+                <div class="form-group">
+                    <label class="form-label form-label-required">
+                        Observações das adaptações realizadas (NAPNE)
+                    </label>
+                    <textarea
+                        name="observacao_napne_{{ dado.estudante.id }}"
+                        class="form-control"
+                        rows="4"
+                        placeholder="Informe as adaptações curriculares realizadas para este estudante..."
+                        required>{{ dado.obs_docente.observacao_napne }}</textarea>
+                    <div class="form-help">
+                        Descreva as adaptações realizadas conforme a necessidade específica do estudante
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            Salvar Todas as Observações
+        </button>
+        <a href="{% url 'pedagogico:conselho_painel' conselho.pk %}" class="btn btn-outline">
+            Cancelar
+        </a>
+    </div>
+</form>
+{% endblock %}

@@ -3,78 +3,115 @@
 
 {% block title %}Conselhos de Classe{% endblock %}
 
+{% block breadcrumb %}
+<nav class="breadcrumb">
+    <span class="breadcrumb-item active">Conselhos de Classe</span>
+</nav>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <h1 class="page-title">Conselhos de Classe</h1>
-        <a href="{% url 'pedagogico:conselho_create' %}" class="btn btn-primary">
-            Novo Conselho
-        </a>
-    </div>
+<div class="page-header mb-4">
+    <h1 class="page-title">Conselhos de Classe</h1>
+    <a href="{% url 'pedagogico:conselho_create' %}" class="btn btn-primary">Novo Conselho</a>
+</div>
 
-    <!-- Filtros -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" class="grid-3">
-                <div>
-                    <label>Turma</label>
-                    <select name="turma" class="form-control">
-                        <option value="">Todas</option>
-                        <!-- Opções de turma -->
-                    </select>
-                </div>
-                <div>
-                    <label>Período</label>
-                    <input type="text" name="periodo" class="form-control" 
-                           placeholder="2024.1" value="{{ request.GET.periodo }}">
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="btn btn-outline">Filtrar</button>
-                </div>
-            </form>
-        </div>
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h2 class="card-title">Filtros</h2>
     </div>
-
-    <!-- Lista -->
-    <div class="card">
-        <div class="card-body" style="padding: 0;">
-            <div class="table-container">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Turma</th>
-                            <th>Período</th>
-                            <th>Coordenador</th>
-                            <th>Participantes</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for conselho in conselhos %}
-                        <tr>
-                            <td>{{ conselho.data_realizacao|date:"d/m/Y" }}</td>
-                            <td>{{ conselho.turma.nome }}</td>
-                            <td>{{ conselho.periodo }}</td>
-                            <td>{{ conselho.coordenacao_curso.nome }}</td>
-                            <td>{{ conselho.docentes_participantes.count }}</td>
-                            <td>
-                                <a href="{% url 'pedagogico:conselho_detail' conselho.pk %}" 
-                                   class="btn btn-outline btn-sm">
-                                    Ver
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">
-                                Nenhum conselho encontrado.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="card-body">
+        <form method="get" class="form-filter-grid">
+            <div class="form-group">
+                <label class="form-label">Turma</label>
+                <select name="turma" class="form-control">
+                    <option value="">Todas as turmas</option>
+                    {% for turma in turmas %}
+                    <option value="{{ turma.id }}" {% if request.GET.turma == turma.id|stringformat:"i" %}selected{% endif %}>
+                        {{ turma.nome }}
+                    </option>
+                    {% endfor %}
+                </select>
             </div>
+            <div class="form-group">
+                <label class="form-label">Período</label>
+                <input type="text" name="periodo" class="form-control"
+                       placeholder="ex: 2024.1" value="{{ request.GET.periodo }}">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+                <a href="{% url 'pedagogico:conselho_list' %}" class="btn btn-outline">Limpar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Conselhos -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Conselhos Cadastrados</h2>
+    </div>
+    <div class="card-body">
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Turma</th>
+                        <th>Período</th>
+                        <th>Data</th>
+                        <th>Status</th>
+                        <th>Coordenador</th>
+                        <th>Docentes</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for conselho in conselhos %}
+                    <tr>
+                        <td>
+                            <strong>{{ conselho.turma.nome }}</strong>
+                            <div class="text-sm text-muted">{{ conselho.turma.curso.nome }}</div>
+                        </td>
+                        <td>{{ conselho.periodo }}</td>
+                        <td>{{ conselho.data_realizacao|date:"d/m/Y" }}</td>
+                        <td>
+                            <span class="badge {% if conselho.aberto %}badge-success{% else %}badge-secondary{% endif %}">
+                                {{ conselho.aberto|yesno:"Aberto,Fechado" }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if conselho.coordenacao_curso %}
+                                {{ conselho.coordenacao_curso.nome }}
+                            {% else %}
+                                <span class="text-muted">Não definido</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="text-sm">{{ conselho.total_docentes }} participantes</span>
+                        </td>
+                        <td>
+                            <div class="flex gap-2">
+                                <a href="{% url 'pedagogico:conselho_painel' conselho.pk %}"
+                                   class="btn btn-sm btn-primary">Painel</a>
+                                <a href="{% url 'pedagogico:conselho_detail' conselho.pk %}"
+                                   class="btn btn-sm btn-outline">Detalhes</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <div class="empty-state">
+                                <p>Nenhum conselho encontrado</p>
+                                <a href="{% url 'pedagogico:conselho_create' %}" class="btn btn-primary mt-2">
+                                    Criar Primeiro Conselho
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

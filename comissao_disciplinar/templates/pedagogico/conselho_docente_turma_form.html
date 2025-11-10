@@ -1,0 +1,59 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Perfil da Turma - {{ disciplina_turma.disciplina.nome }}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb">
+    <a class="breadcrumb-item" href="{% url 'pedagogico:conselho_list' %}">Conselhos</a>
+    <a class="breadcrumb-item" href="{% url 'pedagogico:conselho_painel' conselho.pk %}">{{ conselho.turma.nome }}</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-item active">Perfil da Turma - {{ disciplina_turma.disciplina.nome }}</span>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title">Perfil da Turma</h1>
+        <p class="page-subtitle">
+            {{ disciplina_turma.disciplina.nome }} - {{ conselho.turma.nome }} ({{ conselho.periodo }})
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'pedagogico:conselho_painel' conselho.pk %}" class="btn btn-outline">Voltar ao Painel</a>
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Descrição da Turma</h2>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label form-label-required">
+                    Perfil da turma segundo sua experiência atual com ela
+                </label>
+                {{ form.observacao }}
+                {% if form.observacao.errors %}
+                <div class="form-error">{{ form.observacao.errors }}</div>
+                {% endif %}
+                <div class="form-help">
+                    Faça uma descrição da turma conforme sua experiência atual com ela,
+                    considerando aspectos como: participação, relacionamento, dificuldades,
+                    potencialidades e dinâmica geral da turma.
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Salvar Observação</button>
+                <a href="{% url 'pedagogico:conselho_painel' conselho.pk %}" class="btn btn-outline">Cancelar</a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

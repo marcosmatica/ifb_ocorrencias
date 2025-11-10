@@ -1,78 +1,79 @@
 {% extends 'core/base.html' %}
 {% load static %}
-{% load crispy_forms_tags %}
 
-{% block title %}Novo Conselho de Classe{% endblock %}
+{% block title %}{% if form.instance.pk %}Editar{% else %}Novo{% endif %} Conselho de Classe{% endblock %}
+
+{% block breadcrumb %}
+<nav class="breadcrumb">
+    <a class="breadcrumb-item" href="{% url 'pedagogico:conselho_list' %}">Conselhos</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-item active">{% if form.instance.pk %}Editar{% else %}Novo{% endif %} Conselho</span>
+</nav>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="page-header">
-        <h1 class="page-title">Novo Conselho de Classe</h1>
-    </div>
-
-    <div class="card">
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
-                
-                <div class="grid-2">
-                    <div class="form-group">
-                        {{ form.turma|as_crispy_field }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.periodo|as_crispy_field }}
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.data_realizacao|as_crispy_field }}
-                </div>
-
-                <div class="grid-2">
-                    <div class="form-group">
-                        {{ form.coordenacao_curso|as_crispy_field }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.coordenacao_pedagogica|as_crispy_field }}
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    {{ form.docentes_participantes|as_crispy_field }}
-                </div>
-
-                <div class="form-group">
-                    {{ form.informacoes_gerais|as_crispy_field }}
-                </div>
-
-                <div class="form-group">
-                    {{ form.pontos_positivos|as_crispy_field }}
-                </div>
-
-                <div class="form-group">
-                    {{ form.pontos_atencao|as_crispy_field }}
-                </div>
-
-                <div class="form-group">
-                    {{ form.encaminhamentos|as_crispy_field }}
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Criar Conselho</button>
-                    <a href="{% url 'pedagogico:conselho_list' %}" class="btn btn-outline">Cancelar</a>
-                </div>
-            </form>
-        </div>
-    </div>
+<div class="page-header mb-4">
+    <h1 class="page-title">{% if form.instance.pk %}Editar{% else %}Novo{% endif %} Conselho de Classe</h1>
 </div>
 
-<style>
-.form-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--gray-200);
-}
-</style>
+<form method="post">
+    {% csrf_token %}
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Informações Básicas</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Turma</label>
+                    {{ form.turma }}
+                    {% if form.turma.errors %}
+                    <div class="form-error">{{ form.turma.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Período</label>
+                    {{ form.periodo }}
+                    {% if form.periodo.errors %}
+                    <div class="form-error">{{ form.periodo.errors }}</div>
+                    {% endif %}
+                    <div class="form-help">Exemplo: 2024.1, 2024.2</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label form-label-required">Data de Realização</label>
+                    {{ form.data_realizacao }}
+                    {% if form.data_realizacao.errors %}
+                    <div class="form-error">{{ form.data_realizacao.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Coordenação do Curso</label>
+                    {{ form.coordenacao_curso }}
+                    {% if form.coordenacao_curso.errors %}
+                    <div class="form-error">{{ form.coordenacao_curso.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group md:col-span-2">
+                    <label class="form-label">Coordenação Pedagógica</label>
+                    {{ form.coordenacao_pedagogica }}
+                    {% if form.coordenacao_pedagogica.errors %}
+                    <div class="form-error">{{ form.coordenacao_pedagogica.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+            {% if form.instance.pk %}Atualizar{% else %}Criar{% endif %} Conselho
+        </button>
+        <a href="{% url 'pedagogico:conselho_list' %}" class="btn btn-outline">Cancelar</a>
+    </div>
+</form>
 {% endblock %}
