@@ -146,11 +146,20 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = '3353645@etfbsb.edu.br'
 EMAIL_HOST_PASSWORD = 'lckx iwes sydo xkrw'
-DEFAULT_FROM_EMAIL = '3353645@etfbsb.edu.br'
+#DEFAULT_FROM_EMAIL = '3353645@etfbsb.edu.br'
 EMAIL_TIMEOUT = 30  # Aumenta o timeout
+
+DEFAULT_FROM_EMAIL = 'Coordenações DREP IFB Recanto das Emas <no-reply@ifb.edu.br>'
+SERVER_EMAIL = 'Coordenações DREP IFB Recanto das Emas <no-reply@ifb.edu.br>'
+
+# Se quiser manter o email atual como fallback, adicione também:
+EMAIL_FROM_NAME = 'Coordenações DREP IFB Recanto das Emas'
+EMAIL_FROM_ADDRESS = 'no-reply@ifb.edu.br'
 
 EMAIL_TEMPLATE_NAME = 'registration/password_reset_email.html'
 EMAIL_SUBJECT_TEMPLATE_NAME = 'registration/password_reset_subject.txt'
+
+EMAIL_SUBJECT_PREFIX = '[Sistema DREP IFB Recanto das Emas] '
 
 # LGPD - Retenção de dados
 DATA_RETENTION_YEARS = 5
