@@ -56,6 +56,20 @@ urlpatterns = [
         template_name='registration/password_reset_complete.html'
     ), name='password_reset_complete'),
 
+    # URLs sem 'accounts/' (nossas URLs principais)
+    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login_simple'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout_simple'),
+    path('password_reset/', views.custom_password_reset, name='password_reset_simple'),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(
+        template_name='registration/password_reset_done.html'
+    ), name='password_reset_done_simple'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='registration/password_reset_confirm.html'
+    ), name='password_reset_confirm_simple'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='registration/password_reset_complete.html'
+    ), name='password_reset_complete_simple'),
+
     # Notificações (mantenha as existentes)
     path('notificacoes/', views.notificacoes_list, name='notificacoes_list'),
     path('notificacoes/<int:pk>/marcar-lida/', views.notificacao_marcar_lida, name='notificacao_marcar_lida'),

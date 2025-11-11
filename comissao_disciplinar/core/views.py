@@ -1,28 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models.query import QuerySet
 from django.contrib import messages
-#from wagtail.models import Page
-from django.conf import settings
-from django.contrib.auth.views import LoginView
 from django.db.models import Q, Count
 from django.http import HttpResponse, JsonResponse
-from django.utils import timezone
 from django.core.paginator import Paginator
 from datetime import datetime, timedelta
 from .models import *
 from .forms import *
 from .utils import gerar_documento_pdf, enviar_notificacao_email
 from .services import ServicoNotificacao
-# Adicione estas importações para o diagnóstico de e-mail
-from django.core.mail import get_connection, send_mail
-from django.conf import settings
-from django.contrib.auth.views import PasswordResetView
+from django.core.mail import get_connection
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.conf import settings
-from django.contrib.auth.views import PasswordResetView
-from .forms import CustomPasswordResetForm  # Importe o form personalizado
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes

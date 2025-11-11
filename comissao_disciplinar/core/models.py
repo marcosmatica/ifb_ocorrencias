@@ -576,7 +576,8 @@ class OcorrenciaRapida(models.Model):
         ('UNIFORME', 'Sem uniforme'),
         ('RECUSA', 'Recusa a participar das atividades'),
         ('AUSENCIA', 'Ausência de sala'),
-        ('SAIDA', 'Saída Antecipada')
+        ('SAIDA', 'Saída Antecipada'),
+        ('BIBLIO', 'Acesso a Biblioteca sem autorização'),
     ]
 
     # Dados básicos

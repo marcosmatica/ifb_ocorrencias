@@ -100,9 +100,9 @@ TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
 
-LOGIN_REDIRECT_URL = '/'  # Where to redirect after login
-LOGIN_URL = '/login/'      # Login page URL
-LOGOUT_REDIRECT_URL = '/'  # Where to redirect after logout
+LOGIN_URL = '/login/'  # Agora ambas as URLs funcionam
+LOGIN_REDIRECT_URL = '/dashboard/'  # Onde redirecionar após login
+LOGOUT_REDIRECT_URL = '/'  # Onde redirecionar após logout
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
