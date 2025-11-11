@@ -7,6 +7,10 @@ from .models import (
     Recurso, ComissaoProcessoDisciplinar, DocumentoGerado, Curso, Turma, Infracao,
     Servidor, OcorrenciaRapida
 )
+from django.contrib.auth.forms import PasswordResetForm
+from django.core.mail import EmailMultiAlternatives
+from django.template import loader
+from django.conf import settings
 
 
 class OcorrenciaForm(forms.ModelForm):
@@ -282,3 +286,28 @@ class ResponsavelForm(forms.ModelForm):
             'tipo_vinculo': forms.Select(attrs={'class': 'form-control'}),
             'preferencia_contato': forms.Select(attrs={'class': 'form-control'}),
         }
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    def send_mail(self, subject_template_name, email_template_name,
+                  context, from_email, to_email, html_email_template_name=None):
+        """
+        Envia um e-mail multipart (texto + HTML) para redefinição de senha
+        """
+        subject = loader.render_to_string(subject_template_name, context)
+        subject = ''.join(subject.splitlines())  # Remove quebras de linha
+        body = loader.render_to_string(email_template_name, context)
+
+        email_message = EmailMultiAlternatives(
+            subject,
+            body,
+            from_email,
+            [to_email]
+        )
+
+        # Adiciona versão HTML se o template existir
+        if html_email_template_name is not None:
+            html_email = loader.render_to_string(html_email_template_name, context)
+            email_message.attach_alternative(html_email, 'text/html')
+
+        email_message.send()

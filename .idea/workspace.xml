@@ -6,10 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/notificacao_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/notificacao_form.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/notificacoes_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/notificacoes_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/registration/password_reset_email.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/registration/password_reset_email.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,8 +24,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="HTML File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>

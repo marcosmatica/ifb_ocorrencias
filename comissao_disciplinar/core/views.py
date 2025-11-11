@@ -21,6 +21,12 @@ from django.contrib.auth.views import PasswordResetView
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.conf import settings
+from django.contrib.auth.views import PasswordResetView
+from .forms import CustomPasswordResetForm  # Importe o form personalizado
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth import get_user_model
 
 
 def home(request):
@@ -784,30 +790,7 @@ def diagnostico_email(request):
     return render(request, 'core/diagnostico_email.html', context)
 
 
-# ADICIONE ESTA VIEW PARA TESTE DE EMAIL
-@login_required
-def testar_email(request):
-    """View para testar configuração de e-mail"""
-    if not request.user.is_superuser:
-        messages.error(request, 'Apenas administradores podem executar esta ação.')
-        return redirect('dashboard')
-
-    try:
-        from django.core.mail import send_mail
-        send_mail(
-            'Teste de E-mail - Sistema Ocorrências IFB',
-            'Este é um e-mail de teste do sistema de ocorrências.\n\n'
-            f'Enviado em: {timezone.now().strftime("%d/%m/%Y %H:%M")}\n'
-            f'Para: {request.user.email}',
-            settings.DEFAULT_FROM_EMAIL,
-            [request.user.email],
-            fail_silently=False,
-        )
-        messages.success(request, f'E-mail de teste enviado com sucesso para {request.user.email}!')
-    except Exception as e:
-        messages.error(request, f'Erro ao enviar e-mail: {str(e)}')
-
-    return redirect('diagnostico_email')
+#
 
 
 @login_required
@@ -1060,30 +1043,81 @@ def ocorrencia_rapida_delete(request, pk):
 
 def custom_password_reset(request):
     """
-    Versão ultra-simplificada baseada no teste
+    View COMPLETAMENTE NOVA para recuperação de senha com HTML
     """
     if request.method == "POST":
-        form = PasswordResetForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data["email"]
+        email = request.POST.get('email')
+        print(f"🔧 DEBUG: Iniciando recuperação para: {email}")
 
-            # Simplesmente chama a função de teste para o email fornecido
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
+        User = get_user_model()
+
+        try:
+            user = User.objects.get(email=email)
+            print(f"🔧 DEBUG: Usuário encontrado: {user.username}")
+
+            # Gerar token e UID
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+            print(f"🔧 DEBUG: Token gerado: {token}")
+            print(f"🔧 DEBUG: UID gerado: {uid}")
+
+            # Contexto para o template
+            protocol = 'https' if request.is_secure() else 'http'
+            domain = request.get_host()
+
+            context = {
+                'protocol': protocol,
+                'domain': domain,
+                'uid': uid,
+                'token': token,
+                'user': user,
+            }
+
+            # Renderizar templates
+            subject = 'Redefinição de Senha - Sistema de Ocorrências IFB'
+            body_text = loader.render_to_string('registration/password_reset_email.txt', context)
+            body_html = loader.render_to_string('registration/password_reset_email.html', context)
+
+            print(f"🔧 DEBUG: Template HTML renderizado: {len(body_html)} caracteres")
+
+            # Criar e enviar email
+            email_msg = EmailMultiAlternatives(
+                subject,
+                body_text,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email]
+            )
+            email_msg.attach_alternative(body_html, "text/html")
 
             try:
-                user = User.objects.get(email=email)
-                # Use a view de teste como função auxiliar
-                return testar_email_html_direct(request, user)
-            except User.DoesNotExist:
-                # Mesmo assim redireciona para não revelar que o email não existe
-                pass
+                email_msg.send()
+                print(f"✅ DEBUG: Email HTML ENVIADO com SUCESSO para {user.email}")
+            except Exception as e:
+                print(f"❌ DEBUG: Erro ao enviar email: {str(e)}")
+                # Fallback: tentar enviar apenas texto
+                try:
+                    from django.core.mail import send_mail
+                    send_mail(
+                        subject,
+                        body_text,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [user.email],
+                        fail_silently=False,
+                    )
+                    print("✅ DEBUG: Email de texto enviado como fallback")
+                except Exception as e2:
+                    print(f"❌ DEBUG: Erro no fallback também: {str(e2)}")
 
-            return redirect('password_reset_done')
-    else:
-        form = PasswordResetForm()
+        except User.DoesNotExist:
+            print(f"❌ DEBUG: Usuário não encontrado para email: {email}")
+            # Por segurança, não revelamos que o email não existe
 
-    return render(request, 'registration/password_reset_form.html', {'form': form})
+        # SEMPRE redireciona para a página de confirmação
+        return redirect('password_reset_done')
+
+    # GET request - mostrar formulário
+    return render(request, 'registration/password_reset_form.html')
 
 def testar_email_html_direct(request, user):
     """

@@ -136,6 +136,7 @@ else:
 
 
 
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Configurações de Email para recuperação de senha
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -146,6 +147,10 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_USER = '3353645@etfbsb.edu.br'
 EMAIL_HOST_PASSWORD = 'lckx iwes sydo xkrw'
 DEFAULT_FROM_EMAIL = '3353645@etfbsb.edu.br'
+EMAIL_TIMEOUT = 30  # Aumenta o timeout
+
+EMAIL_TEMPLATE_NAME = 'registration/password_reset_email.html'
+EMAIL_SUBJECT_TEMPLATE_NAME = 'registration/password_reset_subject.txt'
 
 # LGPD - Retenção de dados
 DATA_RETENTION_YEARS = 5

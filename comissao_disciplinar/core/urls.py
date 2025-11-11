@@ -43,17 +43,16 @@ urlpatterns = [
     #path('estudantes/<str:matricula>/editar/', views.estudante_edit, name='estudante_edit'),
 
     # Auth com recuperação de senha
-    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
-    path('password_reset/', views.custom_password_reset, name='password_reset'),
-    path('testar-email-html/', views.testar_email_html, name='testar_email_html'),
-    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(
+    path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('accounts/logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
+    path('accounts/password_reset/', views.custom_password_reset, name='password_reset'),
+    path('accounts/password_reset/done/', auth_views.PasswordResetDoneView.as_view(
         template_name='registration/password_reset_done.html'
     ), name='password_reset_done'),
-    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+    path('accounts/reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
         template_name='registration/password_reset_confirm.html'
     ), name='password_reset_confirm'),
-    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
+    path('accounts/reset/done/', auth_views.PasswordResetCompleteView.as_view(
         template_name='registration/password_reset_complete.html'
     ), name='password_reset_complete'),
 
@@ -67,7 +66,6 @@ urlpatterns = [
     path('guia-regulamento-discente/', views.guia_regulamento_discente, name='guia_regulamento_discente'),
     path('meu-perfil/', views.meu_perfil, name='meu_perfil'),
     path('diagnostico-email/', views.diagnostico_email, name='diagnostico_email'),
-    path('testar-email/', views.testar_email, name='testar_email'),
     path('api/estudantes/filtrar/', views.api_filtrar_estudantes, name='api_filtrar_estudantes'),
     path('api/servidores/filtrar/', views.api_filtrar_servidores, name='api_filtrar_servidores'),
 ]
