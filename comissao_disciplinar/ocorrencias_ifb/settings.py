@@ -142,6 +142,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'  # Ou seu servidor SMTP
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 EMAIL_HOST_USER = '3353645@etfbsb.edu.br'
 EMAIL_HOST_PASSWORD = 'lckx iwes sydo xkrw'
 DEFAULT_FROM_EMAIL = '3353645@etfbsb.edu.br'

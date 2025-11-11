@@ -17,6 +17,10 @@ from .services import ServicoNotificacao
 # Adicione estas importações para o diagnóstico de e-mail
 from django.core.mail import get_connection, send_mail
 from django.conf import settings
+from django.contrib.auth.views import PasswordResetView
+from django.core.mail import EmailMultiAlternatives
+from django.template import loader
+from django.conf import settings
 
 
 def home(request):
@@ -1052,3 +1056,105 @@ def ocorrencia_rapida_delete(request, pk):
 
     # Se não for POST, redirecionar para detalhes
     return redirect('ocorrencia_rapida_detail', pk=pk)
+
+
+def custom_password_reset(request):
+    """
+    Versão ultra-simplificada baseada no teste
+    """
+    if request.method == "POST":
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+
+            # Simplesmente chama a função de teste para o email fornecido
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+
+            try:
+                user = User.objects.get(email=email)
+                # Use a view de teste como função auxiliar
+                return testar_email_html_direct(request, user)
+            except User.DoesNotExist:
+                # Mesmo assim redireciona para não revelar que o email não existe
+                pass
+
+            return redirect('password_reset_done')
+    else:
+        form = PasswordResetForm()
+
+    return render(request, 'registration/password_reset_form.html', {'form': form})
+
+def testar_email_html_direct(request, user):
+    """
+    Função auxiliar idêntica à testar_email_html mas para usuário específico
+    """
+    from django.core.mail import EmailMultiAlternatives
+    from django.template import loader
+    from django.contrib.auth.tokens import default_token_generator
+    from django.utils.http import urlsafe_base64_encode
+    from django.utils.encoding import force_bytes
+
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+    context = {
+        'protocol': 'https' if request.is_secure() else 'http',
+        'domain': request.get_host(),
+        'uid': uid,
+        'token': token,
+    }
+
+    subject = 'Redefinição de Senha - Sistema de Ocorrências IFB'
+    body_text = 'Versão em texto simples do email de redefinição'
+    body_html = loader.render_to_string('registration/password_reset_email.html', context)
+
+    email = EmailMultiAlternatives(
+        subject,
+        body_text,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email]
+    )
+    email.attach_alternative(body_html, "text/html")
+
+    try:
+        email.send()
+        print(f"✅ Email HTML enviado com SUCESSO para {user.email}")
+    except Exception as e:
+        print(f"❌ Erro ao enviar email: {str(e)}")
+
+    return redirect('password_reset_done')
+
+@login_required
+def testar_email_html(request):
+    if not request.user.is_superuser:
+        return redirect('dashboard')
+
+    from django.core.mail import EmailMultiAlternatives
+    from django.template import loader
+
+    context = {
+        'protocol': 'http',
+        'domain': request.get_host(),
+        'uid': 'teste123',
+        'token': 'token-teste',
+    }
+
+    subject = 'Teste Email HTML'
+    body_text = 'Versão em texto simples'
+    body_html = loader.render_to_string('registration/password_reset_email.html', context)
+
+    email = EmailMultiAlternatives(
+        subject,
+        body_text,
+        '3353645@etfbsb.edu.br',
+        [request.user.email]
+    )
+    email.attach_alternative(body_html, "text/html")
+    email.content_subtype = "html"
+
+    try:
+        email.send()
+        return HttpResponse(f"Email HTML enviado para {request.user.email}. Verifique sua caixa de entrada.")
+    except Exception as e:
+        return HttpResponse(f"Erro: {str(e)}")

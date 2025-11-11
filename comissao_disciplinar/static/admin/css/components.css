@@ -1,0 +1,86 @@
+/* === Action Cards (Home) === */
+.action-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    border: 2px solid var(--gray-200);
+    display: block;
+}
+
+.action-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--ifb-verde);
+    box-shadow: var(--shadow-lg);
+}
+
+.action-card-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.action-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--gray-900);
+}
+
+.action-card-description {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* === Tipo Rapido Options === */
+.tipo-rapido-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.tipo-rapido-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tipo-rapido-option:hover {
+    border-color: var(--ifb-verde);
+    background: var(--gray-50);
+}
+
+.tipo-rapido-option.selected {
+    border-color: var(--ifb-verde);
+    background: #e0f2e9;
+}
+
+.tipo-rapido-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+}
+
+.tipo-rapido-title {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 0.25rem;
+}
+
+.tipo-rapido-desc {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}

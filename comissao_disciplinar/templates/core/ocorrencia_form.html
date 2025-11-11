@@ -73,7 +73,7 @@
                         </svg>
                         Filtrar e Buscar Estudantes
                     </div>
-                    
+
                     <div class="grid-2" style="gap: 1rem; margin-bottom: 1rem;">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label" for="turma-filtro">Filtrar por Turma</label>
@@ -84,19 +84,19 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        
+
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label" for="busca-estudante">Buscar Estudante</label>
                             <div class="search-box">
-                                <input type="text" 
-                                       name="busca_estudante" 
-                                       id="busca-estudante" 
-                                       class="form-control" 
+                                <input type="text"
+                                       name="busca_estudante"
+                                       id="busca-estudante"
+                                       class="form-control"
                                        placeholder="Digite o nome ou matrícula do estudante...">
                             </div>
                         </div>
                     </div>
-                    
+
                     <div style="display: flex; gap: 0.5rem;">
                         <button type="button" id="aplicar-filtros" class="btn btn-primary btn-sm">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,20 +116,20 @@
                 <!-- Estudantes Envolvidos -->
                 <div class="form-group mb-4">
                     <label class="form-label">Estudantes Envolvidos *</label>
-                    
+
                     <div id="selection-counter" class="selection-counter" style="display: none;">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
                         <span id="counter-text">0 estudantes selecionados</span>
                     </div>
-                    
+
                     <div class="students-selection" id="students-container">
                         <div id="loading-state" style="display: none; text-align: center; padding: 2rem;">
                             <div class="loading-spinner"></div>
                             <p style="margin-top: 1rem; color: var(--gray-600);">Carregando estudantes...</p>
                         </div>
-                        
+
                         <div id="empty-state" class="empty-state" style="display: none;">
                             <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
@@ -137,12 +137,12 @@
                             <p>Nenhum estudante encontrado</p>
                             <p style="font-size: 0.875rem; margin-top: 0.5rem;">Tente ajustar os filtros de busca</p>
                         </div>
-                        
+
                         <div id="students-list">
                             <!-- Os estudantes serão inseridos aqui dinamicamente -->
                         </div>
                     </div>
-                    
+
                     {% if form.estudantes.errors %}
                         <div class="form-error">{{ form.estudantes.errors }}</div>
                     {% endif %}
@@ -221,7 +221,7 @@
 
                 <!-- Botões -->
                 <div class="flex gap-2" style="justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
-                    <a href="{% url 'dashboard' %}" class="btn btn-outline">
+                    <a href="{% url 'core:dashboard' %}" class="btn btn-outline">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                         </svg>
@@ -252,18 +252,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const emptyState = document.getElementById('empty-state');
     const selectionCounter = document.getElementById('selection-counter');
     const counterText = document.getElementById('counter-text');
-    
+
     let estudantesSelecionados = new Set();
     let timeoutId = null;
-    
+
     // Carregar estudantes inicialmente
     carregarEstudantes();
-    
+
     // Aplicar filtros ao clicar no botão
     aplicarFiltros.addEventListener('click', function() {
         carregarEstudantes();
     });
-    
+
     // Busca em tempo real (com debounce)
     buscaEstudante.addEventListener('input', function() {
         clearTimeout(timeoutId);
@@ -271,19 +271,19 @@ document.addEventListener('DOMContentLoaded', function() {
             carregarEstudantes();
         }, 500);
     });
-    
+
     // Limpar filtros
     limparFiltros.addEventListener('click', function() {
         turmaFiltro.value = '';
         buscaEstudante.value = '';
         carregarEstudantes();
     });
-    
+
     // Filtrar automaticamente ao mudar a turma
     turmaFiltro.addEventListener('change', function() {
         carregarEstudantes();
     });
-    
+
     // Função para carregar estudantes via AJAX
     function carregarEstudantes() {
     const turmaId = turmaFiltro.value;
@@ -321,22 +321,22 @@ document.addEventListener('DOMContentLoaded', function() {
             emptyState.style.display = 'block';
         });
 }
-    
+
     // Função para renderizar a lista de estudantes
     function renderizarEstudantes(estudantes) {
         studentsContainer.innerHTML = '';
-        
+
         estudantes.forEach(estudante => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'student-item';
             if (estudantesSelecionados.has(estudante.id)) {
                 itemDiv.classList.add('selected');
             }
-            
+
             itemDiv.innerHTML = `
-                <input type="checkbox" 
-                       name="estudantes" 
-                       value="${estudante.id}" 
+                <input type="checkbox"
+                       name="estudantes"
+                       value="${estudante.id}"
                        id="estudante_${estudante.id}"
                        class="student-checkbox"
                        ${estudantesSelecionados.has(estudante.id) ? 'checked' : ''}>
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             `;
-            
+
             // Adicionar evento de clique no item inteiro
             itemDiv.addEventListener('click', function(e) {
                 if (e.target.type !== 'checkbox') {
@@ -367,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     checkbox.dispatchEvent(new Event('change'));
                 }
             });
-            
+
             // Adicionar evento de mudança no checkbox
             const checkbox = itemDiv.querySelector('.student-checkbox');
             checkbox.addEventListener('change', function() {
@@ -380,11 +380,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 atualizarContador();
             });
-            
+
             studentsContainer.appendChild(itemDiv);
         });
     }
-    
+
     // Função para atualizar o contador de selecionados
     function atualizarContador() {
         const count = estudantesSelecionados.size;
@@ -395,16 +395,16 @@ document.addEventListener('DOMContentLoaded', function() {
             selectionCounter.style.display = 'none';
         }
     }
-    
+
     // Definir data e hora padrão (hoje e hora atual)
     const dataInput = document.getElementById('id_data');
     const horarioInput = document.getElementById('id_horario');
-    
+
     if (dataInput && !dataInput.value) {
         const hoje = new Date().toISOString().split('T')[0];
         dataInput.value = hoje;
     }
-    
+
     if (horarioInput && !horarioInput.value) {
         const agora = new Date();
         const horas = String(agora.getHours()).padStart(2, '0');
