@@ -25,9 +25,39 @@ class TurmaAdmin(admin.ModelAdmin):
 
 @admin.register(Estudante)
 class EstudanteAdmin(admin.ModelAdmin):
-    list_display = ['matricula_sga', 'nome', 'turma', 'situacao']
-    list_filter = ['situacao', 'campus', 'curso']
+    list_display = ['matricula_sga', 'nome', 'turma', 'situacao', 'tem_foto']
+    list_filter = ['situacao', 'campus', 'curso', 'turma']
     search_fields = ['nome', 'matricula_sga', 'email']
+
+    fieldsets = (
+        ('Identificação', {
+            'fields': ('matricula_sga', 'nome', 'cpf', 'data_nascimento')
+        }),
+        ('Foto de Perfil', {
+            'fields': ('foto', 'foto_url'),
+            'description': 'Use foto_url para links do Google Drive. Formato: https://drive.google.com/uc?export=view&id=ID_DA_IMAGEM'
+        }),
+        ('Contatos', {
+            'fields': ('email', 'email_responsavel', 'contato_responsavel')
+        }),
+        ('Endereço', {
+            'fields': ('logradouro', 'bairro_cidade', 'uf'),
+            'classes': ('collapse',)
+        }),
+        ('Acadêmico', {
+            'fields': ('campus', 'curso', 'turma', 'turma_periodo', 'situacao', 'data_ingresso')
+        }),
+        ('Responsável', {
+            'fields': ('responsavel',)
+        }),
+    )
+
+    def tem_foto(self, obj):
+        if obj.get_foto_url():
+            return '✓ Sim'
+        return '✗ Não'
+
+    tem_foto.short_description = 'Foto'
 
 
 @admin.register(Servidor)
