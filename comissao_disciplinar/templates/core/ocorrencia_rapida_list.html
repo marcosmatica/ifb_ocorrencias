@@ -1,3 +1,5 @@
+[file name]: ocorrencia_rapida_list.html
+[file content begin]
 {% extends 'core/base.html' %}
 {% load static %}
 
@@ -7,6 +9,62 @@
 
 {% block breadcrumb %}
     {% include 'core/components/breadcrumb.html' %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Estilos para as fotos dos estudantes na lista */
+.foto-container-list {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid white;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: white;
+    flex-shrink: 0;
+}
+
+.foto-estudante-list {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.foto-placeholder-list {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--ifb-verde) 0%, #004d2e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Layout para estudantes na tabela */
+.student-list-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.student-list-info {
+    flex: 1;
+}
+
+.student-list-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.student-list-details {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -126,8 +184,26 @@
                             </td>
                             <td>
                                 {% for estudante in ocorrencia.estudantes.all %}
-                                    <div class="text-sm">{{ estudante.nome }}</div>
-                                    <small class="text-gray-600">{{ estudante.matricula_sga }}</small>
+                                    <div class="student-list-item">
+                                        <div class="foto-container-list" data-iniciais="{{ estudante.get_iniciais }}">
+                                            {% if estudante.get_foto_url_proxy %}
+                                                <img src="{{ estudante.get_foto_url_proxy }}"
+                                                     alt="{{ estudante.nome }}"
+                                                     class="foto-estudante-list"
+                                                     referrerpolicy="no-referrer"
+                                                     loading="lazy"
+                                                     onerror="mostrarIniciaisList(this)">
+                                            {% else %}
+                                                <div class="foto-placeholder-list">
+                                                    {{ estudante.get_iniciais }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="student-list-info">
+                                            <div class="student-list-name">{{ estudante.nome }}</div>
+                                            <small class="text-gray-600">{{ estudante.matricula_sga }}</small>
+                                        </div>
+                                    </div>
                                     {% if not forloop.last %}<hr class="my-1">{% endif %}
                                 {% endfor %}
                             </td>
@@ -175,3 +251,27 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+// Função para mostrar iniciais quando imagem falha (lista)
+function mostrarIniciaisList(img) {
+    const container = img.parentElement;
+    const iniciais = container.getAttribute('data-iniciais') || '?';
+    container.innerHTML = `<div class="foto-placeholder-list">${iniciais}</div>`;
+}
+
+// Tratamento de carregamento de imagens para a lista
+document.addEventListener('DOMContentLoaded', function() {
+    const imagens = document.querySelectorAll('.foto-estudante-list');
+    imagens.forEach((img) => {
+        setTimeout(() => {
+            if (img.naturalWidth === 0 || img.complete === false) {
+                mostrarIniciaisList(img);
+            }
+        }, 3000);
+    });
+});
+</script>
+{% endblock %}
+[file content end]

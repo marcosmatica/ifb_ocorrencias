@@ -3,6 +3,87 @@
 
 {% block title %}Atendimento #{{ atendimento.id }}{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Estilos para as fotos dos estudantes */
+.foto-container-pequena {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid white;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: white;
+    flex-shrink: 0;
+}
+
+.foto-estudante-pequena {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.foto-placeholder-pequena {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--ifb-verde) 0%, #004d2e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+}
+
+.estudante-item {
+    padding: 0.75rem;
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.estudante-info {
+    flex: 1;
+}
+
+.estudante-nome {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.estudante-detalhes {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+}
+
+/* Status de alerta para estudantes */
+.alerta-badge-pequena {
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.alerta-baixo {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.alerta-medio {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.alerta-alto {
+    background: #fee2e2;
+    color: #991b1b;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <!-- Header -->
@@ -55,19 +136,41 @@
                         <label class="info-label">Estudantes Atendidos:</label>
                         <div style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
                             {% for estudante in atendimento.estudantes.all %}
-                            <div style="padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--ifb-verde); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
-                                    {{ estudante.nome|slice:":1" }}
+                            <div class="estudante-item">
+                                <div class="foto-container-pequena" data-iniciais="{{ estudante.get_iniciais }}">
+                                    {% if estudante.get_foto_url_proxy %}
+                                        <img src="{{ estudante.get_foto_url_proxy }}"
+                                             alt="{{ estudante.nome }}"
+                                             class="foto-estudante-pequena"
+                                             referrerpolicy="no-referrer"
+                                             loading="lazy"
+                                             onerror="mostrarIniciaisPequena(this)">
+                                    {% else %}
+                                        <div class="foto-placeholder-pequena">
+                                            {{ estudante.get_iniciais }}
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 600;">{{ estudante.nome }}</div>
-                                    <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                <div class="estudante-info">
+                                    <div class="estudante-nome">{{ estudante.nome }}</div>
+                                    <div class="estudante-detalhes">
                                         {{ estudante.matricula_sga }} | {{ estudante.turma.nome }}
+                                        {% comment %} Adicionar status de alerta se disponível {% endcomment %}
+                                        {% if estudante.status_alerta %}
+                                            <span class="alerta-badge-pequena alerta-{{ estudante.status_alerta }}" style="margin-left: 0.5rem;">
+                                                {% if estudante.status_alerta == 'alto' %}⚠️{% elif estudante.status_alerta == 'medio' %}⚡{% else %}✓{% endif %}
+                                            </span>
+                                        {% endif %}
                                     </div>
                                 </div>
-                                <a href="{% url 'pedagogico:ficha_aluno' estudante.matricula_sga %}" class="btn btn-outline btn-sm">
-                                    Ver Ficha
-                                </a>
+                                <div class="flex gap-1">
+                                    <a href="{% url 'core:estudante_detail' estudante.matricula_sga %}" class="btn btn-outline btn-sm" title="Ver perfil">
+                                        👤
+                                    </a>
+                                    <a href="{% url 'pedagogico:ficha_aluno' estudante.matricula_sga %}" class="btn btn-outline btn-sm" title="Ver ficha completa">
+                                        📊
+                                    </a>
+                                </div>
                             </div>
                             {% endfor %}
                         </div>
@@ -119,10 +222,15 @@
                 <div class="card-body">
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                         {% for servidor in atendimento.servidores_participantes.all %}
-                        <div style="padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md);">
-                            <div style="font-weight: 600;">{{ servidor.nome }}</div>
-                            <div style="font-size: 0.875rem; color: var(--gray-600);">
-                                {{ servidor.funcao }}
+                        <div style="padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--ifb-verde); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                                {{ servidor.nome|slice:":1" }}
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600;">{{ servidor.nome }}</div>
+                                <div style="font-size: 0.875rem; color: var(--gray-600);">
+                                    {{ servidor.funcao }} | {{ servidor.get_coordenacao_display }}
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
@@ -149,6 +257,15 @@
                             Editar Atendimento
                         </a>
                         {% endif %}
+
+                        <!-- Links rápidos para estudantes -->
+                        {% for estudante in atendimento.estudantes.all %}
+                        <a href="{% url 'core:ocorrencia_create' %}?estudante={{ estudante.matricula_sga }}"
+                           class="btn btn-outline btn-sm"
+                           style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                            📝 Ocorrência para {{ estudante.nome|truncatewords:1 }}
+                        </a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -181,10 +298,61 @@
                                 {{ atendimento.atualizado_em|date:"d/m/Y H:i" }}
                             </div>
                         </div>
+
+                        <!-- Estatísticas dos estudantes -->
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.875rem; color: var(--gray-700);">
+                                Estatísticas dos Estudantes
+                            </label>
+                            <div style="margin-top: 0.5rem; font-size: 0.875rem;">
+                                {% for estudante in atendimento.estudantes.all %}
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                    <span>{{ estudante.nome|truncatewords:1 }}:</span>
+                                    <span>
+                                        {{ estudante.ocorrencias.count }} ocorr.
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Função para mostrar iniciais quando imagem falha (versão pequena)
+function mostrarIniciaisPequena(img) {
+    const container = img.parentElement;
+    const iniciais = container.getAttribute('data-iniciais') || '?';
+    container.innerHTML = `<div class="foto-placeholder-pequena">${iniciais}</div>`;
+}
+
+// Tratamento de carregamento de imagens (versão pequena)
+document.addEventListener('DOMContentLoaded', function() {
+    const imagens = document.querySelectorAll('.foto-estudante-pequena');
+
+    imagens.forEach((img, index) => {
+        const container = img.parentElement;
+        const iniciais = container.getAttribute('data-iniciais') || '?';
+        const url = img.src;
+
+        console.log(`Estudante ${index + 1} no atendimento:`, { url, iniciais });
+
+        // Timeout para verificar se carregou
+        setTimeout(() => {
+            if (img.naturalWidth === 0 || img.complete === false) {
+                console.log(`  ❌ Falha ao carregar - mostrando iniciais`);
+                mostrarIniciaisPequena(img);
+            } else {
+                console.log(`  ✅ Carregada com sucesso`);
+            }
+        }, 3000);
+    });
+});
+</script>
 {% endblock %}

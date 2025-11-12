@@ -7,7 +7,12 @@
     <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudantes_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudantes_dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/atendimentos/atendimento_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/atendimentos/atendimento_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/ficha_aluno.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/ficha_aluno.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,8 +110,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-PY-252.27397.106" />
-        <option value="bundled-python-sdk-4e2b1448bda8-9a97661f3031-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.27397.106" />
+        <option value="bundled-python-sdk-164cda30dcd9-0af03a5fa574-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.26830.99" />
       </set>
     </attachedChunks>
   </component>

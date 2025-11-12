@@ -1,3 +1,5 @@
+[file name]: ocorrencia_rapida_detail.html
+[file content begin]
 {% extends 'core/base.html' %}
 {% load static %}
 
@@ -7,6 +9,66 @@
 
 {% block breadcrumb %}
     {% include 'core/components/breadcrumb.html' %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Estilos para as fotos dos estudantes */
+.foto-container {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: white;
+    flex-shrink: 0;
+}
+
+.foto-estudante {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.foto-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--ifb-verde) 0%, #004d2e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Ajustes no layout dos estudantes */
+.student-item-detail {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--gray-50);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.student-info-detail {
+    flex: 1;
+}
+
+.student-name-detail {
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.student-details-detail {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin-top: 2px;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -90,13 +152,24 @@
                         <label class="font-semibold text-gray-700 text-sm">Estudantes Envolvidos</label>
                         <div class="mt-2 flex flex-col gap-2">
                             {% for estudante in ocorrencia.estudantes.all %}
-                            <div class="p-3 bg-gray-50 rounded-md flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
-                                    {{ estudante.nome|slice:":1" }}
+                            <div class="student-item-detail">
+                                <div class="foto-container" data-iniciais="{{ estudante.get_iniciais }}">
+                                    {% if estudante.get_foto_url_proxy %}
+                                        <img src="{{ estudante.get_foto_url_proxy }}"
+                                             alt="{{ estudante.nome }}"
+                                             class="foto-estudante"
+                                             referrerpolicy="no-referrer"
+                                             loading="lazy"
+                                             onerror="mostrarIniciais(this)">
+                                    {% else %}
+                                        <div class="foto-placeholder">
+                                            {{ estudante.get_iniciais }}
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                <div class="flex-1">
-                                    <div class="font-semibold">{{ estudante.nome }}</div>
-                                    <div class="text-gray-600 text-sm">
+                                <div class="student-info-detail">
+                                    <div class="student-name-detail">{{ estudante.nome }}</div>
+                                    <div class="student-details-detail">
                                         Matrícula: {{ estudante.matricula_sga }} | {{ estudante.email }}
                                     </div>
                                 </div>
@@ -233,3 +306,27 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+// Função para mostrar iniciais quando imagem falha
+function mostrarIniciais(img) {
+    const container = img.parentElement;
+    const iniciais = container.getAttribute('data-iniciais') || '?';
+    container.innerHTML = `<div class="foto-placeholder">${iniciais}</div>`;
+}
+
+// Tratamento de carregamento de imagens
+document.addEventListener('DOMContentLoaded', function() {
+    const imagens = document.querySelectorAll('.foto-estudante');
+    imagens.forEach((img) => {
+        setTimeout(() => {
+            if (img.naturalWidth === 0 || img.complete === false) {
+                mostrarIniciais(img);
+            }
+        }, 3000);
+    });
+});
+</script>
+{% endblock %}
+[file content end]

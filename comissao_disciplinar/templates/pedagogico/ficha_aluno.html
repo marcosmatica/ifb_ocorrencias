@@ -3,19 +3,91 @@
 
 {% block title %}Ficha do Aluno - {{ estudante.nome }}{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Estilos para a foto do estudante */
+.foto-container {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    border: 4px solid white;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: white;
+}
+
+.foto-estudante {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.foto-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--ifb-verde) 0%, #004d2e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Header com foto */
+.header-com-foto {
+    background: linear-gradient(135deg, var(--ifb-verde) 0%, #004d2e 100%);
+    padding: 2rem;
+    text-align: center;
+    color: white;
+    margin-bottom: 2rem;
+    border-radius: var(--radius-lg);
+}
+
+.estudante-nome-header {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.estudante-info-header {
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .foto-container {
+        width: 100px;
+        height: 100px;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <!-- Cabeçalho -->
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">Ficha do Aluno</h1>
-            <p class="page-subtitle">{{ estudante.nome }} - {{ estudante.matricula_sga }}</p>
+    <div class="container">
+    <!-- Cabeçalho com Foto -->
+    <div class="header-com-foto">
+        <div class="foto-container" data-iniciais="{{ estudante.get_iniciais }}">
+            {% if estudante.get_foto_url_proxy %}
+                <img src="{{ estudante.get_foto_url_proxy }}"
+                     alt="{{ estudante.nome }}"
+                     class="foto-estudante"
+                     referrerpolicy="no-referrer"
+                     loading="lazy"
+                     onerror="mostrarIniciais(this)">
+            {% else %}
+                <div class="foto-placeholder">
+                    {{ estudante.get_iniciais }}
+                </div>
+            {% endif %}
         </div>
-        <div class="flex gap-2">
-            <a href="{% url 'core:estudante_detail' estudante.matricula_sga %}" class="btn btn-outline">
-                Perfil Completo
-            </a>
-        </div>
+
+        <h1 class="estudante-nome-header">{{ estudante.nome }}</h1>
+        <p class="estudante-info-header">
+            Matrícula: {{ estudante.matricula_sga }} | Turma: {{ estudante.turma.nome }}
+        </p>
     </div>
 
     <!-- Resumo -->
@@ -327,5 +399,28 @@ function openTab(evt, tabName) {
     document.getElementById(tabName).classList.add("active");
     evt.currentTarget.classList.add("active");
 }
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Função para mostrar iniciais quando imagem falha
+function mostrarIniciais(img) {
+    const container = img.parentElement;
+    const iniciais = container.getAttribute('data-iniciais') || '?';
+    container.innerHTML = `<div class="foto-placeholder">${iniciais}</div>`;
+}
+
+// Tratamento de carregamento de imagens
+document.addEventListener('DOMContentLoaded', function() {
+    const imagens = document.querySelectorAll('.foto-estudante');
+    imagens.forEach((img) => {
+        setTimeout(() => {
+            if (img.naturalWidth === 0 || img.complete === false) {
+                mostrarIniciais(img);
+            }
+        }, 3000);
+    });
+});
 </script>
 {% endblock %}

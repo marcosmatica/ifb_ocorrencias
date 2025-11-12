@@ -117,7 +117,7 @@
 
                     <div id="selection-counter-rapido" class="selection-counter hidden">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
                         <span id="counter-text-rapido">0 selecionados</span>
                     </div>
@@ -188,6 +188,76 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Estilos para as fotos no formulário */
+.foto-container-form {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: white;
+    flex-shrink: 0;
+}
+
+.foto-estudante-form {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.foto-placeholder-form {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--ifb-verde) 0%, #004d2e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Ajustes nos itens de estudante no formulário */
+.student-item-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.student-item-form:hover {
+    border-color: var(--ifb-verde);
+    background: var(--gray-50);
+}
+
+.student-item-form.selected {
+    border-color: var(--ifb-verde);
+    background: var(--ifb-verde-claro);
+}
+
+.student-info-form {
+    flex: 1;
+}
+
+.student-name-form {
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.student-details-form {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin-top: 2px;
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -316,27 +386,33 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderizarEstudantes(estudantes) {
         studentsContainer.innerHTML = '';
 
-        estudantes.forEach(estudante => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'student-item';
-            if (estudantesSelecionados.has(estudante.id)) {
-                itemDiv.classList.add('selected');
-            }
+    estudantes.forEach(estudante => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'student-item-form';
+        if (estudantesSelecionados.has(estudante.id)) {
+            itemDiv.classList.add('selected');
+        }
 
-            itemDiv.innerHTML = `
-                <input type="checkbox"
-                       name="estudantes"
-                       value="${estudante.id}"
-                       id="est_${estudante.id}"
-                       class="student-checkbox"
-                       ${estudantesSelecionados.has(estudante.id) ? 'checked' : ''}>
-                <div class="student-info">
-                    <div class="student-name">${estudante.nome}</div>
-                    <div class="student-details">
-                        ${estudante.matricula} | ${estudante.turma}
-                    </div>
+        itemDiv.innerHTML = `
+            <input type="checkbox"
+                   name="estudantes"
+                   value="${estudante.id}"
+                   id="est_${estudante.id}"
+                   class="student-checkbox"
+                   ${estudantesSelecionados.has(estudante.id) ? 'checked' : ''}>
+            <div class="foto-container-form" data-iniciais="${estudante.iniciais || '?'}">
+                ${estudante.foto_url ?
+                    `<img src="${estudante.foto_url}" alt="${estudante.nome}" class="foto-estudante-form" referrerpolicy="no-referrer" loading="lazy" onerror="mostrarIniciaisForm(this)">` :
+                    `<div class="foto-placeholder-form">${estudante.iniciais || '?'}</div>`
+                }
+            </div>
+            <div class="student-info-form">
+                <div class="student-name-form">${estudante.nome}</div>
+                <div class="student-details-form">
+                    ${estudante.matricula} | ${estudante.turma}
                 </div>
-            `;
+            </div>
+        `;
 
             // Evento de clique no item
             itemDiv.addEventListener('click', function(e) {
@@ -363,6 +439,12 @@ document.addEventListener('DOMContentLoaded', function() {
             studentsContainer.appendChild(itemDiv);
         });
     }
+
+    function mostrarIniciaisForm(img) {
+    const container = img.parentElement;
+    const iniciais = container.getAttribute('data-iniciais') || '?';
+    container.innerHTML = `<div class="foto-placeholder-form">${iniciais}</div>`;
+       }
 
     // Atualizar contador
     function atualizarContador() {
