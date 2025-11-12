@@ -1,0 +1,530 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard de Estudantes{% endblock %}
+{% block header_title %}Dashboard de Estudantes{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Seletor de Turma */
+.turma-selector {
+    background: white;
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+}
+
+.turma-selector-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.turma-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.turma-select:focus {
+    outline: none;
+    border-color: var(--ifb-verde);
+    box-shadow: 0 0 0 3px rgba(0, 102, 51, 0.1);
+}
+
+/* Grid de Cards */
+.estudantes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+/* Card do Estudante */
+.estudante-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.estudante-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--ifb-verde);
+}
+
+/* Header do Card */
+.card-header-estudante {
+    background: linear-gradient(135deg, var(--ifb-verde) 0%, #004d2e 100%);
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+}
+
+/* Status de Alerta */
+.alerta-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.alerta-baixo {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.alerta-medio {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.alerta-alto {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Foto do Estudante */
+.foto-container {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    border: 4px solid white;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: white;
+}
+
+.foto-estudante {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.foto-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+/* Nome e Info */
+.estudante-nome {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.estudante-matricula {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Body do Card */
+.card-body-estudante {
+    padding: 1.5rem;
+}
+
+/* Estatísticas */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-box {
+    text-align: center;
+    padding: 0.75rem;
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+}
+
+.stat-numero {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ifb-verde);
+    display: block;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+/* Lista de Registros */
+.registros-section {
+    margin-top: 1rem;
+}
+
+.section-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title svg {
+    width: 16px;
+    height: 16px;
+}
+
+.registro-item {
+    padding: 0.75rem;
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.registro-item:last-child {
+    margin-bottom: 0;
+}
+
+.registro-data {
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.25rem;
+}
+
+.registro-desc {
+    color: var(--gray-600);
+    line-height: 1.4;
+}
+
+.registro-vazio {
+    padding: 1rem;
+    text-align: center;
+    color: var(--gray-500);
+    font-size: 0.875rem;
+}
+
+/* Botões de Ação */
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+.btn-card {
+    flex: 1;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    border-radius: var(--radius-md);
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-card-primary {
+    background: var(--ifb-verde);
+    color: white;
+    border: 2px solid var(--ifb-verde);
+}
+
+.btn-card-primary:hover {
+    background: #004d2e;
+    border-color: #004d2e;
+}
+
+.btn-card-outline {
+    background: white;
+    color: var(--ifb-verde);
+    border: 2px solid var(--ifb-verde);
+}
+
+.btn-card-outline:hover {
+    background: var(--ifb-verde);
+    color: white;
+}
+
+/* Empty State */
+.empty-state-dashboard {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.empty-state-dashboard svg {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    color: var(--gray-400);
+}
+
+.empty-state-dashboard h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-dashboard p {
+    color: var(--gray-600);
+    margin-bottom: 1.5rem;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .estudantes-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .stat-box {
+        padding: 0.5rem;
+    }
+    
+    .stat-numero {
+        font-size: 1.25rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Seletor de Turma -->
+    <div class="turma-selector">
+        <label for="turma-select" class="turma-selector-label">
+            🎓 Selecione uma turma para visualizar os estudantes:
+        </label>
+        <select id="turma-select" class="turma-select" onchange="selecionarTurma(this.value)">
+            <option value="">-- Selecione uma turma --</option>
+            {% for turma in turmas %}
+            <option value="{{ turma.id }}" 
+                    {% if turma_selecionada and turma.id == turma_selecionada.id %}selected{% endif %}>
+                {{ turma.nome }} - {{ turma.curso.nome }} ({{ turma.estudantes.count }} estudantes)
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if turma_selecionada %}
+        <!-- Header da Turma Selecionada -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">
+                            {{ turma_selecionada.nome }}
+                        </h2>
+                        <p style="color: var(--gray-600); margin: 0;">
+                            {{ turma_selecionada.curso.nome }} • {{ estudantes|length }} estudante{{ estudantes|length|pluralize }}
+                        </p>
+                    </div>
+                    <div>
+                        <a href="{% url 'core:ocorrencia_create' %}?turma={{ turma_selecionada.id }}" 
+                           class="btn btn-primary">
+                            Nova Ocorrência
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if estudantes %}
+            <!-- Grid de Cards dos Estudantes -->
+            <div class="estudantes-grid">
+                {% for estudante in estudantes %}
+                <div class="estudante-card">
+                    <!-- Header com Foto e Status -->
+                    <div class="card-header-estudante">
+                        <!-- Badge de Alerta -->
+                        {% if estudante.status_alerta == 'alto' %}
+                            <span class="alerta-badge alerta-alto">⚠️ Alerta</span>
+                        {% elif estudante.status_alerta == 'medio' %}
+                            <span class="alerta-badge alerta-medio">⚡ Atenção</span>
+                        {% else %}
+                            <span class="alerta-badge alerta-baixo">✓ OK</span>
+                        {% endif %}
+                        
+                        <!-- Foto -->
+                        <div class="foto-container">
+                            {% if estudante.get_foto_url %}
+                                <img src="{{ estudante.get_foto_url }}" 
+                                     alt="{{ estudante.nome }}" 
+                                     class="foto-estudante"
+                                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'foto-placeholder\'>{{ estudante.get_iniciais }}</div>'">
+                            {% else %}
+                                <div class="foto-placeholder">
+                                    {{ estudante.get_iniciais }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Nome e Matrícula -->
+                        <div class="estudante-nome">{{ estudante.nome }}</div>
+                        <div class="estudante-matricula">{{ estudante.matricula_sga }}</div>
+                    </div>
+
+                    <!-- Body do Card -->
+                    <div class="card-body-estudante">
+                        <!-- Estatísticas -->
+                        <div class="stats-row">
+                            <div class="stat-box">
+                                <span class="stat-numero">{{ estudante.total_ocorrencias }}</span>
+                                <span class="stat-label">Ocorrências</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-numero">{{ estudante.total_ocorrencias_rapidas }}</span>
+                                <span class="stat-label">Rápidas</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-numero">{{ estudante.total_atendimentos }}</span>
+                                <span class="stat-label">Atendimentos</span>
+                            </div>
+                        </div>
+
+                        <!-- Últimas Ocorrências -->
+                        {% if estudante.ultimas_ocorrencias %}
+                        <div class="registros-section">
+                            <div class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                Últimas Ocorrências
+                            </div>
+                            {% for ocorrencia in estudante.ultimas_ocorrencias %}
+                            <div class="registro-item">
+                                <div class="registro-data">
+                                    {{ ocorrencia.data|date:"d/m/Y" }}
+                                    {% if ocorrencia.infracao %}
+                                        <span class="badge badge-{{ ocorrencia.infracao.gravidade|lower }} ml-2" style="font-size: 0.7rem;">
+                                            {{ ocorrencia.infracao.get_gravidade_display }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div class="registro-desc">
+                                    {{ ocorrencia.descricao|truncatewords:10 }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Últimos Atendimentos -->
+                        {% if estudante.ultimos_atendimentos %}
+                        <div class="registros-section">
+                            <div class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
+                                </svg>
+                                Últimos Atendimentos
+                            </div>
+                            {% for atendimento in estudante.ultimos_atendimentos %}
+                            <div class="registro-item">
+                                <div class="registro-data">
+                                    {{ atendimento.data|date:"d/m/Y" }} - {{ atendimento.get_coordenacao_display }}
+                                </div>
+                                <div class="registro-desc">
+                                    {{ atendimento.informacoes|truncatewords:8 }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Mensagem se não houver registros -->
+                        {% if not estudante.ultimas_ocorrencias and not estudante.ultimos_atendimentos %}
+                        <div class="registro-vazio">
+                            ✓ Nenhum registro recente
+                        </div>
+                        {% endif %}
+
+                        <!-- Botões de Ação -->
+                        <div class="card-actions">
+                            <a href="{% url 'core:estudante_detail' estudante.matricula_sga %}" 
+                               class="btn-card btn-card-primary">
+                                Ver Perfil
+                            </a>
+                            <a href="{% url 'pedagogico:ficha_aluno' estudante.matricula_sga %}" 
+                               class="btn-card btn-card-outline">
+                                Ficha Completa
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Empty State - Nenhum Estudante -->
+            <div class="empty-state-dashboard">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                <h3>Nenhum estudante ativo</h3>
+                <p>Esta turma não possui estudantes ativos no momento.</p>
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- Empty State - Selecione uma Turma -->
+        <div class="empty-state-dashboard">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            <h3>Selecione uma turma</h3>
+            <p>Escolha uma turma no seletor acima para visualizar os estudantes e seus registros.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selecionarTurma(turmaId) {
+    if (turmaId) {
+        window.location.href = `?turma=${turmaId}`;
+    } else {
+        window.location.href = window.location.pathname;
+    }
+}
+
+// Prevenir erro de imagem quebrada
+document.addEventListener('DOMContentLoaded', function() {
+    const imagens = document.querySelectorAll('.foto-estudante');
+    imagens.forEach(img => {
+        img.addEventListener('error', function() {
+            const container = this.parentElement;
+            const iniciais = container.getAttribute('data-iniciais') || '?';
+            container.innerHTML = `<div class="foto-placeholder">${iniciais}</div>`;
+        });
+    });
+});
+</script>
+{% endblock %}

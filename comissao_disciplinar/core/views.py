@@ -1182,3 +1182,87 @@ def testar_email_html(request):
         return HttpResponse(f"Email HTML enviado para {request.user.email}. Verifique sua caixa de entrada.")
     except Exception as e:
         return HttpResponse(f"Erro: {str(e)}")
+
+
+@login_required
+@user_passes_test(is_servidor)
+def estudantes_dashboard(request):
+    """Dashboard visual dos estudantes por turma com cards"""
+
+    # Pegar turmas ativas
+    turmas = Turma.objects.filter(ativa=True).select_related('curso').order_by('nome')
+
+    # Turma selecionada (via GET)
+    turma_id = request.GET.get('turma')
+    turma_selecionada = None
+    estudantes = []
+
+    if turma_id:
+        try:
+            turma_selecionada = Turma.objects.get(id=turma_id, ativa=True)
+
+            # Buscar estudantes da turma com dados relacionados
+            estudantes = Estudante.objects.filter(
+                turma=turma_selecionada,
+                situacao='ATIVO'
+            ).select_related(
+                'turma', 'curso', 'responsavel'
+            ).prefetch_related(
+                'ocorrencias',
+                'ocorrencias_rapidas'
+            ).order_by('nome')
+
+            # Adicionar contagem de atendimentos e ocorrências para cada estudante
+            from atendimentos.models import Atendimento
+
+            for estudante in estudantes:
+                # Contar ocorrências
+                estudante.total_ocorrencias = estudante.ocorrencias.count()
+                estudante.total_ocorrencias_rapidas = estudante.ocorrencias_rapidas.count()
+
+                # Contar atendimentos
+                estudante.total_atendimentos = Atendimento.objects.filter(
+                    estudantes=estudante
+                ).count()
+
+                # Últimas ocorrências (3 mais recentes)
+                estudante.ultimas_ocorrencias = estudante.ocorrencias.all().order_by('-data')[:3]
+
+                # Últimas ocorrências rápidas (3 mais recentes)
+                estudante.ultimas_ocorrencias_rapidas = estudante.ocorrencias_rapidas.all().order_by('-data')[:3]
+
+                # Últimos atendimentos (3 mais recentes)
+                estudante.ultimos_atendimentos = Atendimento.objects.filter(
+                    estudantes=estudante
+                ).order_by('-data')[:3]
+
+                # Status geral (baseado em ocorrências graves)
+                ocorrencias_graves = estudante.ocorrencias.filter(
+                    infracao__gravidade__in=['GRAVE', 'GRAVISSIMA']
+                ).count()
+
+                if ocorrencias_graves > 0:
+                    estudante.status_alerta = 'alto'
+                elif estudante.total_ocorrencias > 3:
+                    estudante.status_alerta = 'medio'
+                else:
+                    estudante.status_alerta = 'baixo'
+
+        except Turma.DoesNotExist:
+            messages.error(request, 'Turma não encontrada.')
+            turma_selecionada = None
+            estudantes = []
+
+    breadcrumbs_list = [
+        {'label': 'Dashboard', 'url': '/dashboard/'},
+        {'label': 'Dashboard de Estudantes', 'url': ''}
+    ]
+
+    context = {
+        'turmas': turmas,
+        'turma_selecionada': turma_selecionada,
+        'estudantes': estudantes,
+        'breadcrumbs_list': breadcrumbs_list,
+    }
+
+    return render(request, 'core/estudantes_dashboard.html', context)

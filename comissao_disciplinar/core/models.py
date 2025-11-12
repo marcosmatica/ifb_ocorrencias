@@ -147,7 +147,16 @@ class Estudante(models.Model):
     curso = models.ForeignKey(Curso, on_delete=models.PROTECT)
     situacao = models.CharField(max_length=15, choices=SITUACAO_CHOICES, default='ATIVO')
     data_ingresso = models.DateField()
+
+    # Foto - MANTÉM O CAMPO ORIGINAL para upload local
     foto = models.ImageField(upload_to='estudantes/', blank=True, null=True)
+
+    # NOVO CAMPO - URL da foto do Google Drive
+    foto_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text="Link direto da imagem no Google Drive. Use o formato: https://drive.google.com/uc?export=view&id=ID_DA_IMAGEM"
+    )
 
     # Responsável
     responsavel = models.ForeignKey(
@@ -162,6 +171,21 @@ class Estudante(models.Model):
 
     def __str__(self):
         return f"{self.nome} ({self.matricula_sga})"
+
+    def get_foto_url(self):
+        """Retorna a URL da foto (prioriza foto_url, depois foto local)"""
+        if self.foto_url:
+            return self.foto_url
+        elif self.foto:
+            return self.foto.url
+        return None
+
+    def get_iniciais(self):
+        """Retorna as iniciais do nome para avatar"""
+        partes = self.nome.split()
+        if len(partes) >= 2:
+            return f"{partes[0][0]}{partes[-1][0]}".upper()
+        return self.nome[0].upper() if self.nome else "?"
 
 
 class Servidor(models.Model):
