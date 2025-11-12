@@ -375,19 +375,21 @@
                         {% endif %}
                         
                         <!-- Foto -->
-                        <div class="foto-container">
-                            {% if estudante.get_foto_url %}
-                                <img src="{{ estudante.get_foto_url }}" 
-                                     alt="{{ estudante.nome }}" 
+                        <div class="foto-container" data-iniciais="{{ estudante.get_iniciais }}">
+                            {% if estudante.get_foto_url_proxy %}
+                                <img src="{{ estudante.get_foto_url_proxy }}"
+                                     alt="{{ estudante.nome }}"
                                      class="foto-estudante"
-                                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'foto-placeholder\'>{{ estudante.get_iniciais }}</div>'">
+                                     referrerpolicy="no-referrer"
+                                     loading="lazy"
+                                     onerror="mostrarIniciais(this)">
                             {% else %}
                                 <div class="foto-placeholder">
                                     {{ estudante.get_iniciais }}
                                 </div>
                             {% endif %}
                         </div>
-                        
+
                         <!-- Nome e Matrícula -->
                         <div class="estudante-nome">{{ estudante.nome }}</div>
                         <div class="estudante-matricula">{{ estudante.matricula_sga }}</div>
@@ -469,11 +471,11 @@
 
                         <!-- Botões de Ação -->
                         <div class="card-actions">
-                            <a href="{% url 'core:estudante_detail' estudante.matricula_sga %}" 
+                            <a href="{% url 'core:estudante_detail' estudante.matricula_sga %}"
                                class="btn-card btn-card-primary">
                                 Ver Perfil
                             </a>
-                            <a href="{% url 'pedagogico:ficha_aluno' estudante.matricula_sga %}" 
+                            <a href="{% url 'pedagogico:ficha_aluno' estudante.matricula_sga %}"
                                class="btn-card btn-card-outline">
                                 Ficha Completa
                             </a>
@@ -507,6 +509,13 @@
 
 {% block extra_js %}
 <script>
+// Função para mostrar iniciais quando imagem falha (DEVE estar no escopo global)
+function mostrarIniciais(img) {
+    const container = img.parentElement;
+    const iniciais = container.getAttribute('data-iniciais') || '?';
+    container.innerHTML = `<div class="foto-placeholder">${iniciais}</div>`;
+}
+
 function selecionarTurma(turmaId) {
     if (turmaId) {
         window.location.href = `?turma=${turmaId}`;
@@ -515,16 +524,33 @@ function selecionarTurma(turmaId) {
     }
 }
 
-// Prevenir erro de imagem quebrada
+// Tratamento de carregamento de imagens
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== 🔍 DEBUG: Fotos dos Estudantes ===');
+
     const imagens = document.querySelectorAll('.foto-estudante');
-    imagens.forEach(img => {
-        img.addEventListener('error', function() {
-            const container = this.parentElement;
-            const iniciais = container.getAttribute('data-iniciais') || '?';
-            container.innerHTML = `<div class="foto-placeholder">${iniciais}</div>`;
-        });
+
+    imagens.forEach((img, index) => {
+        const container = img.parentElement;
+        const iniciais = container.getAttribute('data-iniciais') || '?';
+        const url = img.src;
+
+        console.log(`Estudante ${index + 1}:`);
+        console.log(`  URL: ${url}`);
+        console.log(`  Iniciais: ${iniciais}`);
+
+        // Timeout para verificar se carregou
+        setTimeout(() => {
+            if (img.naturalWidth === 0 || img.complete === false) {
+                console.log(`  ❌ Falha ao carregar - mostrando iniciais`);
+                mostrarIniciais(img);
+            } else {
+                console.log(`  ✅ Carregada com sucesso`);
+            }
+        }, 3000);
     });
+
+    console.log('=====================================');
 });
 </script>
 {% endblock %}

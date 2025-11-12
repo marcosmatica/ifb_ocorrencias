@@ -17,6 +17,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth import get_user_model
+import requests
 
 
 def home(request):
@@ -1266,3 +1267,41 @@ def estudantes_dashboard(request):
     }
 
     return render(request, 'core/estudantes_dashboard.html', context)
+
+
+#@require_GET
+#@cache_page(60 * 60 * 24)  # Cache por 24 horas
+def proxy_imagem_google_drive(request):
+    """
+    Proxy para carregar imagens do Google Drive sem problemas de CORS
+    """
+    file_id = request.GET.get('id')
+
+    if not file_id:
+        return HttpResponse('ID não fornecido', status=400)
+
+    # URL do Google Drive
+    url = f'https://drive.google.com/uc?export=view&id={file_id}'
+
+    try:
+        # Fazer requisição para o Google Drive
+        response = requests.get(url, timeout=10, stream=True)
+
+        if response.status_code == 200:
+            # Retornar a imagem com headers corretos
+            content_type = response.headers.get('Content-Type', 'image/jpeg')
+
+            http_response = HttpResponse(
+                response.content,
+                content_type=content_type
+            )
+
+            # Adicionar headers para cache
+            http_response['Cache-Control'] = 'public, max-age=86400'  # 24 horas
+
+            return http_response
+        else:
+            return HttpResponse('Imagem não encontrada', status=404)
+
+    except requests.exceptions.RequestException as e:
+        return HttpResponse(f'Erro ao carregar imagem: {str(e)}', status=500)

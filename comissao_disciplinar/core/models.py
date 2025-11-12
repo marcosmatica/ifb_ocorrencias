@@ -180,6 +180,21 @@ class Estudante(models.Model):
             return self.foto.url
         return None
 
+    def get_foto_url_proxy(self):
+        """Retorna a URL da foto usando proxy para Google Drive"""
+        from django.urls import reverse
+
+        if self.foto_url and 'drive.google.com' in self.foto_url:
+            # Extrair ID do Google Drive
+            import re
+            match = re.search(r'id=([^&]+)', self.foto_url)
+            if match:
+                file_id = match.group(1)
+                return reverse('core:proxy_google_drive_image') + f'?id={file_id}'
+
+        # Se for foto local ou não for Google Drive, retornar URL normal
+        return self.get_foto_url()
+
     def get_iniciais(self):
         """Retorna as iniciais do nome para avatar"""
         partes = self.nome.split()

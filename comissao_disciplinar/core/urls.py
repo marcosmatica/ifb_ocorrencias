@@ -41,6 +41,7 @@ urlpatterns = [
     path('estudantes/<str:matricula>/relatorio/', views.relatorio_estudante, name='relatorio_estudante'),
     path('estudantes/<str:matricula>/', views.estudante_detail, name='estudante_detail'),
     path('estudantes/', views.estudante_list, name='estudante_list'),
+    path('proxy/google-drive-image/', views.proxy_imagem_google_drive, name='proxy_google_drive_image'),
 
     #path('estudantes/<str:matricula>/editar/', views.estudante_edit, name='estudante_edit'),
 
