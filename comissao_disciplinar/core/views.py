@@ -576,7 +576,7 @@ def notificacao_marcar_lida(request, pk):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'success': True})
 
-    return redirect('notificacoes_list')
+    return redirect('core:notificacoes_list')
 
 
 @login_required

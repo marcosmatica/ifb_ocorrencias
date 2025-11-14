@@ -97,6 +97,9 @@
             {% endif %}
         </div>
 
+        <!-- Adicione esta aba no tab-header -->
+        <button class="tab-link" onclick="openTab(event, 'responsaveis')">Responsáveis</button>
+
         <h1 class="estudante-nome-header">{{ estudante.nome }}</h1>
         <p class="estudante-info-header">
             Matrícula: {{ estudante.matricula_sga }} | Turma: {{ estudante.turma.nome }}
@@ -130,6 +133,46 @@
         </div>
 
         <div class="card">
+            <!-- Adicione este conteúdo de aba -->
+<div id="responsaveis" class="tab-content">
+            <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Responsáveis</h3>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        {% if estudante.responsaveis.all %}
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Vínculo</th>
+                                        <th>Email</th>
+                                        <th>Celular</th>
+                                        <th>Preferência de Contato</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for responsavel in estudante.responsaveis.all %}
+                                    <tr>
+                                        <td>{{ responsavel.nome }}</td>
+                                        <td>{{ responsavel.get_tipo_vinculo_display }}</td>
+                                        <td>{{ responsavel.email }}</td>
+                                        <td>{{ responsavel.celular }}</td>
+                                        <td>{{ responsavel.get_preferencia_contato_display }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4 text-muted">
+                            Nenhum responsável cadastrado.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
             <div class="card-header">
                 <h3 class="card-title">Informações Acadêmicas</h3>
             </div>

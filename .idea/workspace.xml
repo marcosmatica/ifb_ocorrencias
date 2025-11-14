@@ -7,8 +7,12 @@
     <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/services.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/services.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/estudante_detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/email/notificacao_responsavel_ocorrencia.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/email/notificacao_responsavel_ocorrencia.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/ficha_aluno.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/pedagogico/ficha_aluno.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,8 +25,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="HTML File" />
         <option value="Python Script" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -144,7 +148,7 @@
       <workItem from="1762939003349" duration="307000" />
       <workItem from="1762939728482" duration="344000" />
       <workItem from="1763077948156" duration="10167000" />
-      <workItem from="1763119394696" duration="4692000" />
+      <workItem from="1763119394696" duration="8191000" />
     </task>
     <servers />
   </component>

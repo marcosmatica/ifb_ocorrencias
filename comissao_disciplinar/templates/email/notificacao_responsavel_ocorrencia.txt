@@ -1,0 +1,20 @@
+IFB - Registro Disciplinar
+
+Prezado(a) responsável,
+
+Informamos sobre um registro disciplinar envolvendo {{ estudantes_str }}.
+
+Data: {{ ocorrencia.data|date:"d/m/Y" }}
+
+{% if ocorrencia.descricao %}
+Informações: {{ ocorrencia.descricao|truncatewords:30 }}
+{% endif %}
+
+Para mais detalhes sobre este registro, entre em contato com a coordenação do curso.
+
+Atenciosamente,
+Comissão Disciplinar Estudantil
+Instituto Federal de Brasília
+
+---
+Esta é uma mensagem automática. Por favor, não responda este email.

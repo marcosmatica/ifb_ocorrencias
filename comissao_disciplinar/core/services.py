@@ -87,6 +87,7 @@ class ServicoNotificacao:
                 responsaveis_unicos[responsavel.id]['estudantes'].append(estudante)
 
         # Enviar notificações
+        print(responsaveis_unicos.values())
         for resp_data in responsaveis_unicos.values():
             responsavel = resp_data['responsavel']
             estudantes_lista = resp_data['estudantes']
@@ -103,25 +104,34 @@ class ServicoNotificacao:
 
     @staticmethod
     def _enviar_email_responsavel(responsavel, estudantes, ocorrencia, tipo_ocorrencia):
-        """Envia email para responsável"""
+        """Envia email para responsável com informações privadas"""
         try:
             if responsavel.preferencia_contato not in ['EMAIL', 'WHATSAPP']:
                 return
 
-            estudantes_nomes = ", ".join([e.nome for e in estudantes])
+            # Formatar informações dos estudantes de forma privada
+            estudantes_info = []
+            for estudante in estudantes:
+                primeiro_nome = estudante.nome.split()[0] if estudante.nome else "Estudante"
+                nome_abreviado = primeiro_nome[:3] + "."
+                matricula_abreviada = estudante.matricula_sga[-4:]  # Últimos 4 dígitos
+                estudantes_info.append(f"{nome_abreviado} ({matricula_abreviada})")
+
+            estudantes_str = ", ".join(estudantes_info)
 
             if tipo_ocorrencia == 'ocorrencia_rapida':
                 template_html = 'email/notificacao_responsavel_rapida.html'
                 template_text = 'email/notificacao_responsavel_rapida.txt'
-                assunto = f"[IFB] Registro - {estudantes_nomes}"
+                assunto = f"[IFB] Registro - {estudantes_str}"
             else:
                 template_html = 'email/notificacao_responsavel_ocorrencia.html'
                 template_text = 'email/notificacao_responsavel_ocorrencia.txt'
-                assunto = f"[IFB] Ocorrência Disciplinar - {estudantes_nomes}"
+                assunto = f"[IFB] Registro Disciplinar - {estudantes_str}"
 
             contexto = {
                 'responsavel': responsavel,
                 'estudantes': estudantes,
+                'estudantes_str': estudantes_str,  # String formatada com nomes abreviados
                 'ocorrencia': ocorrencia,
                 'tipo_ocorrencia': tipo_ocorrencia,
             }
@@ -145,34 +155,46 @@ class ServicoNotificacao:
 
     @staticmethod
     def _enviar_sms_responsavel(responsavel, estudantes, ocorrencia, tipo_ocorrencia):
-        """Envia SMS para responsável"""
+        """Envia SMS para responsável com informações privadas"""
         try:
             if responsavel.preferencia_contato not in ['CELULAR', 'WHATSAPP']:
                 return
 
-            estudantes_nomes = estudantes[0].nome if len(estudantes) == 1 else f"{len(estudantes)} estudantes"
+            # Formatar informações dos estudantes de forma privada
+            if len(estudantes) == 1:
+                estudante = estudantes[0]
+                primeiro_nome = estudante.nome.split()[0] if estudante.nome else "Estudante"
+                # Pegar apenas as primeiras 3 letras do primeiro nome
+                nome_abreviado = primeiro_nome[:3] + "."
+                estudantes_info = f"{nome_abreviado} ({estudante.matricula_sga[-4:]})"  # Últimos 4 dígitos
+            else:
+                estudantes_info = f"{len(estudantes)} estudantes"
 
             if tipo_ocorrencia == 'ocorrencia_rapida':
-                tipo_display = dict(ocorrencia.TIPOS_RAPIDOS).get(ocorrencia.tipo_rapido, 'Ocorrência')
+                tipo_display = dict(ocorrencia.TIPOS_RAPIDOS).get(ocorrencia.tipo_rapido, 'Registro')
                 mensagem = (
-                    f"IFB - Registro: {tipo_display} envolvendo {estudantes_nomes} "
+                    f"IFB - {tipo_display} envolvendo {estudantes_info} "
                     f"em {ocorrencia.data.strftime('%d/%m/%Y')}. "
-                    f"Mais informações no email."
+                    f"Verifique o email para mais informações."
                 )
             else:
                 mensagem = (
-                    f"IFB - Ocorrência disciplinar envolvendo {estudantes_nomes} "
-                    f"registrada em {ocorrencia.data.strftime('%d/%m/%Y')}. "
-                    f"Detalhes no email enviado."
+                    f"IFB - Registro disciplinar envolvendo {estudantes_info} "
+                    f"em {ocorrencia.data.strftime('%d/%m/%Y')}. "
+                    f"Consulte o email para detalhes."
                 )
 
             # Tentar Twilio primeiro, depois Zenvia
             if hasattr(settings, 'TWILIO_ACCOUNT_SID'):
-                ServicoNotificacao._enviar_sms_via_twilio(responsavel.celular, mensagem)
+                print('executou funcao enviar_sms_via_twilio')
+                ServicoNotificacao._enviar_sms_via_twilio('+5561981564098', mensagem )#responsavel.celular, mensagem)
             elif hasattr(settings, 'ZENVIA_API_TOKEN'):
                 ServicoNotificacao._enviar_sms_via_zenvia(responsavel.celular, mensagem)
             else:
                 logger.warning("⚠️ Nenhum provedor SMS configurado")
+
+        except Exception as e:
+            logger.error(f"❌ Erro ao enviar SMS para {responsavel.nome}: {str(e)}")
 
         except Exception as e:
             logger.error(f"❌ Erro ao enviar SMS para {responsavel.nome}: {str(e)}")
@@ -197,10 +219,11 @@ class ServicoNotificacao:
                 from_=settings.TWILIO_PHONE_NUMBER,
                 to= '+5561981564098'#numero
             )
-
+            print('mandou sms')
             logger.info(f"✅ SMS Twilio enviado para {numero}: {message.sid}")
 
         except Exception as e:
+            print(f"❌ Erro Twilio: {str(e)}")
             logger.error(f"❌ Erro Twilio: {str(e)}")
 
     @staticmethod

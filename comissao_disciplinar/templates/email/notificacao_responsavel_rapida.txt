@@ -1,0 +1,16 @@
+IFB - Registro Acadêmico
+
+Prezado(a) responsável,
+
+Informamos sobre um registro envolvendo {{ estudantes_str }}.
+
+Data: {{ ocorrencia.data|date:"d/m/Y" }}
+Tipo: {{ ocorrencia.get_tipo_rapido_display }}
+
+Para mais informações, entre em contato com a coordenação do curso.
+
+Atenciosamente,
+Instituto Federal de Brasília
+
+---
+Esta é uma mensagem automática. Por favor, não responda este email.
