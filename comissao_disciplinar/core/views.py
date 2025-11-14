@@ -246,20 +246,49 @@ def ocorrencia_list(request):
 @user_passes_test(is_servidor)
 def ocorrencia_create(request):
     servidor = request.user.servidor
+    print(f"\n{'='*60}")
+    print(f"🔧 DEBUG: Iniciando criação de ocorrência")
+    print(f"📌 Servidor: {servidor.nome}")
+    print(f"{'='*60}\n")
 
     if request.method == 'POST':
         form = OcorrenciaForm(request.POST, request.FILES, servidor=servidor)
         if form.is_valid():
+            print(f"✅ Formulário válido")
             ocorrencia = form.save()
+            print(f"✅ Ocorrência #{ocorrencia.id} criada")
+            print(f"📊 Estudantes envolvidos: {ocorrencia.estudantes.count()}")
 
-            # NOVO: Notificar comissão
-            ServicoNotificacao.notificar_nova_ocorrencia(ocorrencia)
+            # NOTIFICAR COMISSÃO
+            print(f"\n{'='*60}")
+            print(f"🔔 Iniciando notificação da comissão...")
+            print(f"{'='*60}")
+            try:
+                ServicoNotificacao.notificar_nova_ocorrencia(ocorrencia)
+                print(f"✅ Comissão notificada")
+            except Exception as e:
+                print(f"❌ ERRO ao notificar comissão: {str(e)}")
+                import traceback
+                traceback.print_exc()
 
-            # NOVO: Notificar responsáveis via e-mail e SMS
-            ServicoNotificacao.notificar_responsaveis_ocorrencia(
-                ocorrencia,
-                tipo_ocorrencia='ocorrencia'
-            )
+            # NOTIFICAR RESPONSÁVEIS
+            print(f"\n{'='*60}")
+            print(f"📧 Iniciando notificação dos responsáveis...")
+            print(f"{'='*60}")
+            try:
+                ServicoNotificacao.notificar_responsaveis_ocorrencia(
+                    ocorrencia,
+                    tipo_ocorrencia='ocorrencia'
+                )
+                print(f"✅ Responsáveis notificados")
+            except Exception as e:
+                print(f"❌ ERRO ao notificar responsáveis: {str(e)}")
+                import traceback
+                traceback.print_exc()
+
+            print(f"\n{'='*60}")
+            print(f"✅ Processo de notificação concluído")
+            print(f"{'='*60}\n")
 
             messages.success(
                 request,
@@ -267,52 +296,59 @@ def ocorrencia_create(request):
                 'Notificações enviadas aos responsáveis.'
             )
             return redirect('core:ocorrencia_detail', pk=ocorrencia.pk)
+        else:
+            print(f"❌ Formulário inválido: {form.errors}")
     else:
         form = OcorrenciaForm(servidor=servidor)
 
     return render(request, 'core/ocorrencia_form.html', {'form': form})
 
 
-# Atualizar a view ocorrencia_rapida_create
 @login_required
 @user_passes_test(is_servidor)
 def ocorrencia_rapida_create(request):
     servidor = request.user.servidor
+    print(f"\n{'='*60}")
+    print(f"⚡ DEBUG: Iniciando criação de ocorrência RÁPIDA")
+    print(f"📌 Servidor: {servidor.nome}")
+    print(f"{'='*60}\n")
 
     if request.method == 'POST':
         form = OcorrenciaRapidaForm(request.POST, servidor=servidor)
         if form.is_valid():
+            print(f"✅ Formulário válido")
             ocorrencia = form.save()
+            print(f"✅ Ocorrência Rápida #{ocorrencia.id} criada")
+            print(f"📊 Tipo: {ocorrencia.get_tipo_rapido_display()}")
+            print(f"📊 Estudantes envolvidos: {ocorrencia.estudantes.count()}")
 
-            # NOVO: Notificar responsáveis via e-mail e SMS
-            ServicoNotificacao.notificar_responsaveis_ocorrencia(
-                ocorrencia,
-                tipo_ocorrencia='ocorrencia_rapida'
-            )
+            # NOTIFICAR RESPONSÁVEIS
+            print(f"\n{'='*60}")
+            print(f"📧 Iniciando notificação dos responsáveis...")
+            print(f"{'='*60}")
+            try:
+                ServicoNotificacao.notificar_responsaveis_ocorrencia(
+                    ocorrencia,
+                    tipo_ocorrencia='ocorrencia_rapida'
+                )
+                print(f"✅ Responsáveis notificados")
+            except Exception as e:
+                print(f"❌ ERRO ao notificar responsáveis: {str(e)}")
+                import traceback
+                traceback.print_exc()
+
+            print(f"\n{'='*60}")
+            print(f"✅ Processo de notificação concluído")
+            print(f"{'='*60}\n")
 
             messages.success(
                 request,
                 'Ocorrência rápida registrada! '
                 'Notificações enviadas aos responsáveis.'
             )
-            return redirect('dashboard')
-    else:
-        form = OcorrenciaRapidaForm(servidor=servidor)
-
-    return render(request, 'core/ocorrencia_rapida_form.html', {'form': form})
-
-
-@login_required
-@user_passes_test(is_servidor)
-def ocorrencia_rapida_create(request):
-    servidor = request.user.servidor
-
-    if request.method == 'POST':
-        form = OcorrenciaRapidaForm(request.POST, servidor=servidor)
-        if form.is_valid():
-            ocorrencia = form.save()
-            messages.success(request, 'Ocorrência rápida registrada com sucesso!')
             return redirect('core:dashboard')
+        else:
+            print(f"❌ Formulário inválido: {form.errors}")
     else:
         form = OcorrenciaRapidaForm(servidor=servidor)
 

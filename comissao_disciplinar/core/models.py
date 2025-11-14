@@ -80,6 +80,7 @@ class Turma(models.Model):
 # PESSOAS
 # ====================
 
+# models.py - Modelo Responsavel corrigido
 class Responsavel(models.Model):
     TIPO_VINCULO_CHOICES = [
         ('PAI', 'Pai'),
@@ -106,12 +107,29 @@ class Responsavel(models.Model):
         default='EMAIL'
     )
 
+    ultima_atualizacao = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name_plural = "Responsáveis"
         ordering = ['nome']
 
     def __str__(self):
         return f"{self.nome} ({self.get_tipo_vinculo_display()})"
+
+    @property
+    def estudantes(self):
+        """Retorna todos os estudantes vinculados a este responsável"""
+        return self.estudantes.all()
+
+    @property
+    def estudantes_ativos(self):
+        """Retorna estudantes ativos vinculados"""
+        return self.estudantes.filter(situacao='ATIVO')
+
+    @property
+    def total_estudantes(self):
+        """Retorna o total de estudantes vinculados"""
+        return self.estudantes.count()
 
 
 class Estudante(models.Model):

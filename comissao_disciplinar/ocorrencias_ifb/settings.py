@@ -76,18 +76,6 @@ DATABASES = {
     }
 }
 
-'''
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='ocorrencias_ifb'),
-        'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default='62726748'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
-    }
-}
-'''
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -144,13 +132,13 @@ else:
 # Configurações de Email para recuperação de senha
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
 EMAIL_HOST = os.getenv('EMAIL_HOST')  # Ou seu servidor SMTP
-EMAIL_PORT = os.getenv('EMAIL_PORT')
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
-EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = True #os.getenv('EMAIL_USE_TLS')
+EMAIL_USE_SSL = False #os.getenv('EMAIL_USE_SSL')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 #DEFAULT_FROM_EMAIL = '3353645@etfbsb.edu.br'
-EMAIL_TIMEOUT = os.getenv('EMAIL_TIMEOUT')  # Aumenta o timeout
+EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT'))  # Aumenta o timeout
 
 # Twilio Configuration
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
