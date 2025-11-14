@@ -1207,7 +1207,7 @@ def estudantes_dashboard(request):
                 turma=turma_selecionada,
                 situacao='ATIVO'
             ).select_related(
-                'turma', 'curso', 'responsavel'
+                'turma', 'curso', #'responsaveis'
             ).prefetch_related(
                 'ocorrencias',
                 'ocorrencias_rapidas'

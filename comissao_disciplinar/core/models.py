@@ -132,13 +132,13 @@ class Estudante(models.Model):
 
     # Contatos
     email = models.EmailField()
-    email_responsavel = models.EmailField(blank=True)
-    contato_responsavel = models.CharField(max_length=15, blank=True)
 
     # Endereço
+    cep = models.CharField(max_length=15, blank=True)
     logradouro = models.CharField(max_length=200, blank=True)
     bairro_cidade = models.CharField(max_length=100, blank=True)
     uf = models.CharField(max_length=2, blank=True)
+
 
     # Acadêmico
     turma = models.ForeignKey(Turma, on_delete=models.PROTECT, related_name='estudantes')
@@ -159,10 +159,9 @@ class Estudante(models.Model):
     )
 
     # Responsável
-    responsavel = models.ForeignKey(
+    responsaveis = models.ManyToManyField(
         Responsavel,
-        on_delete=models.SET_NULL,
-        null=True,
+        related_name='estudantes',
         blank=True
     )
 
