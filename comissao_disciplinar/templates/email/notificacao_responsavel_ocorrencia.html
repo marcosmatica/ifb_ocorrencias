@@ -1,193 +1,366 @@
 <!-- templates/email/notificacao_responsavel_ocorrencia.html -->
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificação de Ocorrência - IFB</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #006633; color: white; padding: 20px; text-align: center; }
-        .content { background: #f9f9f9; padding: 20px; margin: 20px 0; }
-        .alert { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; }
-        .info-box { background: white; padding: 15px; margin: 10px 0; border: 1px solid #ddd; }
-        .footer { text-align: center; color: #666; font-size: 12px; margin-top: 20px; }
-        .btn { display: inline-block; padding: 10px 20px; background: #006633; color: white; text-decoration: none; border-radius: 5px; }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #006633 0%, #004d2e 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .alert-box {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .student-info {
+            background: #f9fafb;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .footer {
+            background: #f9fafb;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #006633;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .important {
+            color: #ef4444;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h2>Instituto Federal de Brasília</h2>
-            <p>Notificação de Ocorrência Disciplinar</p>
+            <h1>🏛️ Instituto Federal de Brasília</h1>
+            <p>Campus Recanto das Emas</p>
         </div>
 
         <div class="content">
+            <h2>Notificação de Ocorrência Disciplinar</h2>
+
             <p>Prezado(a) <strong>{{ responsavel.nome }}</strong>,</p>
 
-            <p>Informamos que foi registrada uma ocorrência disciplinar envolvendo:</p>
-
-            <div class="info-box">
-                <strong>Estudante(s):</strong>
-                <ul>
-                    {% for estudante in estudantes %}
-                    <li>{{ estudante.nome }} - Matrícula: {{ estudante.matricula_sga }}</li>
-                    {% endfor %}
-                </ul>
+            <div class="alert-box">
+                <p><strong>⚠️ IMPORTANTE:</strong> Foi registrada uma ocorrência disciplinar envolvendo o(s) estudante(s) sob sua responsabilidade.</p>
             </div>
 
-            <div class="alert">
-                <strong>⚠️ Detalhes da Ocorrência:</strong><br>
-                <strong>Data:</strong> {{ ocorrencia.data|date:"d/m/Y" }}<br>
-                <strong>Horário:</strong> {{ ocorrencia.horario|time:"H:i" }}<br>
-                <strong>Turma:</strong> {{ ocorrencia.turma.nome }}<br>
-                {% if ocorrencia.infracao %}
-                <strong>Tipo:</strong> {{ ocorrencia.infracao.descricao }}<br>
-                <strong>Gravidade:</strong> {{ ocorrencia.infracao.get_gravidade_display }}<br>
-                {% endif %}
+            <h3>Estudante(s) Envolvido(s):</h3>
+            {% for estudante in estudantes %}
+            <div class="student-info">
+                <strong>{{ estudante.nome }}</strong><br>
+                Matrícula: {{ estudante.matricula_sga }}<br>
+                Turma: {{ estudante.turma.nome }}<br>
+                Curso: {{ estudante.curso.nome }}
             </div>
+            {% endfor %}
 
-            <div class="info-box">
-                <strong>Descrição:</strong><br>
-                {{ ocorrencia.descricao }}
-            </div>
-
-            <p><strong>Próximos passos:</strong></p>
+            <h3>Informações da Ocorrência:</h3>
             <ul>
-                <li>O estudante será notificado oficialmente</li>
-                <li>Será concedido prazo para apresentação de defesa</li>
-                <li>Você receberá atualizações sobre o andamento do processo</li>
+                <li><strong>Data:</strong> {{ ocorrencia.data|date:"d/m/Y" }}</li>
+                <li><strong>Horário:</strong> {{ ocorrencia.horario|time:"H:i" }}</li>
+                {% if ocorrencia.infracao %}
+                <li><strong>Infração:</strong> {{ ocorrencia.infracao.codigo }} - {{ ocorrencia.infracao.descricao }}</li>
+                <li><strong>Gravidade:</strong> {{ ocorrencia.infracao.get_gravidade_display }}</li>
+                {% endif %}
             </ul>
 
-            <p style="text-align: center; margin-top: 20px;">
-                <em>Para mais informações, entre em contato com a coordenação pedagógica.</em>
-            </p>
+            <div class="info-box">
+                <h4>Descrição dos Fatos:</h4>
+                <p>{{ ocorrencia.descricao }}</p>
+            </div>
+
+            <div class="info-box">
+                <h4>📋 Próximos Passos:</h4>
+                <ol>
+                    <li>O(a) estudante tem o direito à ampla defesa e ao contraditório</li>
+                    {% if ocorrencia.prazo_defesa %}
+                    <li class="important">Prazo para apresentação de defesa: {{ ocorrencia.prazo_defesa|date:"d/m/Y" }}</li>
+                    {% endif %}
+                    <li>A defesa deve ser protocolada através do sistema de ocorrências</li>
+                    <li>A Comissão Disciplinar analisará o caso</li>
+                </ol>
+            </div>
+
+            <p><strong>Dúvidas?</strong> Entre em contato com a Coordenação Pedagógica:</p>
+            <ul>
+                <li>Email: coordenacao.pedagogica@ifb.edu.br</li>
+                <li>Telefone: (61) 2103-2100</li>
+            </ul>
         </div>
 
         <div class="footer">
-            <p>Este é um e-mail automático. Por favor, não responda.</p>
-            <p>Instituto Federal de Brasília - Sistema de Ocorrências</p>
+            <p>Esta é uma mensagem automática do Sistema de Ocorrências do IFB.</p>
+            <p>Instituto Federal de Brasília - Campus Recanto das Emas</p>
+            <p>{{ "now"|date:"d/m/Y H:i" }}</p>
         </div>
     </div>
 </body>
 </html>
 
 <!-- templates/email/notificacao_responsavel_ocorrencia.txt -->
-Instituto Federal de Brasília
-Notificação de Ocorrência Disciplinar
+INSTITUTO FEDERAL DE BRASÍLIA
+Campus Recanto das Emas
+
+========================================
+NOTIFICAÇÃO DE OCORRÊNCIA DISCIPLINAR
+========================================
 
 Prezado(a) {{ responsavel.nome }},
 
-Foi registrada uma ocorrência disciplinar envolvendo:
+Foi registrada uma ocorrência disciplinar envolvendo o(s) estudante(s) sob sua responsabilidade.
 
-Estudante(s):
+ESTUDANTE(S) ENVOLVIDO(S):
 {% for estudante in estudantes %}
-- {{ estudante.nome }} (Matrícula: {{ estudante.matricula_sga }})
+- {{ estudante.nome }}
+  Matrícula: {{ estudante.matricula_sga }}
+  Turma: {{ estudante.turma.nome }}
+  Curso: {{ estudante.curso.nome }}
 {% endfor %}
 
-DETALHES DA OCORRÊNCIA:
-Data: {{ ocorrencia.data|date:"d/m/Y" }}
-Horário: {{ ocorrencia.horario|time:"H:i" }}
-Turma: {{ ocorrencia.turma.nome }}
+INFORMAÇÕES DA OCORRÊNCIA:
+- Data: {{ ocorrencia.data|date:"d/m/Y" }}
+- Horário: {{ ocorrencia.horario|time:"H:i" }}
 {% if ocorrencia.infracao %}
-Tipo: {{ ocorrencia.infracao.descricao }}
-Gravidade: {{ ocorrencia.infracao.get_gravidade_display }}
+- Infração: {{ ocorrencia.infracao.codigo }} - {{ ocorrencia.infracao.descricao }}
+- Gravidade: {{ ocorrencia.infracao.get_gravidade_display }}
 {% endif %}
 
-Descrição:
+DESCRIÇÃO DOS FATOS:
 {{ ocorrencia.descricao }}
 
 PRÓXIMOS PASSOS:
-- O estudante será notificado oficialmente
-- Será concedido prazo para apresentação de defesa
-- Você receberá atualizações sobre o andamento
+1. O(a) estudante tem direito à ampla defesa e ao contraditório
+{% if ocorrencia.prazo_defesa %}
+2. Prazo para defesa: {{ ocorrencia.prazo_defesa|date:"d/m/Y" }}
+{% endif %}
+3. A defesa deve ser protocolada no sistema
+4. A Comissão Disciplinar analisará o caso
 
-Para mais informações, entre em contato com a coordenação pedagógica.
+CONTATO:
+- Email: coordenacao.pedagogica@ifb.edu.br
+- Telefone: (61) 2103-2100
 
----
-Instituto Federal de Brasília - Sistema de Ocorrências
-Este é um e-mail automático. Por favor, não responda.
-
+========================================
+Mensagem automática - Sistema de Ocorrências IFB
+{{ "now"|date:"d/m/Y H:i" }}
+========================================
 
 <!-- templates/email/notificacao_responsavel_rapida.html -->
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Ocorrência - IFB</title>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #006633; color: white; padding: 20px; text-align: center; }
-        .content { background: #f9f9f9; padding: 20px; margin: 20px 0; }
-        .info-box { background: white; padding: 15px; margin: 10px 0; border: 1px solid #ddd; }
-        .footer { text-align: center; color: #666; font-size: 12px; margin-top: 20px; }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .student-info {
+            background: #f9fafb;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .tipo-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .footer {
+            background: #f9fafb;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h2>Instituto Federal de Brasília</h2>
-            <p>Registro de Ocorrência</p>
+            <h1>🏛️ Instituto Federal de Brasília</h1>
+            <p>Campus Recanto das Emas</p>
         </div>
 
         <div class="content">
+            <h2>Registro de Ocorrência</h2>
+
             <p>Prezado(a) <strong>{{ responsavel.nome }}</strong>,</p>
 
-            <p>Informamos que foi registrada uma ocorrência envolvendo:</p>
+            <p>Informamos que foi registrada uma ocorrência envolvendo o(s) estudante(s) sob sua responsabilidade.</p>
 
             <div class="info-box">
-                <strong>Estudante(s):</strong>
+                <p><strong>Tipo de Registro:</strong></p>
+                <span class="tipo-badge">{{ ocorrencia.get_tipo_rapido_display }}</span>
+            </div>
+
+            <h3>Estudante(s) Envolvido(s):</h3>
+            {% for estudante in estudantes %}
+            <div class="student-info">
+                <strong>{{ estudante.nome }}</strong><br>
+                Matrícula: {{ estudante.matricula_sga }}<br>
+                Turma: {{ estudante.turma.nome }}
+            </div>
+            {% endfor %}
+
+            <h3>Detalhes:</h3>
+            <ul>
+                <li><strong>Data:</strong> {{ ocorrencia.data|date:"d/m/Y" }}</li>
+                <li><strong>Horário:</strong> {{ ocorrencia.horario|time:"H:i" }}</li>
+                <li><strong>Turma:</strong> {{ ocorrencia.turma.nome }}</li>
+            </ul>
+
+            <div class="info-box">
+                <h4>ℹ️ Informações Importantes:</h4>
                 <ul>
-                    {% for estudante in estudantes %}
-                    <li>{{ estudante.nome }} - Matrícula: {{ estudante.matricula_sga }}</li>
-                    {% endfor %}
+                    <li>Este é um registro administrativo</li>
+                    <li>Não há necessidade de defesa imediata</li>
+                    <li>O registro faz parte do acompanhamento escolar</li>
+                    <li>Em caso de dúvidas, procure a Coordenação Pedagógica</li>
                 </ul>
             </div>
 
-            <div class="info-box">
-                <strong>Tipo:</strong> {{ ocorrencia.get_tipo_rapido_display }}<br>
-                <strong>Data:</strong> {{ ocorrencia.data|date:"d/m/Y" }}<br>
-                <strong>Horário:</strong> {{ ocorrencia.horario|time:"H:i" }}<br>
-                <strong>Turma:</strong> {{ ocorrencia.turma.nome }}
-            </div>
-
-            <p>Este registro faz parte do acompanhamento pedagógico do estudante.</p>
-
-            <p style="text-align: center; margin-top: 20px;">
-                <em>Para mais informações, entre em contato com a coordenação pedagógica.</em>
-            </p>
+            <p><strong>Contato:</strong></p>
+            <ul>
+                <li>Email: coordenacao.pedagogica@ifb.edu.br</li>
+                <li>Telefone: (61) 2103-2100</li>
+            </ul>
         </div>
 
         <div class="footer">
-            <p>Este é um e-mail automático. Por favor, não responda.</p>
-            <p>Instituto Federal de Brasília - Sistema de Ocorrências</p>
+            <p>Esta é uma mensagem automática do Sistema de Ocorrências do IFB.</p>
+            <p>Instituto Federal de Brasília - Campus Recanto das Emas</p>
+            <p>{{ "now"|date:"d/m/Y H:i" }}</p>
         </div>
     </div>
 </body>
 </html>
 
 <!-- templates/email/notificacao_responsavel_rapida.txt -->
-Instituto Federal de Brasília
-Registro de Ocorrência
+INSTITUTO FEDERAL DE BRASÍLIA
+Campus Recanto das Emas
+
+========================================
+REGISTRO DE OCORRÊNCIA
+========================================
 
 Prezado(a) {{ responsavel.nome }},
 
-Foi registrada uma ocorrência envolvendo:
+Informamos que foi registrada uma ocorrência envolvendo o(s) estudante(s) sob sua responsabilidade.
 
-Estudante(s):
+TIPO DE REGISTRO:
+{{ ocorrencia.get_tipo_rapido_display }}
+
+ESTUDANTE(S) ENVOLVIDO(S):
 {% for estudante in estudantes %}
-- {{ estudante.nome }} (Matrícula: {{ estudante.matricula_sga }})
+- {{ estudante.nome }}
+  Matrícula: {{ estudante.matricula_sga }}
+  Turma: {{ estudante.turma.nome }}
 {% endfor %}
 
 DETALHES:
-Tipo: {{ ocorrencia.get_tipo_rapido_display }}
-Data: {{ ocorrencia.data|date:"d/m/Y" }}
-Horário: {{ ocorrencia.horario|time:"H:i" }}
-Turma: {{ ocorrencia.turma.nome }}
+- Data: {{ ocorrencia.data|date:"d/m/Y" }}
+- Horário: {{ ocorrencia.horario|time:"H:i" }}
+- Turma: {{ ocorrencia.turma.nome }}
 
-Este registro faz parte do acompanhamento pedagógico do estudante.
+INFORMAÇÕES IMPORTANTES:
+- Este é um registro administrativo
+- Não há necessidade de defesa imediata
+- O registro faz parte do acompanhamento escolar
+- Em caso de dúvidas, procure a Coordenação Pedagógica
 
-Para mais informações, entre em contato com a coordenação pedagógica.
+CONTATO:
+- Email: coordenacao.pedagogica@ifb.edu.br
+- Telefone: (61) 2103-2100
 
----
-Instituto Federal de Brasília - Sistema de Ocorrências
-Este é um e-mail automático. Por favor, não responda.
+========================================
+Mensagem automática - Sistema de Ocorrências IFB
+{{ "now"|date:"d/m/Y H:i" }}
+========================================

@@ -138,16 +138,7 @@ else:
 
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Configurações de Email para recuperação de senha
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # Ou seu servidor SMTP
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-EMAIL_HOST_USER = '3353645@etfbsb.edu.br'
-EMAIL_HOST_PASSWORD = 'lckx iwes sydo xkrw'
-#DEFAULT_FROM_EMAIL = '3353645@etfbsb.edu.br'
-EMAIL_TIMEOUT = 30  # Aumenta o timeout
+
 
 DEFAULT_FROM_EMAIL = 'Coordenações DREP IFB Recanto das Emas <no-reply@ifb.edu.br>'
 SERVER_EMAIL = 'Coordenações DREP IFB Recanto das Emas <no-reply@ifb.edu.br>'
@@ -170,11 +161,7 @@ SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_AGE = 60 * 5
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-# ===== CONFIGURAÇÃO TWILIO (SMS) =====
-# Opção 1: Twilio (internacional, mais conhecido)
-TWILIO_ACCOUNT_SID = 'AC1be6f3e15431e83f0e92af9f3ca832d3'  # Obter em twilio.com
-TWILIO_AUTH_TOKEN = '7bc7fc38cd046a808488baf460c6a722'
-TWILIO_PHONE_NUMBER = '+12769457728'  # Número Twilio
+
 
 # ===== CONFIGURAÇÃO ZENVIA (SMS) =====
 # Opção 2: Zenvia (brasileiro, aceita números BR)
@@ -188,3 +175,32 @@ ZENVIA_SENDER_ID = 'IFB'  # Nome que aparece no SMS
 
 # Para desenvolvimento/testes sem SMS real:
 # Comente as configurações acima e o sistema apenas imprimirá logs
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'logs/notifications.log',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'core.services': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
