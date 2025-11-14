@@ -133,7 +133,7 @@ class ServicoNotificacao:
                 assunto,
                 mensagem_texto,
                 settings.DEFAULT_FROM_EMAIL,
-                [responsavel.email]
+                'marcos.rodrigues@ifb.edu.br'#[responsavel.email]
             )
             email.attach_alternative(mensagem_html, "text/html")
             email.send()
@@ -195,7 +195,7 @@ class ServicoNotificacao:
             message = client.messages.create(
                 body=mensagem,
                 from_=settings.TWILIO_PHONE_NUMBER,
-                to=numero
+                to= '+5561981564098'#numero
             )
 
             logger.info(f"✅ SMS Twilio enviado para {numero}: {message.sid}")

@@ -6,6 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/services.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/services.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/settings.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,8 +21,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="HTML File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -141,7 +144,7 @@
       <workItem from="1762939003349" duration="307000" />
       <workItem from="1762939728482" duration="344000" />
       <workItem from="1763077948156" duration="10167000" />
-      <workItem from="1763119394696" duration="2889000" />
+      <workItem from="1763119394696" duration="4692000" />
     </task>
     <servers />
   </component>

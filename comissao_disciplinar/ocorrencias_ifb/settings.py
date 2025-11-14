@@ -1,6 +1,10 @@
 from pathlib import Path
-import os
 from decouple import config
+import os
+from dotenv import load_dotenv
+
+# Carrega variáveis do .env
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='change-me-in-production')
@@ -137,7 +141,21 @@ else:
 
 
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Configurações de Email para recuperação de senha
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
+EMAIL_HOST = os.getenv('EMAIL_HOST')  # Ou seu servidor SMTP
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+#DEFAULT_FROM_EMAIL = '3353645@etfbsb.edu.br'
+EMAIL_TIMEOUT = os.getenv('EMAIL_TIMEOUT')  # Aumenta o timeout
 
+# Twilio Configuration
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
 
 
 DEFAULT_FROM_EMAIL = 'Coordenações DREP IFB Recanto das Emas <no-reply@ifb.edu.br>'
