@@ -1,0 +1,193 @@
+<!-- templates/email/notificacao_responsavel_ocorrencia.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #006633; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; margin: 20px 0; }
+        .alert { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; }
+        .info-box { background: white; padding: 15px; margin: 10px 0; border: 1px solid #ddd; }
+        .footer { text-align: center; color: #666; font-size: 12px; margin-top: 20px; }
+        .btn { display: inline-block; padding: 10px 20px; background: #006633; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Instituto Federal de Brasília</h2>
+            <p>Notificação de Ocorrência Disciplinar</p>
+        </div>
+
+        <div class="content">
+            <p>Prezado(a) <strong>{{ responsavel.nome }}</strong>,</p>
+
+            <p>Informamos que foi registrada uma ocorrência disciplinar envolvendo:</p>
+
+            <div class="info-box">
+                <strong>Estudante(s):</strong>
+                <ul>
+                    {% for estudante in estudantes %}
+                    <li>{{ estudante.nome }} - Matrícula: {{ estudante.matricula_sga }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="alert">
+                <strong>⚠️ Detalhes da Ocorrência:</strong><br>
+                <strong>Data:</strong> {{ ocorrencia.data|date:"d/m/Y" }}<br>
+                <strong>Horário:</strong> {{ ocorrencia.horario|time:"H:i" }}<br>
+                <strong>Turma:</strong> {{ ocorrencia.turma.nome }}<br>
+                {% if ocorrencia.infracao %}
+                <strong>Tipo:</strong> {{ ocorrencia.infracao.descricao }}<br>
+                <strong>Gravidade:</strong> {{ ocorrencia.infracao.get_gravidade_display }}<br>
+                {% endif %}
+            </div>
+
+            <div class="info-box">
+                <strong>Descrição:</strong><br>
+                {{ ocorrencia.descricao }}
+            </div>
+
+            <p><strong>Próximos passos:</strong></p>
+            <ul>
+                <li>O estudante será notificado oficialmente</li>
+                <li>Será concedido prazo para apresentação de defesa</li>
+                <li>Você receberá atualizações sobre o andamento do processo</li>
+            </ul>
+
+            <p style="text-align: center; margin-top: 20px;">
+                <em>Para mais informações, entre em contato com a coordenação pedagógica.</em>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>Este é um e-mail automático. Por favor, não responda.</p>
+            <p>Instituto Federal de Brasília - Sistema de Ocorrências</p>
+        </div>
+    </div>
+</body>
+</html>
+
+<!-- templates/email/notificacao_responsavel_ocorrencia.txt -->
+Instituto Federal de Brasília
+Notificação de Ocorrência Disciplinar
+
+Prezado(a) {{ responsavel.nome }},
+
+Foi registrada uma ocorrência disciplinar envolvendo:
+
+Estudante(s):
+{% for estudante in estudantes %}
+- {{ estudante.nome }} (Matrícula: {{ estudante.matricula_sga }})
+{% endfor %}
+
+DETALHES DA OCORRÊNCIA:
+Data: {{ ocorrencia.data|date:"d/m/Y" }}
+Horário: {{ ocorrencia.horario|time:"H:i" }}
+Turma: {{ ocorrencia.turma.nome }}
+{% if ocorrencia.infracao %}
+Tipo: {{ ocorrencia.infracao.descricao }}
+Gravidade: {{ ocorrencia.infracao.get_gravidade_display }}
+{% endif %}
+
+Descrição:
+{{ ocorrencia.descricao }}
+
+PRÓXIMOS PASSOS:
+- O estudante será notificado oficialmente
+- Será concedido prazo para apresentação de defesa
+- Você receberá atualizações sobre o andamento
+
+Para mais informações, entre em contato com a coordenação pedagógica.
+
+---
+Instituto Federal de Brasília - Sistema de Ocorrências
+Este é um e-mail automático. Por favor, não responda.
+
+
+<!-- templates/email/notificacao_responsavel_rapida.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #006633; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; margin: 20px 0; }
+        .info-box { background: white; padding: 15px; margin: 10px 0; border: 1px solid #ddd; }
+        .footer { text-align: center; color: #666; font-size: 12px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Instituto Federal de Brasília</h2>
+            <p>Registro de Ocorrência</p>
+        </div>
+
+        <div class="content">
+            <p>Prezado(a) <strong>{{ responsavel.nome }}</strong>,</p>
+
+            <p>Informamos que foi registrada uma ocorrência envolvendo:</p>
+
+            <div class="info-box">
+                <strong>Estudante(s):</strong>
+                <ul>
+                    {% for estudante in estudantes %}
+                    <li>{{ estudante.nome }} - Matrícula: {{ estudante.matricula_sga }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <strong>Tipo:</strong> {{ ocorrencia.get_tipo_rapido_display }}<br>
+                <strong>Data:</strong> {{ ocorrencia.data|date:"d/m/Y" }}<br>
+                <strong>Horário:</strong> {{ ocorrencia.horario|time:"H:i" }}<br>
+                <strong>Turma:</strong> {{ ocorrencia.turma.nome }}
+            </div>
+
+            <p>Este registro faz parte do acompanhamento pedagógico do estudante.</p>
+
+            <p style="text-align: center; margin-top: 20px;">
+                <em>Para mais informações, entre em contato com a coordenação pedagógica.</em>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>Este é um e-mail automático. Por favor, não responda.</p>
+            <p>Instituto Federal de Brasília - Sistema de Ocorrências</p>
+        </div>
+    </div>
+</body>
+</html>
+
+<!-- templates/email/notificacao_responsavel_rapida.txt -->
+Instituto Federal de Brasília
+Registro de Ocorrência
+
+Prezado(a) {{ responsavel.nome }},
+
+Foi registrada uma ocorrência envolvendo:
+
+Estudante(s):
+{% for estudante in estudantes %}
+- {{ estudante.nome }} (Matrícula: {{ estudante.matricula_sga }})
+{% endfor %}
+
+DETALHES:
+Tipo: {{ ocorrencia.get_tipo_rapido_display }}
+Data: {{ ocorrencia.data|date:"d/m/Y" }}
+Horário: {{ ocorrencia.horario|time:"H:i" }}
+Turma: {{ ocorrencia.turma.nome }}
+
+Este registro faz parte do acompanhamento pedagógico do estudante.
+
+Para mais informações, entre em contato com a coordenação pedagógica.
+
+---
+Instituto Federal de Brasília - Sistema de Ocorrências
+Este é um e-mail automático. Por favor, não responda.

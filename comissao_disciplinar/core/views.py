@@ -251,13 +251,55 @@ def ocorrencia_create(request):
         form = OcorrenciaForm(request.POST, request.FILES, servidor=servidor)
         if form.is_valid():
             ocorrencia = form.save()
+
+            # NOVO: Notificar comissão
             ServicoNotificacao.notificar_nova_ocorrencia(ocorrencia)
-            messages.success(request, 'Ocorrência registrada com sucesso!')
-            return redirect('ocorrencia_detail', pk=ocorrencia.pk)
+
+            # NOVO: Notificar responsáveis via e-mail e SMS
+            ServicoNotificacao.notificar_responsaveis_ocorrencia(
+                ocorrencia,
+                tipo_ocorrencia='ocorrencia'
+            )
+
+            messages.success(
+                request,
+                'Ocorrência registrada com sucesso! '
+                'Notificações enviadas aos responsáveis.'
+            )
+            return redirect('core:ocorrencia_detail', pk=ocorrencia.pk)
     else:
         form = OcorrenciaForm(servidor=servidor)
 
     return render(request, 'core/ocorrencia_form.html', {'form': form})
+
+
+# Atualizar a view ocorrencia_rapida_create
+@login_required
+@user_passes_test(is_servidor)
+def ocorrencia_rapida_create(request):
+    servidor = request.user.servidor
+
+    if request.method == 'POST':
+        form = OcorrenciaRapidaForm(request.POST, servidor=servidor)
+        if form.is_valid():
+            ocorrencia = form.save()
+
+            # NOVO: Notificar responsáveis via e-mail e SMS
+            ServicoNotificacao.notificar_responsaveis_ocorrencia(
+                ocorrencia,
+                tipo_ocorrencia='ocorrencia_rapida'
+            )
+
+            messages.success(
+                request,
+                'Ocorrência rápida registrada! '
+                'Notificações enviadas aos responsáveis.'
+            )
+            return redirect('dashboard')
+    else:
+        form = OcorrenciaRapidaForm(servidor=servidor)
+
+    return render(request, 'core/ocorrencia_rapida_form.html', {'form': form})
 
 
 @login_required
@@ -270,7 +312,7 @@ def ocorrencia_rapida_create(request):
         if form.is_valid():
             ocorrencia = form.save()
             messages.success(request, 'Ocorrência rápida registrada com sucesso!')
-            return redirect('dashboard')
+            return redirect('core:dashboard')
     else:
         form = OcorrenciaRapidaForm(servidor=servidor)
 
@@ -348,11 +390,19 @@ def ocorrencia_notificar(request, pk):
             messages.success(request, 'Notificação enviada!')
             return redirect('ocorrencia_detail', pk=pk)
     else:
-        # Pré-preencher destinatários
+        # Pré-preencher destinatários - CORREÇÃO AQUI
         estudantes = ocorrencia.estudantes.all()
         emails = [e.email for e in estudantes]
-        responsaveis = [e.responsavel for e in estudantes if e.responsavel]
-        emails.extend([r.email for r in responsaveis])
+
+        # CORREÇÃO: Usar .all() para acessar os objetos relacionados
+        for e in estudantes:
+            # Para cada estudante, pegar todos os responsáveis
+            responsaveis_estudante = e.responsaveis.all()
+            for responsavel in responsaveis_estudante:
+                emails.append(responsavel.email)
+
+        # Remover emails duplicados (caso algum responsável tenha mais de um estudante)
+        emails = list(set(emails))
 
         form = NotificacaoForm(initial={
             'destinatarios': ', '.join(emails),

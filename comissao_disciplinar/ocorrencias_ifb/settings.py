@@ -169,3 +169,22 @@ DATA_RETENTION_YEARS = 5
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_AGE = 60 * 5
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# ===== CONFIGURAÇÃO TWILIO (SMS) =====
+# Opção 1: Twilio (internacional, mais conhecido)
+TWILIO_ACCOUNT_SID = 'AC1be6f3e15431e83f0e92af9f3ca832d3'  # Obter em twilio.com
+TWILIO_AUTH_TOKEN = '7bc7fc38cd046a808488baf460c6a722'
+TWILIO_PHONE_NUMBER = '+12769457728'  # Número Twilio
+
+# ===== CONFIGURAÇÃO ZENVIA (SMS) =====
+# Opção 2: Zenvia (brasileiro, aceita números BR)
+ZENVIA_API_TOKEN = 'seu_token_zenvia'  # Obter em zenvia.com
+ZENVIA_SENDER_ID = 'IFB'  # Nome que aparece no SMS
+
+# ===== OUTRAS OPÇÕES DE SMS BRASILEIRAS =====
+# - Total Voice: https://totalvoice.com.br/
+# - Movile SMS: https://www.movile.com/sms/
+# - SMS Brasil: https://www.smsbrasil.com.br/
+
+# Para desenvolvimento/testes sem SMS real:
+# Comente as configurações acima e o sistema apenas imprimirá logs

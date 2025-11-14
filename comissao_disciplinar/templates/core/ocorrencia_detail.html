@@ -33,7 +33,7 @@
                 </svg>
                 Imprimir
             </button>
-            <a href="{% url 'gerar_documento' ocorrencia.pk 'REGISTRO' %}" class="btn btn-primary btn-sm">
+            <a href="{% url 'core:gerar_documento' ocorrencia.pk 'REGISTRO' %}" class="btn btn-primary btn-sm">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                 </svg>
@@ -89,7 +89,7 @@
                                         Matrícula: {{ estudante.matricula_sga }} | {{ estudante.email }}
                                     </div>
                                 </div>
-                                <a href="{% url 'relatorio_estudante' estudante.matricula_sga %}" class="btn btn-outline btn-sm">
+                                <a href="{% url 'core:relatorio_estudante' estudante.matricula_sga %}" class="btn btn-outline btn-sm">
                                     Ver Histórico
                                 </a>
                             </div>
@@ -183,7 +183,7 @@
                             <strong>Aguardando defesa</strong>
                             <p class="mt-2">Prazo até: {{ ocorrencia.prazo_defesa|date:"d/m/Y" }}</p>
                         </div>
-                        <a href="{% url 'ocorrencia_apresentar_defesa' ocorrencia.pk %}" class="btn btn-primary">
+                        <a href="{% url 'core:ocorrencia_apresentar_defesa' ocorrencia.pk %}" class="btn btn-primary">
                             Apresentar Defesa
                         </a>
                     {% endif %}
@@ -280,25 +280,25 @@
                 <div class="card-body">
                     <div class="flex flex-col gap-2">
                         {% if ocorrencia.status == 'REGISTRADA' and user.servidor.membro_comissao_disciplinar %}
-                        <a href="{% url 'ocorrencia_iniciar_analise' ocorrencia.pk %}" class="btn btn-primary btn-sm">
+                        <a href="{% url 'core:ocorrencia_iniciar_analise' ocorrencia.pk %}" class="btn btn-primary btn-sm">
                             Iniciar Análise
                         </a>
                         {% endif %}
 
                         {% if ocorrencia.status in 'REGISTRADA,COMISSAO_DESIGNADA' %}
-                        <a href="{% url 'ocorrencia_notificar' ocorrencia.pk %}" class="btn btn-outline btn-sm">
+                        <a href="{% url 'core:ocorrencia_notificar' ocorrencia.pk %}" class="btn btn-outline btn-sm">
                             Enviar Notificação
                         </a>
                         {% endif %}
 
                         {% if ocorrencia.status == 'EM_ANALISE' and user.servidor.membro_comissao_disciplinar %}
-                        <a href="{% url 'comissao_create' ocorrencia.pk %}" class="btn btn-outline btn-sm">
+                        <a href="{% url 'core:comissao_create' ocorrencia.pk %}" class="btn btn-outline btn-sm">
                             Designar Comissão
                         </a>
                         {% endif %}
 
                         {% if ocorrencia.status == 'EM_JULGAMENTO' and user.servidor.membro_comissao_disciplinar %}
-                        <a href="{% url 'ocorrencia_aplicar_sancao' ocorrencia.pk %}" class="btn btn-danger btn-sm">
+                        <a href="{% url 'core:ocorrencia_aplicar_sancao' ocorrencia.pk %}" class="btn btn-danger btn-sm">
                             Aplicar Sanção
                         </a>
                         {% endif %}
