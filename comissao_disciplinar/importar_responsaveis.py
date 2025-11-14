@@ -11,7 +11,7 @@ django.setup()
 
 from core.models import Estudante, Responsavel, Turma, Curso, Campus
 from django.db import transaction
-
+ceps = []
 
 def buscar_cep(cep):
     """
@@ -19,6 +19,10 @@ def buscar_cep(cep):
     Retorna: { 'logradouro', 'bairro', 'localidade', 'uf', 'erro' }
     """
     cep_limpo = ''.join(filter(str.isdigit, cep))
+    if cep_limpo not in ceps:
+        ceps.append(cep_limpo)
+    else:
+        return {'erro': 'CEP já buscado'}
 
     if len(cep_limpo) != 8:
         return {'erro': 'CEP inválido'}
