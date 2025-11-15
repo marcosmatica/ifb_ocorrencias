@@ -15,6 +15,11 @@ import qrcode
 from django.conf import settings
 import os
 
+from reportlab.lib.pagesizes import mm
+from reportlab.pdfgen import canvas
+from io import BytesIO
+from datetime import datetime
+
 def gerar_documento_pdf(ocorrencia, tipo_documento):
     """Gera documento PDF profissional baseado no tipo"""
     buffer = BytesIO()
@@ -424,7 +429,7 @@ def enviar_notificacao_email(notificacao_id):
         destinatarios = [email.strip() for email in notificacao.destinatarios.split(',')]
 
         send_mail(
-            subject=f"IFB - {notificacao.get_tipo_display()}",
+            subject=f"IFB Recanto das Emas - {notificacao.get_tipo_display()}",
             message=notificacao.texto,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=destinatarios,
@@ -434,3 +439,183 @@ def enviar_notificacao_email(notificacao_id):
         return f"E-mail enviado para {len(destinatarios)} destinatário(s)"
     except Exception as e:
         return f"Erro ao enviar e-mail: {str(e)}"
+
+
+def gerar_recibo_termico_ocorrencia_rapida(ocorrencia):
+    """
+    Gera um recibo térmico (58mm de largura) para ocorrência rápida
+    Similar a cupom fiscal de mercado
+    """
+    # Configurações para impressora térmica 58mm
+    LARGURA_MM = 58
+    MARGEM_MM = 3
+
+    # Converter mm para pontos (1mm = 2.83465 pontos)
+    largura = LARGURA_MM * mm
+    margem = MARGEM_MM * mm
+
+    # PASSO 1: Calcular altura necessária
+    linha_altura = 12
+    linhas_necessarias = 0
+
+    # Cabeçalho: 5 linhas
+    linhas_necessarias += 5
+
+    # Dados da ocorrência: 4 linhas
+    linhas_necessarias += 4
+
+    # Tipo: 3 linhas
+    linhas_necessarias += 3
+
+    # Turma: 4 linhas
+    linhas_necessarias += 4
+
+    # Estudantes
+    linhas_necessarias += 2  # Título
+    estudantes = ocorrencia.estudantes.all()
+    linhas_necessarias += len(estudantes) * 3  # 3 linhas por estudante
+
+    # Descrição (se houver)
+    if ocorrencia.descricao:
+        linhas_necessarias += 2  # Título
+        # Estimar linhas da descrição
+        palavras = ocorrencia.descricao[:150].split()
+        linha_atual = ""
+        max_chars = 35
+        for palavra in palavras:
+            if len(linha_atual + " " + palavra) <= max_chars:
+                linha_atual += (" " if linha_atual else "") + palavra
+            else:
+                linhas_necessarias += 1
+                linha_atual = palavra
+        if linha_atual:
+            linhas_necessarias += 1
+
+    # Responsável: 4 linhas
+    linhas_necessarias += 4
+
+    # Rodapé: 5 linhas
+    linhas_necessarias += 5
+
+    # Calcular altura total
+    altura_conteudo = linhas_necessarias * linha_altura
+    altura_total = altura_conteudo + (margem * 4)  # Margem extra
+
+    # PASSO 2: Criar canvas com altura correta
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=(largura, altura_total))
+
+    # Posição Y inicial (de cima para baixo)
+    y = altura_total - (margem * 2)
+
+    def texto_centralizado(texto, y_pos, tamanho=8, negrito=False):
+        """Desenha texto centralizado"""
+        font = "Helvetica-Bold" if negrito else "Helvetica"
+        c.setFont(font, tamanho)
+        texto_largura = c.stringWidth(texto, font, tamanho)
+        x = (largura - texto_largura) / 2
+        c.drawString(x, y_pos, texto)
+        return y_pos - linha_altura
+
+    def texto_esquerda(texto, y_pos, tamanho=7):
+        """Desenha texto alinhado à esquerda"""
+        c.setFont("Helvetica", tamanho)
+        c.drawString(margem, y_pos, texto)
+        return y_pos - linha_altura
+
+    def linha_tracejada(y_pos):
+        """Desenha linha tracejada"""
+        c.setDash(1, 2)
+        c.line(margem, y_pos, largura - margem, y_pos)
+        c.setDash()
+        return y_pos - 8
+
+    # === CABEÇALHO ===
+    y = texto_centralizado("INSTITUTO FEDERAL", y, 9, True)
+    y = texto_centralizado("DE BRASILIA", y, 9, True)
+    y = texto_centralizado("Campus Recanto das Emas", y, 7)
+    y -= 4
+    y = linha_tracejada(y)
+
+    # === TÍTULO ===
+    y = texto_centralizado("REGISTRO DE OCORRENCIA", y, 8, True)
+    y = texto_centralizado("(Ocorrencia Rapida)", y, 7)
+    y -= 4
+    y = linha_tracejada(y)
+
+    # === DADOS DA OCORRÊNCIA ===
+    y = texto_esquerda(f"No: {ocorrencia.id:06d}", y, 8)
+    y = texto_esquerda(f"Data: {ocorrencia.data.strftime('%d/%m/%Y')}", y)
+    y = texto_esquerda(f"Hora: {ocorrencia.horario.strftime('%H:%M')}", y)
+    y -= 4
+    y = linha_tracejada(y)
+
+    # === TIPO ===
+    y = texto_esquerda("TIPO DE OCORRENCIA:", y, 7)
+    tipo_display = ocorrencia.get_tipo_rapido_display()
+    y = texto_centralizado(tipo_display, y, 8, True)
+    y -= 4
+    y = linha_tracejada(y)
+
+    # === TURMA ===
+    y = texto_esquerda("TURMA:", y, 7)
+    y = texto_esquerda(f"{ocorrencia.turma.nome}", y, 8)
+    y = texto_esquerda(f"{ocorrencia.turma.curso.nome[:30]}", y, 6)
+    y -= 4
+    y = linha_tracejada(y)
+
+    # === ESTUDANTES ===
+    y = texto_esquerda("ESTUDANTE(S):", y, 7)
+    y -= 2
+
+    for estudante in estudantes:
+        nome = estudante.nome[:25]
+        y = texto_esquerda(f"* {nome}", y, 7)
+        y = texto_esquerda(f"  Mat: {estudante.matricula_sga}", y, 6)
+        y -= 2
+
+    y -= 2
+    y = linha_tracejada(y)
+
+    # === DESCRIÇÃO ===
+    if ocorrencia.descricao:
+        y = texto_esquerda("DESCRICAO:", y, 7)
+        descricao = ocorrencia.descricao[:150]
+        palavras = descricao.split()
+        linha_atual = ""
+        max_chars = 35
+
+        for palavra in palavras:
+            if len(linha_atual + " " + palavra) <= max_chars:
+                linha_atual += (" " if linha_atual else "") + palavra
+            else:
+                if linha_atual:
+                    y = texto_esquerda(linha_atual, y, 6)
+                linha_atual = palavra
+
+        if linha_atual:
+            y = texto_esquerda(linha_atual, y, 6)
+
+        y -= 4
+        y = linha_tracejada(y)
+
+    # === RESPONSÁVEL ===
+    y = texto_esquerda("REGISTRADO POR:", y, 7)
+    nome_servidor = ocorrencia.responsavel_registro.nome[:30]
+    y = texto_esquerda(nome_servidor, y, 7)
+    y = texto_esquerda(f"SIAPE: {ocorrencia.responsavel_registro.siape}", y, 6)
+    y -= 4
+    y = linha_tracejada(y)
+
+    # === RODAPÉ ===
+    y -= 4
+    y = texto_centralizado("Sistema de Ocorrencias IFB", y, 6)
+    data_hora = datetime.now().strftime("%d/%m/%Y %H:%M")
+    y = texto_centralizado(data_hora, y, 6)
+    y -= 4
+    y = linha_tracejada(y)
+    y = texto_centralizado("*** FIM DO DOCUMENTO ***", y, 6)
+
+    c.save()
+    buffer.seek(0)
+    return buffer

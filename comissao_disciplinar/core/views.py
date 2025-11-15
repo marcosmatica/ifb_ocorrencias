@@ -304,14 +304,16 @@ def ocorrencia_create(request):
     return render(request, 'core/ocorrencia_form.html', {'form': form})
 
 
+# Substitua a função ocorrencia_rapida_create no arquivo comissao_disciplinar/core/views.py
+
 @login_required
 @user_passes_test(is_servidor)
 def ocorrencia_rapida_create(request):
     servidor = request.user.servidor
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"⚡ DEBUG: Iniciando criação de ocorrência RÁPIDA")
     print(f"📌 Servidor: {servidor.nome}")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     if request.method == 'POST':
         form = OcorrenciaRapidaForm(request.POST, servidor=servidor)
@@ -322,10 +324,47 @@ def ocorrencia_rapida_create(request):
             print(f"📊 Tipo: {ocorrencia.get_tipo_rapido_display()}")
             print(f"📊 Estudantes envolvidos: {ocorrencia.estudantes.count()}")
 
+            # Verificar se deve gerar recibo
+            gerar_recibo = form.cleaned_data.get('gerar_recibo', False)
+
+            if gerar_recibo:
+                print(f"\n{'=' * 60}")
+                print(f"🖨️  Gerando recibo térmico...")
+                print(f"{'=' * 60}")
+
+                try:
+                    from .utils import gerar_recibo_termico_ocorrencia_rapida
+
+                    # Gerar recibo
+                    recibo_pdf = gerar_recibo_termico_ocorrencia_rapida(ocorrencia)
+
+                    # Salvar como documento gerado
+                    from django.core.files.base import ContentFile
+                    documento = DocumentoGerado.objects.create(
+                        ocorrencia_rapida=ocorrencia,  # Você precisará adicionar este campo no model
+                        tipo_documento='RECIBO_TERMICO',
+                        assinado=True  # Recibo já vem "assinado" pelo sistema
+                    )
+
+                    nome_arquivo = f"recibo_termico_{ocorrencia.id}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                    documento.arquivo.save(nome_arquivo, ContentFile(recibo_pdf.getvalue()))
+                    documento.assinaturas.add(servidor)
+
+                    print(f"✅ Recibo térmico gerado: {nome_arquivo}")
+
+                    # Armazenar ID do documento na sessão para baixar depois
+                    request.session['ultimo_recibo_id'] = documento.id
+
+                except Exception as e:
+                    print(f"❌ ERRO ao gerar recibo térmico: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
+                    messages.warning(request, 'Ocorrência registrada, mas houve erro ao gerar o recibo térmico.')
+
             # NOTIFICAR RESPONSÁVEIS
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print(f"📧 Iniciando notificação dos responsáveis...")
-            print(f"{'='*60}")
+            print(f"{'=' * 60}")
             try:
                 ServicoNotificacao.notificar_responsaveis_ocorrencia(
                     ocorrencia,
@@ -337,22 +376,70 @@ def ocorrencia_rapida_create(request):
                 import traceback
                 traceback.print_exc()
 
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print(f"✅ Processo de notificação concluído")
-            print(f"{'='*60}\n")
+            print(f"{'=' * 60}\n")
 
-            messages.success(
-                request,
-                'Ocorrência rápida registrada! '
-                'Notificações enviadas aos responsáveis.'
-            )
-            return redirect('core:dashboard')
+            if gerar_recibo and 'ultimo_recibo_id' in request.session:
+                messages.success(
+                    request,
+                    'Ocorrência rápida registrada! Recibo térmico gerado. '
+                    'Clique no botão "Baixar Recibo" para imprimir.'
+                )
+            else:
+                messages.success(
+                    request,
+                    'Ocorrência rápida registrada! '
+                    'Notificações enviadas aos responsáveis.'
+                )
+
+            return redirect('core:ocorrencia_rapida_detail', pk=ocorrencia.pk)
         else:
             print(f"❌ Formulário inválido: {form.errors}")
     else:
         form = OcorrenciaRapidaForm(servidor=servidor)
 
     return render(request, 'core/ocorrencia_rapida_form.html', {'form': form})
+
+
+# NOVA VIEW: Baixar recibo térmico
+@login_required
+@user_passes_test(is_servidor)
+def baixar_recibo_termico(request, ocorrencia_id):
+    """Permite baixar ou gerar recibo térmico para uma ocorrência rápida"""
+    ocorrencia = get_object_or_404(OcorrenciaRapida, pk=ocorrencia_id)
+
+    # Verificar permissão
+    if hasattr(request.user, 'servidor'):
+        pode_acessar = (
+                request.user.servidor == ocorrencia.responsavel_registro or
+                request.user.servidor.membro_comissao_disciplinar
+        )
+    else:
+        pode_acessar = False
+
+    if not pode_acessar:
+        messages.error(request, 'Você não tem permissão para acessar este documento.')
+        return redirect('core:dashboard')
+
+    try:
+        from .utils import gerar_recibo_termico_ocorrencia_rapida
+
+        # Gerar recibo
+        recibo_pdf = gerar_recibo_termico_ocorrencia_rapida(ocorrencia)
+
+        # Retornar como resposta HTTP
+        response = HttpResponse(recibo_pdf.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="recibo_termico_{ocorrencia.id}.pdf"'
+
+        return response
+
+    except Exception as e:
+        print(f"❌ ERRO ao gerar recibo térmico: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        messages.error(request, f'Erro ao gerar recibo térmico: {str(e)}')
+        return redirect('core:ocorrencia_rapida_detail', pk=ocorrencia_id)
 
 
 @login_required

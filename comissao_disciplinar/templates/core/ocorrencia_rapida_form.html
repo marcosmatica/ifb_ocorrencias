@@ -146,6 +146,29 @@
                     <div class="form-help">Selecione um ou mais estudantes</div>
                 </div>
 
+                <!-- Opção de Gerar Recibo Térmico -->
+                <div class="form-group">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
+                        <div class="flex items-start gap-3">
+                            <input type="checkbox"
+                                   name="gerar_recibo"
+                                   id="gerar-recibo"
+                                   class="mt-1"
+                                   checked>
+                            <div class="flex-1">
+                                <label for="gerar-recibo" class="font-semibold text-gray-800 cursor-pointer">
+                                    🖨️ Gerar recibo para impressão térmica
+                                </label>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    Marque esta opção para gerar um documento compacto (58mm)
+                                    compatível com impressoras térmicas portáteis, ideal para
+                                    registro físico imediato da ocorrência.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Botões -->
                 <div class="flex gap-2 justify-between mt-8 pt-6 border-t border-gray-200">
                     <a href="{% url 'core:dashboard' %}" class="btn btn-outline">

@@ -85,4 +85,5 @@ urlpatterns = [
     path('diagnostico-email/', views.diagnostico_email, name='diagnostico_email'),
     path('api/estudantes/filtrar/', views.api_filtrar_estudantes, name='api_filtrar_estudantes'),
     path('api/servidores/filtrar/', views.api_filtrar_servidores, name='api_filtrar_servidores'),
+    path('ocorrencias-rapidas/<int:ocorrencia_id>/recibo/', views.baixar_recibo_termico, name='baixar_recibo_termico'),
 ]

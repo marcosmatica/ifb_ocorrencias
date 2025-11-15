@@ -126,6 +126,18 @@ class OcorrenciaRapidaForm(forms.ModelForm):
         })
     )
 
+    # NOVO: Campo para gerar recibo térmico
+    gerar_recibo = forms.BooleanField(
+        required=False,
+        initial=True,  # Marcado por padrão
+        label='Gerar recibo para impressão térmica',
+        help_text='Marque para gerar documento no formato de impressora térmica (58mm)',
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-checkbox',
+            'id': 'gerar-recibo'
+        })
+    )
+
     class Meta:
         model = OcorrenciaRapida
         fields = ['data', 'horario', 'turma', 'estudantes', 'tipo_rapido']

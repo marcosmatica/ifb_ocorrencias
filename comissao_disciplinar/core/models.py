@@ -538,13 +538,27 @@ class DocumentoGerado(models.Model):
         ('TERMO_COMPROMISSO', 'Termo de Compromisso'),
         ('NOTIFICACAO', 'Notificação/Intimação'),
         ('PARECER', 'Parecer da Comissão'),
+        ('RECIBO_TERMICO', 'Recibo Térmico'),  # NOVO
     ]
 
+    # Relacionamentos (um dos dois deve estar preenchido)
     ocorrencia = models.ForeignKey(
         Ocorrencia,
         on_delete=models.CASCADE,
-        related_name='documentos'
+        related_name='documentos',
+        null=True,
+        blank=True
     )
+
+    # NOVO: Relacionamento com OcorrenciaRapida
+    ocorrencia_rapida = models.ForeignKey(
+        'OcorrenciaRapida',
+        on_delete=models.CASCADE,
+        related_name='documentos',
+        null=True,
+        blank=True
+    )
+
     tipo_documento = models.CharField(max_length=25, choices=TIPO_CHOICES)
     arquivo = models.FileField(upload_to='documentos_gerados/')
     data_geracao = models.DateTimeField(auto_now_add=True)
@@ -560,7 +574,19 @@ class DocumentoGerado(models.Model):
         ordering = ['-data_geracao']
 
     def __str__(self):
-        return f"{self.get_tipo_documento_display()} - Ocorrência #{self.ocorrencia.id}"
+        if self.ocorrencia:
+            return f"{self.get_tipo_documento_display()} - Ocorrência #{self.ocorrencia.id}"
+        elif self.ocorrencia_rapida:
+            return f"{self.get_tipo_documento_display()} - Ocorrência Rápida #{self.ocorrencia_rapida.id}"
+        return f"{self.get_tipo_documento_display()}"
+
+    def clean(self):
+        """Validação para garantir que pelo menos uma ocorrência está vinculada"""
+        from django.core.exceptions import ValidationError
+        if not self.ocorrencia and not self.ocorrencia_rapida:
+            raise ValidationError('Documento deve estar vinculado a uma Ocorrência ou Ocorrência Rápida.')
+        if self.ocorrencia and self.ocorrencia_rapida:
+            raise ValidationError('Documento não pode estar vinculado a ambos os tipos de ocorrência.')
 
 
 # ====================
