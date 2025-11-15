@@ -560,7 +560,7 @@ def gerar_recibo_termico_ocorrencia_rapida(ocorrencia):
     # === TURMA ===
     y = texto_esquerda("TURMA:", y, 7)
     y = texto_esquerda(f"{ocorrencia.turma.nome}", y, 8)
-    y = texto_esquerda(f"{ocorrencia.turma.curso.nome[:30]}", y, 6)
+    y = texto_esquerda(f"{ocorrencia.turma.curso.nome[:40]}", y, 6)
     y -= 4
     y = linha_tracejada(y)
 
@@ -569,7 +569,7 @@ def gerar_recibo_termico_ocorrencia_rapida(ocorrencia):
     y -= 2
 
     for estudante in estudantes:
-        nome = estudante.nome[:25]
+        nome = estudante.nome[:50]
         y = texto_esquerda(f"* {nome}", y, 7)
         y = texto_esquerda(f"  Mat: {estudante.matricula_sga}", y, 6)
         y -= 2
@@ -603,7 +603,7 @@ def gerar_recibo_termico_ocorrencia_rapida(ocorrencia):
     y = texto_esquerda("REGISTRADO POR:", y, 7)
     nome_servidor = ocorrencia.responsavel_registro.nome[:30]
     y = texto_esquerda(nome_servidor, y, 7)
-    y = texto_esquerda(f"SIAPE: {ocorrencia.responsavel_registro.siape}", y, 6)
+    y = texto_esquerda(f"SIAPE/CPF: {ocorrencia.responsavel_registro.siape}", y, 6)
     y -= 4
     y = linha_tracejada(y)
 

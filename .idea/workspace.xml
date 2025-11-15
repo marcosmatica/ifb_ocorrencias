@@ -5,16 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/ocorrencia_rapida_form.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -151,7 +142,7 @@
       <workItem from="1762939728482" duration="344000" />
       <workItem from="1763077948156" duration="10167000" />
       <workItem from="1763119394696" duration="14476000" />
-      <workItem from="1763171909799" duration="813000" />
+      <workItem from="1763171909799" duration="993000" />
     </task>
     <servers />
   </component>
