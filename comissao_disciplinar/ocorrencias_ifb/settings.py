@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = config('SECRET_KEY', default='change-me-in-production')
+SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = config('DEBUG', default=True, cast=bool)
 #ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com', 'localhost', '127.0.0.1']
@@ -140,10 +140,18 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 #DEFAULT_FROM_EMAIL = '3353645@etfbsb.edu.br'
 EMAIL_TIMEOUT = int(os.getenv('EMAIL_TIMEOUT'))  # Aumenta o timeout
 
+
+# ===== CONFIGURAÇÃO ZENVIA (SMS) =====
+# Opção 2: Zenvia (brasileiro, aceita números BR)
+ZENVIA_API_KEY = os.getenv('ZENVIA_API_KEY')  # Obter em zenvia.com
+ZENVIA_SENDER_ID = os.getenv('ZENVIA_SENDER_ID')  # Nome que aparece no SMS
+ZENVIA_FROM = os.getenv('ZENVIA_FROM')
+
+
 # Twilio Configuration
-TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
-TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
+#TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+#TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+#TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
 
 
 DEFAULT_FROM_EMAIL = 'Coordenações DREP IFB Recanto das Emas <no-reply@ifb.edu.br>'
@@ -169,10 +177,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 
 
-# ===== CONFIGURAÇÃO ZENVIA (SMS) =====
-# Opção 2: Zenvia (brasileiro, aceita números BR)
-ZENVIA_API_TOKEN = 'seu_token_zenvia'  # Obter em zenvia.com
-ZENVIA_SENDER_ID = 'IFB'  # Nome que aparece no SMS
+
 
 # ===== OUTRAS OPÇÕES DE SMS BRASILEIRAS =====
 # - Total Voice: https://totalvoice.com.br/
