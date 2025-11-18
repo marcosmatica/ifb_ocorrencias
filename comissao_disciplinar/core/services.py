@@ -1,4 +1,4 @@
-# core/services.py - Versão com DEBUG COMPLETO
+# core/services.py - Versão com Twilio
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -19,7 +19,7 @@ class ServicoNotificacao:
         if getattr(settings, 'DEBUG', False):
             return {
                 'email': 'marcos.rodrigues@ifb.edu.br',  # Substitua pelo email desejado
-                'sms': '981564098'  # Substitua pelo número desejado
+                'sms': '+5561981564098'  # Formato E.164 para Twilio
             }
         return None
 
@@ -214,16 +214,17 @@ class ServicoNotificacao:
                 print(f"  Preferência não é CELULAR/WHATSAPP - Pulando")
                 return
 
-            # Verificar configuração Zenvia
-            print(f"\n Verificando configurações Zenvia...")
-            has_zenvia = hasattr(settings, 'ZENVIA_API_KEY') and hasattr(settings, 'ZENVIA_FROM')
-            print(f"   ZENVIA_API_KEY existe: {hasattr(settings, 'ZENVIA_API_KEY')}")
-            print(f"   ZENVIA_FROM existe: {hasattr(settings, 'ZENVIA_FROM')}")
+            # Verificar configuração Twilio
+            print(f"\n Verificando configurações Twilio...")
+            has_twilio = hasattr(settings, 'TWILIO_ACCOUNT_SID') and hasattr(settings, 'TWILIO_AUTH_TOKEN') and hasattr(settings, 'TWILIO_PHONE_NUMBER')
+            print(f"   TWILIO_ACCOUNT_SID existe: {hasattr(settings, 'TWILIO_ACCOUNT_SID')}")
+            print(f"   TWILIO_AUTH_TOKEN existe: {hasattr(settings, 'TWILIO_AUTH_TOKEN')}")
+            print(f"   TWILIO_PHONE_NUMBER existe: {hasattr(settings, 'TWILIO_PHONE_NUMBER')}")
 
-            if has_zenvia:
-                print(f"   ZENVIA_FROM: {settings.ZENVIA_FROM}")
+            if has_twilio:
+                print(f"   TWILIO_PHONE_NUMBER: {settings.TWILIO_PHONE_NUMBER}")
             else:
-                print(f"     Zenvia não configurado")
+                print(f"     Twilio não configurado")
                 return
 
             # FORMATAR MENSAGEM
@@ -266,9 +267,9 @@ class ServicoNotificacao:
                 numero_envio = responsavel.celular
                 print(f"   Número para envio: {numero_envio}")
 
-            # Enviar via Zenvia
-            print(f"\n Enviando SMS via Zenvia...")
-            ServicoNotificacao._enviar_sms_via_zenvia(numero_envio, mensagem)
+            # Enviar via Twilio
+            print(f"\n Enviando SMS via Twilio...")
+            ServicoNotificacao._enviar_sms_via_twilio(numero_envio, mensagem)
 
         except Exception as e:
             print(f"\n ERRO ao enviar SMS:")
@@ -301,21 +302,29 @@ class ServicoNotificacao:
             )
             print(f"    Cliente criado")
 
+            # Padronizar número antes do envio
+            numero_padronizado = ServicoNotificacao._padronizar_numero_telefone(numero)
+            if not numero_padronizado:
+                print(f"  Número {numero} não pôde ser padronizado para envio SMS")
+                return
+
+            print(f" Número padronizado: {numero_padronizado}")
+
             print(f"\n Enviando mensagem...")
             print(f"   De: {settings.TWILIO_PHONE_NUMBER}")
-            print(f"   Para: {numero}")
+            print(f"   Para: {numero_padronizado}")
 
             message = client.messages.create(
                 body=mensagem,
                 from_=settings.TWILIO_PHONE_NUMBER,
-                to=numero
+                to=numero_padronizado
             )
 
             print(f"    SMS enviado com SUCESSO!")
             print(f"   SID: {message.sid}")
             print(f"   Status: {message.status}")
 
-            logger.info(f" SMS Twilio enviado para {numero}: {message.sid}")
+            logger.info(f" SMS Twilio enviado para {numero_padronizado}: {message.sid}")
 
         except Exception as e:
             print(f"\n ERRO FATAL no Twilio:")
@@ -328,7 +337,7 @@ class ServicoNotificacao:
     @staticmethod
     def _padronizar_numero_telefone(numero):
         """
-        Padroniza número de telefone para o formato Zenvia (E.164)
+        Padroniza número de telefone para o formato Twilio (E.164)
 
         Args:
             numero (str): Número de telefone a ser padronizado
@@ -392,101 +401,6 @@ class ServicoNotificacao:
         print(f"   Número final padronizado: {numero_final}")
 
         return numero_final
-
-    @staticmethod
-    def _enviar_sms_via_zenvia(numero, mensagem):
-        """Envia SMS via Zenvia"""
-        print(f"\n{'=' * 60}")
-        print(f" _enviar_sms_via_zenvia")
-        print(f"{'=' * 60}")
-        print(f" Número original: {numero}")
-        print(f" Mensagem: {mensagem}")
-
-        try:
-            # Verificar configurações Zenvia
-            if not hasattr(settings, 'ZENVIA_API_KEY'):
-                print("  Zenvia não configurado - settings.ZENVIA_API_KEY não existe")
-                return
-
-            if not hasattr(settings, 'ZENVIA_FROM'):
-                print("  Zenvia não configurado - settings.ZENVIA_FROM não existe")
-                return
-
-            print(f"\n Verificando configurações Zenvia...")
-            print(f"   ZENVIA_API_KEY existe: {hasattr(settings, 'ZENVIA_API_KEY')}")
-            print(f"   ZENVIA_FROM existe: {hasattr(settings, 'ZENVIA_FROM')}")
-            print(f"   ZENVIA_FROM: {settings.ZENVIA_FROM}")
-
-            # Padronizar número antes do envio
-            numero_padronizado = ServicoNotificacao._padronizar_numero_telefone(numero)
-            if not numero_padronizado:
-                print(f"  Número {numero} não pôde ser padronizado para envio SMS")
-                return
-
-            print(f" Número padronizado: {numero_padronizado}")
-
-            print(f"\n Preparando requisição para Zenvia API...")
-
-            # Configurações da requisição Zenvia
-            url = "https://api.zenvia.com/v2/channels/sms/messages"
-            headers = {
-                "X-API-TOKEN": settings.ZENVIA_API_KEY,
-                "Content-Type": "application/json"
-            }
-
-            # Payload para Zenvia
-            payload = {
-                "from": settings.ZENVIA_FROM,
-                "to": numero_padronizado,
-                "contents": [
-                    {
-                        "type": "text",
-                        "text": mensagem
-                    }
-                ]
-            }
-
-            print(f"\n Enviando mensagem via Zenvia...")
-            print(f"   De: {settings.ZENVIA_FROM}")
-            print(f"   Para: {numero_padronizado}")
-            print(f"   URL: {url}")
-
-            # Fazer requisição para API Zenvia
-            import requests
-            response = requests.post(url, json=payload, headers=headers)
-
-            print(f"   Status Code: {response.status_code}")
-
-            if response.status_code == 200:
-                response_data = response.json()
-                print(f"    SMS enviado com SUCESSO!")
-                print(f"   ID: {response_data.get('id')}")
-                print(f"   Status: {response_data.get('status')}")
-                print(f"   Code: {response_data.get('code')}")
-                logger.info(f" SMS Zenvia enviado para {numero_padronizado}: {response_data.get('id')}")
-
-            elif response.status_code == 401:
-                print(f"    ERRO: Autenticação falhou - API Key inválida")
-                logger.error(f" Erro Zenvia 401: API Key inválida")
-
-            elif response.status_code == 400:
-                error_detail = response.json()
-                print(f"    ERRO: Requisição inválida")
-                print(f"   Detalhes: {error_detail}")
-                logger.error(f" Erro Zenvia 400: {error_detail}")
-
-            else:
-                print(f"    ERRO: Status inesperado: {response.status_code}")
-                print(f"   Resposta: {response.text}")
-                logger.error(f" Erro Zenvia {response.status_code}: {response.text}")
-
-        except Exception as e:
-            print(f"\n ERRO FATAL na Zenvia:")
-            print(f"   {str(e)}")
-            logger.error(f" Erro Zenvia: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            raise
 
     @staticmethod
     def notificar_nova_ocorrencia(ocorrencia):

@@ -8,7 +8,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = False #config('DEBUG', default=True, cast=bool)
 #ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com', 'localhost', '127.0.0.1']
 
@@ -149,9 +149,9 @@ ZENVIA_FROM = os.getenv('ZENVIA_FROM')
 
 
 # Twilio Configuration
-#TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
-#TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
-#TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
 
 
 DEFAULT_FROM_EMAIL = 'Coordenações DREP IFB Recanto das Emas <no-reply@ifb.edu.br>'
