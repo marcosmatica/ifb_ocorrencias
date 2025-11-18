@@ -1,4 +1,4 @@
-# core/services.py - Versão com Twilio
+# core/services.py - Versão com prioridade MÃE/PAI para SMS
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -18,8 +18,8 @@ class ServicoNotificacao:
         """Retorna destinatários para modo DEBUG"""
         if getattr(settings, 'DEBUG', False):
             return {
-                'email': 'marcos.rodrigues@ifb.edu.br',  # Substitua pelo email desejado
-                'sms': '+5561981564098'  # Formato E.164 para Twilio
+                'email': 'marcos.rodrigues@ifb.edu.br',
+                'sms': '981564098'
             }
         return None
 
@@ -82,20 +82,82 @@ class ServicoNotificacao:
                 import traceback
                 traceback.print_exc()
 
-            # SMS
-            try:
-                print(f"\n Tentando enviar SMS...")
-                ServicoNotificacao._enviar_sms_responsavel(
-                    responsavel, estudantes_lista, ocorrencia, tipo_ocorrencia
-                )
-            except Exception as e:
-                print(f" ERRO ao enviar SMS: {str(e)}")
-                import traceback
-                traceback.print_exc()
+        # SMS: Enviar apenas uma vez por estudante, priorizando MÃE
+        print(f"\n{'=' * 60}")
+        print(f" INICIANDO ENVIO DE SMS COM PRIORIDADE")
+        print(f"{'=' * 60}")
+
+        for estudante in estudantes:
+            print(f"\n Processando SMS para estudante: {estudante.nome}")
+            ServicoNotificacao._enviar_sms_priorizado(estudante, ocorrencia, tipo_ocorrencia)
 
         print(f"\n{'=' * 60}")
         print(f" PROCESSO DE NOTIFICAÇÃO CONCLUÍDO")
         print(f"{'=' * 60}\n")
+
+    @staticmethod
+    def _enviar_sms_priorizado(estudante, ocorrencia, tipo_ocorrencia):
+        """
+        Envia SMS priorizando MÃE, depois PAI
+        """
+        print(f"\n Buscando responsáveis para SMS...")
+
+        responsaveis = estudante.responsaveis.all()
+
+        # Separar por tipo de parentesco
+        mae = None
+        pai = None
+        outros = []
+
+        for resp in responsaveis:
+            if resp.preferencia_contato not in ['CELULAR', 'WHATSAPP', 'E-mail', 'EMAIL', 'Email']:
+                continue
+
+            parentesco_upper = resp.tipo_vinculo.upper() if resp.tipo_vinculo else ''
+
+            if 'MÃE' in parentesco_upper or 'MAE' in parentesco_upper:
+                mae = resp
+                print(f"   Encontrada MÃE: {resp.nome}")
+            elif 'PAI' in parentesco_upper:
+                pai = resp
+                print(f"   Encontrado PAI: {resp.nome}")
+            else:
+                outros.append(resp)
+                print(f"   Encontrado OUTRO: {resp.nome} ({resp.tipo_vinculo})")
+
+        # Tentar enviar na ordem: MÃE -> PAI -> OUTROS
+        ordem_envio = []
+        if mae:
+            ordem_envio.append(mae)
+        if pai:
+            ordem_envio.append(pai)
+        ordem_envio.extend(outros)
+
+        if not ordem_envio:
+            print(f"   Nenhum responsável com preferência SMS/WhatsApp")
+            return
+
+        print(f"\n Ordem de tentativa: {[r.nome for r in ordem_envio]}")
+
+        # Tentar enviar até conseguir
+        for responsavel in ordem_envio:
+            try:
+                print(f"\n Tentando enviar SMS para {responsavel.nome} ({responsavel.tipo_vinculo})...")
+                sucesso = ServicoNotificacao._enviar_sms_responsavel(
+                    responsavel, [estudante], ocorrencia, tipo_ocorrencia
+                )
+
+                if sucesso:
+                    print(f"    SMS enviado com SUCESSO para {responsavel.nome}")
+                    return  # Parar após primeiro envio bem-sucedido
+                else:
+                    print(f"    Falha ao enviar para {responsavel.nome}, tentando próximo...")
+
+            except Exception as e:
+                print(f"    ERRO ao enviar para {responsavel.nome}: {str(e)}")
+                continue
+
+        print(f"\n ⚠️  Não foi possível enviar SMS para nenhum responsável")
 
     @staticmethod
     def _enviar_email_responsavel(responsavel, estudantes, ocorrencia, tipo_ocorrencia):
@@ -201,7 +263,12 @@ class ServicoNotificacao:
 
     @staticmethod
     def _enviar_sms_responsavel(responsavel, estudantes, ocorrencia, tipo_ocorrencia):
-        """Envia SMS para responsável"""
+        """
+        Envia SMS para responsável
+
+        Returns:
+            bool: True se enviado com sucesso, False caso contrário
+        """
         print(f"\n{'=' * 60}")
         print(f" _enviar_sms_responsavel")
         print(f"{'=' * 60}")
@@ -212,11 +279,12 @@ class ServicoNotificacao:
         try:
             if responsavel.preferencia_contato not in ['CELULAR', 'WHATSAPP', 'E-mail', 'EMAIL', 'Email']:
                 print(f"  Preferência não é CELULAR/WHATSAPP - Pulando")
-                return
+                return False
 
             # Verificar configuração Twilio
             print(f"\n Verificando configurações Twilio...")
-            has_twilio = hasattr(settings, 'TWILIO_ACCOUNT_SID') and hasattr(settings, 'TWILIO_AUTH_TOKEN') and hasattr(settings, 'TWILIO_PHONE_NUMBER')
+            has_twilio = hasattr(settings, 'TWILIO_ACCOUNT_SID') and hasattr(settings, 'TWILIO_AUTH_TOKEN') and hasattr(
+                settings, 'TWILIO_PHONE_NUMBER')
             print(f"   TWILIO_ACCOUNT_SID existe: {hasattr(settings, 'TWILIO_ACCOUNT_SID')}")
             print(f"   TWILIO_AUTH_TOKEN existe: {hasattr(settings, 'TWILIO_AUTH_TOKEN')}")
             print(f"   TWILIO_PHONE_NUMBER existe: {hasattr(settings, 'TWILIO_PHONE_NUMBER')}")
@@ -225,7 +293,7 @@ class ServicoNotificacao:
                 print(f"   TWILIO_PHONE_NUMBER: {settings.TWILIO_PHONE_NUMBER}")
             else:
                 print(f"     Twilio não configurado")
-                return
+                return False
 
             # FORMATAR MENSAGEM
             print(f"\n Formatando mensagem...")
@@ -245,8 +313,8 @@ class ServicoNotificacao:
             if tipo_ocorrencia == 'ocorrencia_rapida':
                 tipo_display = dict(ocorrencia.TIPOS_RAPIDOS).get(ocorrencia.tipo_rapido, 'Registro')
                 mensagem = (
-                    f"IFB - {tipo_display} envolvendo {estudantes_info} "
-                    f"em {ocorrencia.data.strftime('%d/%m/%Y')}. "
+                    f"IFB Recanto das Emas - Ocorrência pedagógica - {tipo_display}. Estudante {estudantes_info} "
+                    f"em {ocorrencia.data.strftime('%d/%m/%Y %H:%M')}. "
                     f"Consulte o email {texto_email} para detalhes."
                 )
             else:
@@ -269,7 +337,8 @@ class ServicoNotificacao:
 
             # Enviar via Twilio
             print(f"\n Enviando SMS via Twilio...")
-            ServicoNotificacao._enviar_sms_via_twilio(numero_envio, mensagem)
+            sucesso = ServicoNotificacao._enviar_sms_via_twilio(numero_envio, mensagem)
+            return sucesso
 
         except Exception as e:
             print(f"\n ERRO ao enviar SMS:")
@@ -277,10 +346,16 @@ class ServicoNotificacao:
             logger.error(f" Erro ao enviar SMS para {responsavel.nome}: {str(e)}")
             import traceback
             traceback.print_exc()
+            return False
 
     @staticmethod
     def _enviar_sms_via_twilio(numero, mensagem):
-        """Envia SMS via Twilio"""
+        """
+        Envia SMS via Twilio
+
+        Returns:
+            bool: True se enviado com sucesso, False caso contrário
+        """
         print(f"\n{'=' * 60}")
         print(f" _enviar_sms_via_twilio")
         print(f"{'=' * 60}")
@@ -290,7 +365,7 @@ class ServicoNotificacao:
         try:
             if not hasattr(settings, 'TWILIO_ACCOUNT_SID'):
                 print("  Twilio não configurado - settings.TWILIO_ACCOUNT_SID não existe")
-                return
+                return False
 
             print(f"\n Importando Twilio Client...")
             from twilio.rest import Client
@@ -306,7 +381,7 @@ class ServicoNotificacao:
             numero_padronizado = ServicoNotificacao._padronizar_numero_telefone(numero)
             if not numero_padronizado:
                 print(f"  Número {numero} não pôde ser padronizado para envio SMS")
-                return
+                return False
 
             print(f" Número padronizado: {numero_padronizado}")
 
@@ -325,6 +400,7 @@ class ServicoNotificacao:
             print(f"   Status: {message.status}")
 
             logger.info(f" SMS Twilio enviado para {numero_padronizado}: {message.sid}")
+            return True
 
         except Exception as e:
             print(f"\n ERRO FATAL no Twilio:")
@@ -332,7 +408,7 @@ class ServicoNotificacao:
             logger.error(f" Erro Twilio: {str(e)}")
             import traceback
             traceback.print_exc()
-            raise
+            return False
 
     @staticmethod
     def _padronizar_numero_telefone(numero):

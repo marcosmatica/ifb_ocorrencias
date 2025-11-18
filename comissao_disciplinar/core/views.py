@@ -1194,15 +1194,15 @@ def ocorrencia_rapida_delete(request, pk):
 
     if not pode_excluir:
         messages.error(request, 'Você não tem permissão para excluir esta ocorrência.')
-        return redirect('ocorrencia_rapida_detail', pk=pk)
+        return redirect('core:ocorrencia_rapida_detail', pk=pk)
 
     if request.method == 'POST':
         ocorrencia.delete()
         messages.success(request, 'Ocorrência rápida excluída com sucesso!')
-        return redirect('ocorrencia_rapida_list')
+        return redirect('core:ocorrencia_rapida_list')
 
     # Se não for POST, redirecionar para detalhes
-    return redirect('ocorrencia_rapida_detail', pk=pk)
+    return redirect('core:ocorrencia_rapida_detail', pk=pk)
 
 
 def custom_password_reset(request):

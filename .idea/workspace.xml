@@ -6,9 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/services.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/services.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/core/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/components/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/components/sidebar.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/templates/core/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/templates/core/home.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,6 +151,7 @@
       <workItem from="1763119394696" duration="14476000" />
       <workItem from="1763171909799" duration="993000" />
       <workItem from="1763234688731" duration="3465000" />
+      <workItem from="1763428025734" duration="1440000" />
     </task>
     <servers />
   </component>

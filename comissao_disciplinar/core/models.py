@@ -653,13 +653,13 @@ class PreferenciaNotificacao(models.Model):
 
 class OcorrenciaRapida(models.Model):
     TIPOS_RAPIDOS = [
-        ('ATRASO', 'Atraso'),
-        ('CELULAR', 'Uso indevido de celular'),
-        ('UNIFORME', 'Sem uniforme'),
-        ('RECUSA', 'Recusa a participar das atividades'),
-        ('AUSENCIA', 'Ausência de sala'),
-        ('SAIDA', 'Saída Antecipada'),
-        ('BIBLIO', 'Acesso a Biblioteca sem autorização'),
+        ('ATRASO', 'Atraso para apresentar-se à aula designada'),
+        ('CELULAR', 'Uso indevido de celular durante aula'),
+        ('UNIFORME', 'Sem uniforme nos espaços do campus em horário de aula'),
+        ('RECUSA', 'Recusa a participar das atividades propostas pela(o) docente ou Coordenação'),
+        ('AUSENCIA', 'Ausência de sala em período de aula.'),
+        ('SAIDA', 'Saída Antecipada do campus.'),
+        ('BIBLIO', 'Acesso a Biblioteca sem autorização prévia de docentes e/ou Coordenação'),
     ]
 
     # Dados básicos
