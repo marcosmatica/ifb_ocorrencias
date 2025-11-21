@@ -62,15 +62,184 @@ class DocumentoGeradoAdmin(admin.ModelAdmin):
 
 @admin.register(OcorrenciaRapida)
 class OcorrenciaRapidaAdmin(admin.ModelAdmin):
-    list_display = ['id', 'data', 'horario', 'turma', 'tipo_rapido', 'responsavel_registro']
-    list_filter = ['tipo_rapido', 'data', 'turma__curso__campus']
-    search_fields = ['estudantes__nome', 'estudantes__matricula_sga', 'descricao']
+    list_display = [
+        'id',
+        'data',
+        'horario',
+        'turma',
+        'listar_tipos',  # Novo método para listar os tipos
+        'quantidade_estudantes',
+        'responsavel_registro'
+    ]
+    list_filter = [
+        'data',
+        'turma__curso__campus',
+        'tipos_rapidos'  # Agora filtra pelos tipos (ManyToMany)
+    ]
+    search_fields = [
+        'estudantes__nome',
+        'estudantes__matricula_sga',
+        'descricao',
+        'tipos_rapidos__codigo',
+        'tipos_rapidos__descricao'
+    ]
     date_hierarchy = 'data'
+    filter_horizontal = ['tipos_rapidos', 'estudantes']  # Adicionado para facilitar a seleção
+
+    # Campos para exibição no formulário de edição
+    fieldsets = (
+        ('Informações Básicas', {
+            'fields': ('data', 'horario', 'turma')
+        }),
+        ('Tipos de Ocorrência', {
+            'fields': ('tipos_rapidos',),
+            'description': 'Selecione um ou mais tipos de ocorrência rápida'
+        }),
+        ('Estudantes Envolvidos', {
+            'fields': ('estudantes',),
+            'description': 'Selecione os estudantes envolvidos na ocorrência'
+        }),
+        ('Descrição Automática', {
+            'fields': ('descricao',),
+            'classes': ('collapse',),
+            'description': 'Descrição gerada automaticamente baseada nos tipos selecionados'
+        }),
+        ('Registro', {
+            'fields': ('responsavel_registro', 'criado_em', 'atualizado_em'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    readonly_fields = ['descricao', 'criado_em', 'atualizado_em']
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related(
             'turma', 'turma__curso', 'responsavel_registro'
-        ).prefetch_related('estudantes')
+        ).prefetch_related('estudantes', 'tipos_rapidos')
+
+    def listar_tipos(self, obj):
+        """Lista os tipos de ocorrência rápida associados"""
+        tipos = obj.tipos_rapidos.all()
+        if tipos:
+            return ", ".join([tipo.codigo for tipo in tipos])
+        return "Nenhum tipo"
+
+    listar_tipos.short_description = 'Tipos de Ocorrência'
+
+    def quantidade_estudantes(self, obj):
+        """Mostra a quantidade de estudantes envolvidos"""
+        count = obj.estudantes.count()
+        return format_html(
+            '<span style="font-weight: bold; color: {};">{}</span>',
+            'blue' if count > 0 else 'red',
+            f"{count} estudante(s)"
+        )
+
+    quantidade_estudantes.short_description = 'Estudantes'
+
+    def save_model(self, request, obj, form, change):
+        """Garante que o responsável pelo registro seja definido"""
+        if not obj.responsavel_registro_id:
+            # Tenta encontrar um servidor associado ao usuário atual
+            try:
+                servidor = Servidor.objects.get(user=request.user)
+                obj.responsavel_registro = servidor
+            except Servidor.DoesNotExist:
+                # Se não encontrar, usa o primeiro servidor disponível (fallback)
+                primeiro_servidor = Servidor.objects.first()
+                if primeiro_servidor:
+                    obj.responsavel_registro = primeiro_servidor
+
+        # Gera a descrição automaticamente se estiver vazia
+        if not obj.descricao and obj.tipos_rapidos.exists():
+            tipos_selecionados = obj.tipos_rapidos.all()
+            descricoes = [tipo.descricao for tipo in tipos_selecionados]
+            obj.descricao = "; ".join(descricoes)
+
+        super().save_model(request, obj, form, change)
+
+    # Ações personalizadas
+    actions = ['gerar_recibos_termicos', 'duplicar_ocorrencias']
+
+    def gerar_recibos_termicos(self, request, queryset):
+        """Ação para gerar recibos térmicos para ocorrências selecionadas"""
+        from .utils import gerar_recibo_termico_ocorrencia_rapida
+        from django.core.files.base import ContentFile
+
+        count = 0
+        for ocorrencia in queryset:
+            try:
+                recibo_pdf = gerar_recibo_termico_ocorrencia_rapida(ocorrencia)
+
+                documento = DocumentoGerado.objects.create(
+                    ocorrencia_rapida=ocorrencia,
+                    tipo_documento='RECIBO_TERMICO',
+                    assinado=True
+                )
+
+                nome_arquivo = f"recibo_termico_{ocorrencia.id}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                documento.arquivo.save(nome_arquivo, ContentFile(recibo_pdf.getvalue()))
+
+                if ocorrencia.responsavel_registro:
+                    documento.assinaturas.add(ocorrencia.responsavel_registro)
+
+                count += 1
+            except Exception as e:
+                self.message_user(request, f"Erro ao gerar recibo para ocorrência #{ocorrencia.id}: {str(e)}",
+                                  level='ERROR')
+
+        self.message_user(request, f'{count} recibos térmicos gerados com sucesso.')
+
+    gerar_recibos_termicos.short_description = "🖨️ Gerar recibos térmicos para selecionados"
+
+    def duplicar_ocorrencias(self, request, queryset):
+        """Duplica as ocorrências rápidas selecionadas"""
+        count = 0
+        for ocorrencia in queryset:
+            try:
+                # Cria uma nova ocorrência com os mesmos dados
+                nova_ocorrencia = OcorrenciaRapida.objects.create(
+                    data=ocorrencia.data,
+                    horario=ocorrencia.horario,
+                    turma=ocorrencia.turma,
+                    descricao=ocorrencia.descricao,
+                    responsavel_registro=ocorrencia.responsavel_registro
+                )
+
+                # Copia os tipos e estudantes
+                nova_ocorrencia.tipos_rapidos.set(ocorrencia.tipos_rapidos.all())
+                nova_ocorrencia.estudantes.set(ocorrencia.estudantes.all())
+
+                count += 1
+            except Exception as e:
+                self.message_user(request, f"Erro ao duplicar ocorrência #{ocorrencia.id}: {str(e)}", level='ERROR')
+
+        self.message_user(request, f'{count} ocorrências duplicadas com sucesso.')
+
+    duplicar_ocorrencias.short_description = "📋 Duplicar ocorrências selecionadas"
+
+
+# Registrar o novo modelo TipoOcorrenciaRapida
+@admin.register(TipoOcorrenciaRapida)
+class TipoOcorrenciaRapidaAdmin(admin.ModelAdmin):
+    list_display = ['codigo', 'descricao', 'ativo', 'quantidade_uso']
+    list_filter = ['ativo']
+    search_fields = ['codigo', 'descricao']
+    list_editable = ['ativo']
+
+    def quantidade_uso(self, obj):
+        """Mostra quantas vezes este tipo foi usado"""
+        count = obj.ocorrencias_rapidas.count()
+        return format_html(
+            '<span style="font-weight: bold; color: {};">{}</span>',
+            'green' if count > 0 else 'gray',
+            f"{count} uso(s)"
+        )
+
+    quantidade_uso.short_description = 'Uso'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('ocorrencias_rapidas')
 
 
 @admin.register(Responsavel)

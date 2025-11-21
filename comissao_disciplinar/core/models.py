@@ -656,9 +656,10 @@ class OcorrenciaRapida(models.Model):
         ('ATRASO', 'Atraso para apresentar-se à aula designada'),
         ('CELULAR', 'Uso indevido de celular durante aula'),
         ('UNIFORME', 'Sem uniforme nos espaços do campus em horário de aula'),
+        ('UNIFORME_RETIRADA', 'Retirou uniforme após apresentar-se na recepção'),
         ('RECUSA', 'Recusa a participar das atividades propostas pela(o) docente ou Coordenação'),
-        ('AUSENCIA', 'Ausência de sala em período de aula.'),
-        ('SAIDA', 'Saída Antecipada do campus.'),
+        ('AUSENCIA', 'Ausência de sala em período de aula'),
+        ('SAIDA', 'Saída Antecipada do campus'),
         ('BIBLIO', 'Acesso a Biblioteca sem autorização prévia de docentes e/ou Coordenação'),
     ]
 
@@ -667,7 +668,13 @@ class OcorrenciaRapida(models.Model):
     horario = models.TimeField()
     turma = models.ForeignKey(Turma, on_delete=models.PROTECT)
     estudantes = models.ManyToManyField(Estudante, related_name='ocorrencias_rapidas')
-    tipo_rapido = models.CharField(max_length=15, choices=TIPOS_RAPIDOS)
+
+    # ALTERADO: Agora é ManyToManyField para permitir múltiplos tipos
+    tipos_rapidos = models.ManyToManyField(
+        'TipoOcorrenciaRapida',
+        related_name='ocorrencias_rapidas',
+        verbose_name='Tipos de Ocorrência Rápida'
+    )
 
     # Descrição gerada automaticamente
     descricao = models.TextField(blank=True)
@@ -690,13 +697,14 @@ class OcorrenciaRapida(models.Model):
         ordering = ['-data', '-horario']
 
     def __str__(self):
-        return f"Ocorrência Rápida #{self.id} - {self.data} - {self.get_tipo_rapido_display()}"
+        return f"Ocorrência Rápida #{self.id} - {self.data}"
 
     def save(self, *args, **kwargs):
-        """Gera descrição automaticamente baseada no tipo rápido"""
-        if not self.descricao:
-            tipo_map = dict(self.TIPOS_RAPIDOS)
-            self.descricao = f"{tipo_map[self.tipo_rapido]}"
+        """Gera descrição automaticamente baseada nos tipos selecionados"""
+        if not self.descricao and hasattr(self, 'tipos_rapidos'):
+            tipos_selecionados = self.tipos_rapidos.all()
+            descricoes = [tipo.descricao for tipo in tipos_selecionados]
+            self.descricao = "; ".join(descricoes)
 
         # Define o curso automaticamente baseado na turma
         if self.turma and not hasattr(self, '_curso'):
@@ -708,6 +716,28 @@ class OcorrenciaRapida(models.Model):
     def curso(self):
         """Propriedade para compatibilidade com as views existentes"""
         return self.turma.curso if self.turma else None
+
+    def get_tipos_display(self):
+        """Retorna a lista de tipos formatados para exibição"""
+        return [tipo.get_tipo_display() for tipo in self.tipos_rapidos.all()]
+
+
+# NOVO MODELO para os tipos de ocorrência rápida
+class TipoOcorrenciaRapida(models.Model):
+    codigo = models.CharField(max_length=20, unique=True)
+    descricao = models.TextField()
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Tipo de Ocorrência Rápida"
+        verbose_name_plural = "Tipos de Ocorrência Rápida"
+
+    def __str__(self):
+        return f"{self.codigo} - {self.descricao[:50]}"
+
+    def get_tipo_display(self):
+        """Retorna a descrição formatada"""
+        return f"{self.codigo}: {self.descricao}"
 
 # ====================
 # REGISTRO NO AUDITLOG

@@ -304,8 +304,6 @@ def ocorrencia_create(request):
     return render(request, 'core/ocorrencia_form.html', {'form': form})
 
 
-# Substitua a função ocorrencia_rapida_create no arquivo comissao_disciplinar/core/views.py
-
 @login_required
 @user_passes_test(is_servidor)
 def ocorrencia_rapida_create(request):
@@ -321,7 +319,7 @@ def ocorrencia_rapida_create(request):
             print(f"✅ Formulário válido")
             ocorrencia = form.save()
             print(f"✅ Ocorrência Rápida #{ocorrencia.id} criada")
-            print(f"📊 Tipo: {ocorrencia.get_tipo_rapido_display()}")
+            print(f"📊 Tipos selecionados: {[t.codigo for t in ocorrencia.tipos_rapidos.all()]}")
             print(f"📊 Estudantes envolvidos: {ocorrencia.estudantes.count()}")
 
             # Verificar se deve gerar recibo
@@ -341,9 +339,9 @@ def ocorrencia_rapida_create(request):
                     # Salvar como documento gerado
                     from django.core.files.base import ContentFile
                     documento = DocumentoGerado.objects.create(
-                        ocorrencia_rapida=ocorrencia,  # Você precisará adicionar este campo no model
+                        ocorrencia_rapida=ocorrencia,
                         tipo_documento='RECIBO_TERMICO',
-                        assinado=True  # Recibo já vem "assinado" pelo sistema
+                        assinado=True
                     )
 
                     nome_arquivo = f"recibo_termico_{ocorrencia.id}_{timezone.now().strftime('%Y%m%d_%H%M%S')}.pdf"

@@ -146,6 +146,20 @@
                         </div>
                     </div>
 
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Tipos de Ocorrência</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                {% for tipo in ocorrencia.tipos_rapidos.all %}
+                                <li class="list-group-item">
+                                    <strong>{{ tipo.codigo }}:</strong> {{ tipo.descricao }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
                     <div class="mb-4">
                         <label class="font-semibold text-gray-700 text-sm">Estudantes Envolvidos</label>
                         <div class="mt-2 flex flex-col gap-2">

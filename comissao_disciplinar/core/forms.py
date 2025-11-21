@@ -5,7 +5,7 @@ from crispy_forms.layout import Layout, Submit, Row, Column, Div
 from .models import (
     Ocorrencia, Estudante, Responsavel, NotificacaoOficial,
     Recurso, ComissaoProcessoDisciplinar, DocumentoGerado, Curso, Turma, Infracao,
-    Servidor, OcorrenciaRapida
+    Servidor, OcorrenciaRapida, TipoOcorrenciaRapida
 )
 from django.contrib.auth.forms import PasswordResetForm
 from django.core.mail import EmailMultiAlternatives
@@ -113,8 +113,6 @@ class OcorrenciaForm(forms.ModelForm):
 
 
 class OcorrenciaRapidaForm(forms.ModelForm):
-    """Formulário simplificado para ocorrências simples/frequentes usando o novo model"""
-
     # Campo de busca para estudantes
     busca_estudante = forms.CharField(
         required=False,
@@ -126,10 +124,20 @@ class OcorrenciaRapidaForm(forms.ModelForm):
         })
     )
 
-    # NOVO: Campo para gerar recibo térmico
+    # NOVO: Campo para múltiplos tipos
+    tipos_rapidos = forms.ModelMultipleChoiceField(
+        queryset=TipoOcorrenciaRapida.objects.filter(ativo=True),
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'tipo-rapido-checkbox'
+        }),
+        label="Tipos de Ocorrência",
+        required=True
+    )
+
+    # Campo para gerar recibo térmico
     gerar_recibo = forms.BooleanField(
         required=False,
-        initial=True,  # Marcado por padrão
+        initial=True,
         label='Gerar recibo para impressão térmica',
         help_text='Marque para gerar documento no formato de impressora térmica (58mm)',
         widget=forms.CheckboxInput(attrs={
@@ -140,7 +148,7 @@ class OcorrenciaRapidaForm(forms.ModelForm):
 
     class Meta:
         model = OcorrenciaRapida
-        fields = ['data', 'horario', 'turma', 'estudantes', 'tipo_rapido']
+        fields = ['data', 'horario', 'turma', 'estudantes', 'tipos_rapidos']
         widgets = {
             'data': forms.DateInput(attrs={
                 'type': 'date',
@@ -157,7 +165,6 @@ class OcorrenciaRapidaForm(forms.ModelForm):
             'estudantes': forms.CheckboxSelectMultiple(attrs={
                 'class': 'estudante-checkbox'
             }),
-            'tipo_rapido': forms.RadioSelect(attrs={'class': 'tipo-rapido-radio'})
         }
 
     def __init__(self, *args, **kwargs):
@@ -175,7 +182,7 @@ class OcorrenciaRapidaForm(forms.ModelForm):
             instance.responsavel_registro = self.servidor
         if commit:
             instance.save()
-            self.save_m2m()
+            self.save_m2m()  # Importante para salvar os ManyToMany
         return instance
 
 
