@@ -1,16 +1,27 @@
 IFB - Registro Acadêmico
+Campus Recanto das Emas
 
 Prezado(a) responsável,
 
 Informamos sobre um registro envolvendo {{ estudantes_str }}.
 
 Data: {{ ocorrencia.data|date:"d/m/Y" }}
-Tipo: {{ ocorrencia.get_tipo_rapido_display }}
+Horário: {{ ocorrencia.horario|time:"H:i" }}
+
+{% if tipos_count > 1 %}
+TIPOS DE REGISTRO ({{ tipos_count }}):
+{% for tipo in tipos_lista %}
+- {{ tipo.codigo }}: {{ tipo.descricao }}
+{% endfor %}
+{% else %}
+Tipo: {{ tipos_str }}
+{% endif %}
 
 Para mais informações, entre em contato com a coordenação do curso.
 
 Atenciosamente,
-Instituto Federal de Brasília
+Instituto Federal de Brasília - Campus Recanto das Emas
 
 ---
 Esta é uma mensagem automática. Por favor, não responda este email.
+Email enviado em: {% now "d/m/Y H:i" %}

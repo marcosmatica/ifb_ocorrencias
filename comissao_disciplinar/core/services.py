@@ -160,8 +160,8 @@ class ServicoNotificacao:
         print(f"\n ⚠️  Não foi possível enviar SMS para nenhum responsável")
 
     @staticmethod
-    def _enviar_email_responsavel(responsavel, estudantes, ocorrencia, tipo_ocorrencia):
-        """Envia email para responsável"""
+    def _enviar_email_responsavel(responsavel, estudantes, ocorrencia, tipo_ocorrencia='ocorrencia'):
+        """Envia email para responsável - ATUALIZADO para múltiplos tipos"""
         print(f"\n{'=' * 60}")
         print(f" _enviar_email_responsavel")
         print(f"{'=' * 60}")
@@ -176,11 +176,6 @@ class ServicoNotificacao:
 
             # Verificar configurações de email
             print(f"\n Verificando configurações de email...")
-            print(f"   EMAIL_BACKEND: {settings.EMAIL_BACKEND}")
-            print(f"   EMAIL_HOST: {settings.EMAIL_HOST}")
-            print(f"   EMAIL_PORT: {settings.EMAIL_PORT}")
-            print(f"   EMAIL_HOST_USER: {settings.EMAIL_HOST_USER}")
-            print(f"   DEFAULT_FROM_EMAIL: {settings.DEFAULT_FROM_EMAIL}")
 
             # Formatar informações dos estudantes
             estudantes_info = []
@@ -193,7 +188,7 @@ class ServicoNotificacao:
             estudantes_str = ", ".join(estudantes_info)
             print(f"   Estudantes: {estudantes_str}")
 
-            # Definir templates
+            # Definir templates baseados no tipo de ocorrência
             if tipo_ocorrencia == 'ocorrencia_rapida':
                 template_html = 'email/notificacao_responsavel_rapida.html'
                 template_text = 'email/notificacao_responsavel_rapida.txt'
@@ -208,13 +203,32 @@ class ServicoNotificacao:
             print(f"   TEXT: {template_text}")
             print(f"   Assunto: {assunto}")
 
+            # NOVO: Preparar informações dos tipos para o contexto
+            if tipo_ocorrencia == 'ocorrencia_rapida' and hasattr(ocorrencia, 'tipos_rapidos'):
+                tipos_lista = list(ocorrencia.tipos_rapidos.all())
+                tipos_str = "; ".join([tipo.descricao for tipo in tipos_lista])
+                tipos_count = len(tipos_lista)
+            else:
+                tipos_lista = []
+                tipos_str = ocorrencia.get_tipo_rapido_display() if hasattr(ocorrencia,
+                                                                            'get_tipo_rapido_display') else "Registro"
+                tipos_count = 1
+
             contexto = {
                 'responsavel': responsavel,
                 'estudantes': estudantes,
                 'estudantes_str': estudantes_str,
                 'ocorrencia': ocorrencia,
                 'tipo_ocorrencia': tipo_ocorrencia,
+                # NOVOS CAMPOS para múltiplos tipos
+                'tipos_lista': tipos_lista,
+                'tipos_str': tipos_str,
+                'tipos_count': tipos_count,
             }
+
+            print(f"\n Contexto preparado:")
+            print(f"   Tipos count: {tipos_count}")
+            print(f"   Tipos str: {tipos_str}")
 
             print(f"\n Renderizando templates...")
             try:
@@ -264,7 +278,7 @@ class ServicoNotificacao:
     @staticmethod
     def _enviar_sms_responsavel(responsavel, estudantes, ocorrencia, tipo_ocorrencia):
         """
-        Envia SMS para responsável
+        Envia SMS para responsável - ATUALIZADO para múltiplos tipos
 
         Returns:
             bool: True se enviado com sucesso, False caso contrário
@@ -285,17 +299,12 @@ class ServicoNotificacao:
             print(f"\n Verificando configurações Twilio...")
             has_twilio = hasattr(settings, 'TWILIO_ACCOUNT_SID') and hasattr(settings, 'TWILIO_AUTH_TOKEN') and hasattr(
                 settings, 'TWILIO_PHONE_NUMBER')
-            print(f"   TWILIO_ACCOUNT_SID existe: {hasattr(settings, 'TWILIO_ACCOUNT_SID')}")
-            print(f"   TWILIO_AUTH_TOKEN existe: {hasattr(settings, 'TWILIO_AUTH_TOKEN')}")
-            print(f"   TWILIO_PHONE_NUMBER existe: {hasattr(settings, 'TWILIO_PHONE_NUMBER')}")
 
-            if has_twilio:
-                print(f"   TWILIO_PHONE_NUMBER: {settings.TWILIO_PHONE_NUMBER}")
-            else:
+            if not has_twilio:
                 print(f"     Twilio não configurado")
                 return False
 
-            # FORMATAR MENSAGEM
+            # FORMATAR MENSAGEM - ATUALIZADO para múltiplos tipos
             print(f"\n Formatando mensagem...")
             if len(estudantes) == 1:
                 estudante = estudantes[0]
@@ -309,9 +318,23 @@ class ServicoNotificacao:
             parte_local_ = parte_local[:5] + '*' * (len(parte_local) - 5)
             texto_email = parte_local_ + '@' + dominio
 
+            # NOVO: Formatar tipos para SMS
+            if tipo_ocorrencia == 'ocorrencia_rapida' and hasattr(ocorrencia, 'tipos_rapidos'):
+                tipos = list(ocorrencia.tipos_rapidos.all())
+                if len(tipos) == 1:
+                    tipo_display = tipos[0].codigo
+                elif len(tipos) == 2:
+                    tipo_display = f"{tipos[0].codigo} e {tipos[1].codigo}"
+                else:
+                    tipo_display = f"{tipos[0].codigo} e outros"
+            else:
+                # Fallback para o sistema antigo
+                tipo_display = getattr(ocorrencia, 'get_tipo_rapido_display', lambda: 'Registro')()
+                if callable(tipo_display):
+                    tipo_display = tipo_display()
+
             # Criar mensagem baseada no tipo de ocorrência
             if tipo_ocorrencia == 'ocorrencia_rapida':
-                tipo_display = dict(ocorrencia.TIPOS_RAPIDOS).get(ocorrencia.tipo_rapido, 'Registro')
                 mensagem = (
                     f"IFB Recanto das Emas - Ocorrência pedagógica - {tipo_display}. Estudante {estudantes_info} "
                     f"em {ocorrencia.data.strftime('%d/%m/%Y %H:%M')}. "
