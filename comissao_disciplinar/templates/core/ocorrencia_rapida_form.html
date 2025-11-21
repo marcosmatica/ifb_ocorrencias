@@ -36,38 +36,29 @@
                 </div>
                 {% endif %}
 
-                <!-- Tipo de Ocorrência -->
+                <!-- Tipos de Ocorrência (Múltipla Seleção) -->
                 <div class="form-group">
                     <label class="form-label text-base font-semibold">
-                        Tipo de Ocorrência *
+                        Tipos de Ocorrência *
                     </label>
+                    <div class="text-sm text-gray-600 mb-3">
+                        Selecione um ou mais tipos de ocorrência
+                    </div>
                     <div class="tipo-rapido-container">
-                        {% for value, label in form.fields.tipo_rapido.choices %}
-                        <label class="tipo-rapido-option" data-value="{{ value }}">
-                            <input type="radio" name="tipo_rapido" value="{{ value }}">
+                        {% for tipo in form.tipos_rapidos %}
+                        <label class="tipo-rapido-option" data-value="{{ tipo.data.value }}">
+                            {{ tipo.tag }}
                             <div class="tipo-rapido-info">
-                                <div class="tipo-rapido-title">{{ label }}</div>
+                                <div class="tipo-rapido-title">{{ tipo.choice_label }}</div>
                                 <div class="tipo-rapido-desc">
-                                    {% if value == 'ATRASO' %}
-                                        Estudante chegou atrasado à aula
-                                    {% elif value == 'CELULAR' %}
-                                        Uso de celular durante a aula sem autorização
-                                    {% elif value == 'UNIFORME' %}
-                                        Estudante sem uniforme escolar
-                                    {% elif value == 'RECUSA' %}
-                                        Recusa em participar das atividades propostas
-                                    {% elif value == 'AUSENCIA' %}
-                                        Saída da sala sem autorização
-                                    {% elif value == 'Saída' %}
-                                        Saída antecipada mediante autorização de responsável ou Coordenação de Curso
-                                    {% endif %}
+                                    {{ tipo.choice_label }}
                                 </div>
                             </div>
                         </label>
                         {% endfor %}
                     </div>
-                    {% if form.tipo_rapido.errors %}
-                        <div class="form-error">{{ form.tipo_rapido.errors }}</div>
+                    {% if form.tipos_rapidos.errors %}
+                        <div class="form-error">{{ form.tipos_rapidos.errors }}</div>
                     {% endif %}
                 </div>
 
@@ -150,13 +141,9 @@
                 <div class="form-group">
                     <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
                         <div class="flex items-start gap-3">
-                            <input type="checkbox"
-                                   name="gerar_recibo"
-                                   id="gerar-recibo"
-                                   class="mt-1"
-                                   checked>
+                            {{ form.gerar_recibo }}
                             <div class="flex-1">
-                                <label for="gerar-recibo" class="font-semibold text-gray-800 cursor-pointer">
+                                <label for="{{ form.gerar_recibo.id_for_label }}" class="font-semibold text-gray-800 cursor-pointer">
                                     🖨️ Gerar recibo para impressão térmica
                                 </label>
                                 <p class="text-sm text-gray-600 mt-1">
@@ -203,6 +190,7 @@
                 <li class="mb-2">Ocorrências simples e recorrentes</li>
                 <li class="mb-2">Infrações leves que não requerem investigação detalhada</li>
                 <li class="mb-2">Quando você precisa documentar rapidamente durante a aula</li>
+                <li class="mb-2">Múltiplas infrações simultâneas</li>
             </ul>
             <p class="mt-4 text-gray-600 text-sm">
                 Para casos que envolvem evidências, testemunhas ou descrição detalhada, utilize o
@@ -280,6 +268,79 @@
     color: var(--gray-600);
     margin-top: 2px;
 }
+
+/* Estilos para os tipos de ocorrência (checkboxes) */
+.tipo-rapido-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.tipo-rapido-option {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.tipo-rapido-option:hover {
+    border-color: var(--ifb-verde);
+    background: var(--gray-50);
+}
+
+.tipo-rapido-option.selected {
+    border-color: var(--ifb-verde);
+    background: var(--ifb-verde-claro);
+}
+
+.tipo-rapido-option input[type="checkbox"] {
+    margin-top: 2px;
+    margin-right: 12px;
+    transform: scale(1.2);
+}
+
+.tipo-rapido-info {
+    flex: 1;
+}
+
+.tipo-rapido-title {
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 4px;
+}
+
+.tipo-rapido-desc {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    line-height: 1.4;
+}
+
+/* Contador de tipos selecionados */
+.tipos-counter {
+    background: var(--ifb-verde);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .tipo-rapido-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .tipo-rapido-option {
+        padding: 12px;
+    }
+}
 </style>
 {% endblock %}
 
@@ -297,25 +358,58 @@ document.addEventListener('DOMContentLoaded', function() {
     let estudantesSelecionados = new Set();
     let timeoutId = null;
 
-    // Efeito visual nos tipos de ocorrência
+    // Efeito visual nos tipos de ocorrência (checkboxes)
     const tipoOptions = document.querySelectorAll('.tipo-rapido-option');
     tipoOptions.forEach(option => {
-        const radio = option.querySelector('input[type="radio"]');
+        const checkbox = option.querySelector('input[type="checkbox"]');
 
         option.addEventListener('click', function(e) {
-            if (e.target.type !== 'radio') {
-                radio.checked = true;
-            }
-            tipoOptions.forEach(opt => opt.classList.remove('selected'));
-            if (radio.checked) {
-                option.classList.add('selected');
+            if (e.target.type !== 'checkbox') {
+                checkbox.checked = !checkbox.checked;
+                checkbox.dispatchEvent(new Event('change'));
             }
         });
 
-        if (radio.checked) {
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+            atualizarContadorTipos();
+        });
+
+        // Marcar como selecionado se já estiver checked
+        if (checkbox.checked) {
             option.classList.add('selected');
         }
     });
+
+    // Atualizar contador de tipos selecionados
+    function atualizarContadorTipos() {
+        const tiposSelecionados = document.querySelectorAll('.tipo-rapido-option input[type="checkbox"]:checked');
+        const tiposCounter = document.getElementById('tipos-counter') || criarContadorTipos();
+        
+        if (tiposSelecionados.length > 0) {
+            tiposCounter.textContent = `${tiposSelecionados.length} selecionado(s)`;
+            tiposCounter.style.display = 'inline-block';
+        } else {
+            tiposCounter.style.display = 'none';
+        }
+    }
+
+    function criarContadorTipos() {
+        const label = document.querySelector('.form-label.text-base.font-semibold');
+        const counter = document.createElement('span');
+        counter.id = 'tipos-counter';
+        counter.className = 'tipos-counter';
+        counter.style.display = 'none';
+        label.appendChild(counter);
+        return counter;
+    }
+
+    // Inicializar contador de tipos
+    atualizarContadorTipos();
 
     // Definir data e hora padrão
     const dataInput = document.querySelector('input[type="date"]');
@@ -357,85 +451,76 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Função para carregar estudantes
     function carregarEstudantes() {
-    const turmaId = turmaSelect ? turmaSelect.value : '';
-    const busca = buscaInput ? buscaInput.value.trim() : '';
+        const turmaId = turmaSelect ? turmaSelect.value : '';
+        const busca = buscaInput ? buscaInput.value.trim() : '';
 
-    if (!turmaId && !busca) {
-        studentsContainer.innerHTML = '<p class="text-center text-gray-500 p-6 text-sm">Selecione uma turma para ver os estudantes</p>';
-        //loadingState.classList.add('hidden');
-        loadingState.style.display = 'none';
-        //emptyState.classList.add('hidden');
-        emptyState.style.display = 'none';
-        return;
-    }
-
-    // Mostrar APENAS loading
-    //loadingState.classList.remove('hidden');
-    loadingState.style.display = 'block';
-    //emptyState.classList.add('hidden');
-    emptyState.style.display = 'flex';
-    studentsContainer.innerHTML = '';
-
-    const params = new URLSearchParams();
-    if (turmaId) params.append('turma_id', turmaId);
-    if (busca) params.append('busca', busca);
-
-    fetch(`/api/estudantes/filtrar/?${params.toString()}`)
-        .then(response => response.json())
-        .then(data => {
-            //loadingState.classList.add('hidden'); // Esconder loading
+        if (!turmaId && !busca) {
+            studentsContainer.innerHTML = '<p class="text-center text-gray-500 p-6 text-sm">Selecione uma turma para ver os estudantes</p>';
             loadingState.style.display = 'none';
-            if (data.estudantes && data.estudantes.length > 0) {
-                //emptyState.classList.add('hidden'); // Garantir que empty está oculto
-                emptyState.style.display = 'none';
-                renderizarEstudantes(data.estudantes);
-            } else {
-                emptyState.style.display = 'flex';
-                //emptyState.classList.remove('hidden'); // Mostrar empty
-                studentsContainer.innerHTML = ''; // Limpar lista
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            //loadingState.classList.add('hidden');
-            loadingState.style.display = 'none';
-            //emptyState.classList.remove('hidden');
             emptyState.style.display = 'none';
-            studentsContainer.innerHTML = '';
-        });
-}
+            return;
+        }
+
+        // Mostrar APENAS loading
+        loadingState.style.display = 'block';
+        emptyState.style.display = 'none';
+        studentsContainer.innerHTML = '';
+
+        const params = new URLSearchParams();
+        if (turmaId) params.append('turma_id', turmaId);
+        if (busca) params.append('busca', busca);
+
+        fetch(`/api/estudantes/filtrar/?${params.toString()}`)
+            .then(response => response.json())
+            .then(data => {
+                loadingState.style.display = 'none';
+                if (data.estudantes && data.estudantes.length > 0) {
+                    emptyState.style.display = 'none';
+                    renderizarEstudantes(data.estudantes);
+                } else {
+                    emptyState.style.display = 'flex';
+                    studentsContainer.innerHTML = '';
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                loadingState.style.display = 'none';
+                emptyState.style.display = 'flex';
+                studentsContainer.innerHTML = '';
+            });
+    }
 
     // Função para renderizar estudantes
     function renderizarEstudantes(estudantes) {
         studentsContainer.innerHTML = '';
 
-    estudantes.forEach(estudante => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'student-item-form';
-        if (estudantesSelecionados.has(estudante.id)) {
-            itemDiv.classList.add('selected');
-        }
+        estudantes.forEach(estudante => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'student-item-form';
+            if (estudantesSelecionados.has(estudante.id)) {
+                itemDiv.classList.add('selected');
+            }
 
-        itemDiv.innerHTML = `
-            <input type="checkbox"
-                   name="estudantes"
-                   value="${estudante.id}"
-                   id="est_${estudante.id}"
-                   class="student-checkbox"
-                   ${estudantesSelecionados.has(estudante.id) ? 'checked' : ''}>
-            <div class="foto-container-form" data-iniciais="${estudante.iniciais || '?'}">
-                ${estudante.foto_url ?
-                    `<img src="${estudante.foto_url}" alt="${estudante.nome}" class="foto-estudante-form" referrerpolicy="no-referrer" loading="lazy" onerror="mostrarIniciaisForm(this)">` :
-                    `<div class="foto-placeholder-form">${estudante.iniciais || '?'}</div>`
-                }
-            </div>
-            <div class="student-info-form">
-                <div class="student-name-form">${estudante.nome}</div>
-                <div class="student-details-form">
-                    ${estudante.matricula} | ${estudante.turma}
+            itemDiv.innerHTML = `
+                <input type="checkbox"
+                       name="estudantes"
+                       value="${estudante.id}"
+                       id="est_${estudante.id}"
+                       class="student-checkbox"
+                       ${estudantesSelecionados.has(estudante.id) ? 'checked' : ''}>
+                <div class="foto-container-form" data-iniciais="${estudante.iniciais || '?'}">
+                    ${estudante.foto_url ?
+                        `<img src="${estudante.foto_url}" alt="${estudante.nome}" class="foto-estudante-form" referrerpolicy="no-referrer" loading="lazy" onerror="mostrarIniciaisForm(this)">` :
+                        `<div class="foto-placeholder-form">${estudante.iniciais || '?'}</div>`
+                    }
                 </div>
-            </div>
-        `;
+                <div class="student-info-form">
+                    <div class="student-name-form">${estudante.nome}</div>
+                    <div class="student-details-form">
+                        ${estudante.matricula} | ${estudante.turma}
+                    </div>
+                </div>
+            `;
 
             // Evento de clique no item
             itemDiv.addEventListener('click', function(e) {
@@ -464,12 +549,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function mostrarIniciaisForm(img) {
-    const container = img.parentElement;
-    const iniciais = container.getAttribute('data-iniciais') || '?';
-    container.innerHTML = `<div class="foto-placeholder-form">${iniciais}</div>`;
-       }
+        const container = img.parentElement;
+        const iniciais = container.getAttribute('data-iniciais') || '?';
+        container.innerHTML = `<div class="foto-placeholder-form">${iniciais}</div>`;
+    }
 
-    // Atualizar contador
+    // Atualizar contador de estudantes
     function atualizarContador() {
         const count = estudantesSelecionados.size;
         if (count > 0) {
@@ -482,12 +567,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Validação ao submeter
     document.getElementById('form-rapido').addEventListener('submit', function(e) {
-        const tipoSelecionado = document.querySelector('input[name="tipo_rapido"]:checked');
+        const tiposSelecionados = document.querySelectorAll('.tipo-rapido-option input[type="checkbox"]:checked');
         const estudantesSelecionadosCount = estudantesSelecionados.size;
         
-        if (!tipoSelecionado) {
+        if (tiposSelecionados.length === 0) {
             e.preventDefault();
-            alert('Por favor, selecione um tipo de ocorrência.');
+            alert('Por favor, selecione pelo menos um tipo de ocorrência.');
             return false;
         }
         
