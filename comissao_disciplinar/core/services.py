@@ -336,9 +336,9 @@ class ServicoNotificacao:
             # Criar mensagem baseada no tipo de ocorrência
             if tipo_ocorrencia == 'ocorrencia_rapida':
                 mensagem = (
-                    f"IFB Recanto das Emas - Ocorrência pedagógica - {tipo_display}. Estudante {estudantes_info} "
+                    f"IFB Recanto das Emas - Ocorrência pedagógica do(s) tipo(s)- {tipo_display}. Estudante {estudantes_info} "
                     f"em {ocorrencia.data.strftime('%d/%m/%Y %H:%M')}. "
-                    f"Consulte o email {texto_email} para detalhes."
+                    f"Consulte o email {texto_email} para maiores detalhes."
                 )
             else:
                 mensagem = (
