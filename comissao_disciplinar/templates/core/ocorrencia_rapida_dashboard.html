@@ -96,7 +96,6 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Data/Hora</th>
                     <th>Tipo</th>
                     <th>Estudante(s)</th>
@@ -108,15 +107,19 @@
             <tbody>
                 {% for ocorrencia in ultimas_ocorrencias %}
                 <tr>
-                    <td class="font-semibold">#{{ ocorrencia.id }}</td>
                     <td class="whitespace-nowrap">
                         {{ ocorrencia.data|date:"d/m/Y" }}<br>
                         <small class="text-gray-600">{{ ocorrencia.horario|time:"H:i" }}</small>
                     </td>
                     <td>
-                        <span class="badge badge-info">
-                            {{ ocorrencia.get_tipo_rapido_display }}
-                        </span>
+                        {% for tipo in ocorrencia.tipos_rapidos.all %}
+                            <span class="badge badge-info">
+                                {{ tipo.codigo }}
+                            </span>
+                            {% if not forloop.last %}<br>{% endif %}
+                        {% empty %}
+                            <span class="text-gray-500 text-sm">Nenhum tipo selecionado</span>
+                        {% endfor %}
                     </td>
                     <td>
                         {% for estudante in ocorrencia.estudantes.all|slice:":2" %}
@@ -144,7 +147,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7">
+                    <td colspan="6">
                         <div class="empty-state">
                             <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
