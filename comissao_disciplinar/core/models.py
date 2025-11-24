@@ -701,16 +701,17 @@ class OcorrenciaRapida(models.Model):
 
     def save(self, *args, **kwargs):
         """Gera descrição automaticamente baseada nos tipos selecionados"""
+        # Primeiro salva o objeto para obter um ID
+        super().save(*args, **kwargs)
+
+        # Agora que tem ID, pode acessar o relacionamento many-to-many
         if not self.descricao and hasattr(self, 'tipos_rapidos'):
             tipos_selecionados = self.tipos_rapidos.all()
             descricoes = [tipo.descricao for tipo in tipos_selecionados]
             self.descricao = "; ".join(descricoes)
 
-        # Define o curso automaticamente baseado na turma
-        if self.turma and not hasattr(self, '_curso'):
-            self._curso = self.turma.curso
-
-        super().save(*args, **kwargs)
+            # Salva novamente para atualizar a descrição
+            super().save(update_fields=['descricao'])
 
     @property
     def curso(self):
