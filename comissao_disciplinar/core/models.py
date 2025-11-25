@@ -653,7 +653,8 @@ class PreferenciaNotificacao(models.Model):
 
 class OcorrenciaRapida(models.Model):
     TIPOS_RAPIDOS = [
-        ('ATRASO', 'Atraso para apresentar-se à aula designada'),
+        ('ATRASO', 'Atraso para apresentar-se à aula designada no início do turno'),
+        ('ATRASO_INTERVALO', 'Atraso para apresentar-se à aula designada após o intervalo'),
         ('CELULAR', 'Uso indevido de celular durante aula'),
         ('UNIFORME', 'Sem uniforme nos espaços do campus em horário de aula'),
         ('UNIFORME_RETIRADA', 'Retirou uniforme após apresentar-se na recepção'),
