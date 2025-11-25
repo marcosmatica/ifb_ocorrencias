@@ -17,7 +17,7 @@ TIPOS DE REGISTRO ({{ tipos_count }}):
 Tipo: {{ tipos_str }}
 {% endif %}
 
-Para mais informações, entre em contato com a coordenação do curso.
+Para mais informações, entre em contato com a coordenação do curso, ou com a recepção do campus, pelo whatsapp wa.me/5561991090909
 
 Atenciosamente,
 Instituto Federal de Brasília - Campus Recanto das Emas
