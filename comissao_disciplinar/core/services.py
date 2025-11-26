@@ -338,7 +338,7 @@ class ServicoNotificacao:
                 mensagem = (
                     f"IFB Recanto das Emas - Ocorrência pedagógica do(s) tipo(s)- {tipo_display}. Estudante {estudantes_info} "
                     f"em {ocorrencia.data.strftime('%d/%m/%Y %H:%M')}. "
-                    f"Consulte o email {texto_email} para maiores detalhes."
+                    f"Consulte o email {texto_email} para maiores detalhes. Em caso de dúvidas, entre em contato com a recepção do campus Recanto das Emas wa.me/5561991090909 (61) 9 9109 0909."
                 )
             else:
                 mensagem = (
