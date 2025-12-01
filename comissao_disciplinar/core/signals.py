@@ -1,6 +1,8 @@
+from .models import Ocorrencia, NotificacaoOficial
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import Ocorrencia, NotificacaoOficial
+from .models import OcorrenciaRapida
+from .utils_alertas import verificar_limites_ocorrencia
 
 
 @receiver(post_save, sender=Ocorrencia)
@@ -18,3 +20,11 @@ def notificacao_enviada(sender, instance, created, **kwargs):
         # Aqui você pode adicionar lógica adicional
         # como enviar push notification, SMS, etc.
         pass
+
+@receiver(post_save, sender=OcorrenciaRapida)
+def verificar_alertas_ocorrencia_rapida(sender, instance, created, **kwargs):
+    """
+    Signal para verificar limites sempre que uma ocorrência rápida é criada/atualizada
+    """
+    if created:
+        verificar_limites_ocorrencia(instance)

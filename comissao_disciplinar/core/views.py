@@ -1487,7 +1487,11 @@ def alertas_limites_dashboard(request):
     """
     from datetime import datetime, timedelta
     from django.db.models import Count
-    recalcular_alertas_periodo()
+
+    # CORREÇÃO: Remover chamada automática de recalcular_alertas_periodo
+    # para melhor performance (mantenha apenas se necessário)
+    # recalcular_alertas_periodo()
+
     # Alertas do mês atual
     hoje = timezone.now().date()
     primeiro_dia_mes = hoje.replace(day=1)
@@ -1542,6 +1546,11 @@ def alertas_limites_dashboard(request):
     page = request.GET.get('page')
     alertas_page = paginator.get_page(page)
 
+    # CORREÇÃO: Obter configurações ativas para mostrar no template
+    configuracoes_ativas = ConfiguracaoLimiteOcorrenciaRapida.objects.filter(
+        ativo=True
+    ).select_related('tipo_ocorrencia').count()
+
     breadcrumbs_list = [
         {'label': 'Dashboard', 'url': '/dashboard/'},
         {'label': 'Alertas de Limites', 'url': ''}
@@ -1555,6 +1564,7 @@ def alertas_limites_dashboard(request):
         'tipos_frequentes': tipos_frequentes,
         'turmas': Turma.objects.filter(ativa=True),
         'tipos': TipoOcorrenciaRapida.objects.filter(ativo=True),
+        'configuracoes_ativas': configuracoes_ativas,
         'breadcrumbs_list': breadcrumbs_list,
     }
 

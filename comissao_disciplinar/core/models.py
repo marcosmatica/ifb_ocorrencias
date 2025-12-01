@@ -854,3 +854,5 @@ auditlog.register(DocumentoGerado)
 auditlog.register(OcorrenciaRapida)
 auditlog.register(ConfiguracaoLimiteOcorrenciaRapida)
 auditlog.register(AlertaLimiteOcorrenciaRapida)
+
+AlertaLimiteOcorrenciaRapida.__str__ = lambda self: f"Alerta: {self.estudante.nome} - {self.tipo_ocorrencia.codigo} ({self.quantidade_ocorrencias}x) em {self.mes_referencia.strftime('%m/%Y')}"
