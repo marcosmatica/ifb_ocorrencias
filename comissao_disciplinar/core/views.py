@@ -1476,3 +1476,85 @@ def proxy_imagem_google_drive(request):
 
     except requests.exceptions.RequestException as e:
         return HttpResponse(f'Erro ao carregar imagem: {str(e)}', status=500)
+
+
+@login_required
+@user_passes_test(is_servidor)
+def alertas_limites_dashboard(request):
+    """
+    Dashboard para visualizar alertas de limites de ocorrências rápidas
+    """
+    from datetime import datetime, timedelta
+    from django.db.models import Count
+
+    # Alertas do mês atual
+    hoje = timezone.now().date()
+    primeiro_dia_mes = hoje.replace(day=1)
+
+    alertas_mes = AlertaLimiteOcorrenciaRapida.objects.filter(
+        mes_referencia=primeiro_dia_mes
+    ).select_related(
+        'estudante',
+        'estudante__turma',
+        'estudante__curso',
+        'tipo_ocorrencia',
+        'configuracao'
+    ).order_by('-quantidade_ocorrencias', '-criado_em')
+
+    # Estatísticas
+    total_alertas = alertas_mes.count()
+    alertas_novos = alertas_mes.filter(
+        criado_em__gte=timezone.now() - timedelta(days=7)
+    ).count()
+
+    # Estudantes com mais alertas
+    estudantes_criticos = alertas_mes.values(
+        'estudante__id',
+        'estudante__nome',
+        'estudante__matricula_sga',
+        'estudante__turma__nome'
+    ).annotate(
+        total_alertas=Count('id')
+    ).order_by('-total_alertas')[:10]
+
+    # Tipos mais frequentes
+    tipos_frequentes = alertas_mes.values(
+        'tipo_ocorrencia__codigo',
+        'tipo_ocorrencia__descricao'
+    ).annotate(
+        total=Count('id')
+    ).order_by('-total')[:5]
+
+    # Filtros
+    turma_filtro = request.GET.get('turma')
+    tipo_filtro = request.GET.get('tipo')
+
+    if turma_filtro:
+        alertas_mes = alertas_mes.filter(estudante__turma_id=turma_filtro)
+
+    if tipo_filtro:
+        alertas_mes = alertas_mes.filter(tipo_ocorrencia_id=tipo_filtro)
+
+    # Paginação
+    from django.core.paginator import Paginator
+    paginator = Paginator(alertas_mes, 20)
+    page = request.GET.get('page')
+    alertas_page = paginator.get_page(page)
+
+    breadcrumbs_list = [
+        {'label': 'Dashboard', 'url': '/dashboard/'},
+        {'label': 'Alertas de Limites', 'url': ''}
+    ]
+
+    context = {
+        'alertas': alertas_page,
+        'total_alertas': total_alertas,
+        'alertas_novos': alertas_novos,
+        'estudantes_criticos': estudantes_criticos,
+        'tipos_frequentes': tipos_frequentes,
+        'turmas': Turma.objects.filter(ativa=True),
+        'tipos': TipoOcorrenciaRapida.objects.filter(ativo=True),
+        'breadcrumbs_list': breadcrumbs_list,
+    }
+
+    return render(request, 'core/alertas_limites_dashboard.html', context)

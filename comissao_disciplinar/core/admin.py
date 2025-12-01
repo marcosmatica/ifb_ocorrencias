@@ -529,4 +529,110 @@ class TurmaAdmin(admin.ModelAdmin):
     list_filter = ['ano', 'semestre', 'ativa', 'curso__campus']
     search_fields = ['nome']
 
-# ... (mantenha os outros admin registrations existentes)
+
+@admin.register(ConfiguracaoLimiteOcorrenciaRapida)
+class ConfiguracaoLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
+    list_display = [
+        'tipo_ocorrencia',
+        'limite_mensal',
+        'coordenacoes_notificar',
+        'gerar_notificacao_sistema',
+        'gerar_email_coordenacao',
+        'gerar_email_responsaveis',
+        'ativo'
+    ]
+
+    list_filter = ['ativo', 'coordenacoes_notificar']
+
+    search_fields = ['tipo_ocorrencia__codigo', 'tipo_ocorrencia__descricao']
+
+    fieldsets = (
+        ('Tipo de Ocorrência', {
+            'fields': ('tipo_ocorrencia', 'limite_mensal', 'ativo')
+        }),
+        ('Notificações no Sistema', {
+            'fields': ('gerar_notificacao_sistema',)
+        }),
+        ('Notificações por E-mail', {
+            'fields': (
+                'gerar_email_coordenacao',
+                'coordenacoes_notificar',
+                'gerar_email_responsaveis'
+            )
+        }),
+    )
+
+    actions = ['duplicar_configuracao', 'ativar_configuracoes', 'desativar_configuracoes']
+
+    def duplicar_configuracao(self, request, queryset):
+        for config in queryset:
+            # Não duplica, apenas informa
+            self.message_user(
+                request,
+                f'Para duplicar, edite a configuração de {config.tipo_ocorrencia.codigo}'
+            )
+
+    duplicar_configuracao.short_description = "Duplicar configurações selecionadas"
+
+    def ativar_configuracoes(self, request, queryset):
+        updated = queryset.update(ativo=True)
+        self.message_user(request, f'{updated} configuração(ões) ativada(s).')
+
+    ativar_configuracoes.short_description = "Ativar configurações selecionadas"
+
+    def desativar_configuracoes(self, request, queryset):
+        updated = queryset.update(ativo=False)
+        self.message_user(request, f'{updated} configuração(ões) desativada(s).')
+
+    desativar_configuracoes.short_description = "Desativar configurações selecionadas"
+
+
+@admin.register(AlertaLimiteOcorrenciaRapida)
+class AlertaLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
+    list_display = [
+        'estudante',
+        'tipo_ocorrencia',
+        'quantidade_ocorrencias',
+        'mes_referencia',
+        'notificacao_sistema_criada',
+        'email_coordenacao_enviado',
+        'email_responsaveis_enviado',
+        'criado_em'
+    ]
+
+    list_filter = [
+        'mes_referencia',
+        'tipo_ocorrencia',
+        'notificacao_sistema_criada',
+        'email_coordenacao_enviado',
+        'email_responsaveis_enviado',
+        'criado_em'
+    ]
+
+    search_fields = [
+        'estudante__nome',
+        'estudante__matricula_sga',
+        'tipo_ocorrencia__codigo'
+    ]
+
+    readonly_fields = [
+        'estudante',
+        'tipo_ocorrencia',
+        'configuracao',
+        'mes_referencia',
+        'quantidade_ocorrencias',
+        'notificacao_sistema_criada',
+        'email_coordenacao_enviado',
+        'email_responsaveis_enviado',
+        'criado_em'
+    ]
+
+    date_hierarchy = 'criado_em'
+
+    def has_add_permission(self, request):
+        # Alertas são gerados automaticamente
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        # Permitir exclusão apenas para administradores
+        return request.user.is_superuser

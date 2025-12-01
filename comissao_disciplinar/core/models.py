@@ -741,6 +741,108 @@ class TipoOcorrenciaRapida(models.Model):
         """Retorna a descrição formatada"""
         return f"{self.codigo}: {self.descricao}"
 
+
+class ConfiguracaoLimiteOcorrenciaRapida(models.Model):
+    """
+    Configuração de limites para alertas automáticos de ocorrências rápidas
+    """
+    tipo_ocorrencia = models.ForeignKey(
+        TipoOcorrenciaRapida,
+        on_delete=models.CASCADE,
+        related_name='configuracoes_limite',
+        verbose_name='Tipo de Ocorrência'
+    )
+
+    limite_mensal = models.IntegerField(
+        default=3,
+        help_text='Número de ocorrências do mesmo tipo no mês que gera alerta'
+    )
+
+    gerar_notificacao_sistema = models.BooleanField(
+        default=True,
+        help_text='Gerar notificação no sistema quando limite for atingido'
+    )
+
+    gerar_email_coordenacao = models.BooleanField(
+        default=True,
+        help_text='Enviar e-mail para coordenação quando limite for atingido'
+    )
+
+    gerar_email_responsaveis = models.BooleanField(
+        default=False,
+        help_text='Enviar e-mail para responsáveis do estudante'
+    )
+
+    coordenacoes_notificar = models.CharField(
+        max_length=500,
+        choices=Coordenacao.CHOICES,
+        default='CDPD',
+        help_text='Coordenação a ser notificada (ex: CDPD, CC, NAPNE)'
+    )
+
+    ativo = models.BooleanField(
+        default=True,
+        help_text='Se esta configuração está ativa'
+    )
+
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Configuração de Limite'
+        verbose_name_plural = 'Configurações de Limites'
+        unique_together = ['tipo_ocorrencia']
+
+    def __str__(self):
+        return f"{self.tipo_ocorrencia.codigo} - Limite: {self.limite_mensal}/mês"
+
+
+class AlertaLimiteOcorrenciaRapida(models.Model):
+    """
+    Registro de alertas gerados quando limites são atingidos
+    """
+    estudante = models.ForeignKey(
+        Estudante,
+        on_delete=models.CASCADE,
+        related_name='alertas_limite'
+    )
+
+    tipo_ocorrencia = models.ForeignKey(
+        TipoOcorrenciaRapida,
+        on_delete=models.CASCADE,
+        related_name='alertas_gerados'
+    )
+
+    configuracao = models.ForeignKey(
+        ConfiguracaoLimiteOcorrenciaRapida,
+        on_delete=models.CASCADE,
+        related_name='alertas'
+    )
+
+    mes_referencia = models.DateField(
+        help_text='Primeiro dia do mês de referência'
+    )
+
+    quantidade_ocorrencias = models.IntegerField(
+        help_text='Número de ocorrências que gerou o alerta'
+    )
+
+    notificacao_sistema_criada = models.BooleanField(default=False)
+    email_coordenacao_enviado = models.BooleanField(default=False)
+    email_responsaveis_enviado = models.BooleanField(default=False)
+
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Alerta de Limite'
+        verbose_name_plural = 'Alertas de Limites'
+        ordering = ['-criado_em']
+        unique_together = ['estudante', 'tipo_ocorrencia', 'mes_referencia']
+
+    def __str__(self):
+        return f"Alerta: {self.estudante.nome} - {self.tipo_ocorrencia.codigo} ({self.quantidade_ocorrencias}x)"
+
+
 # ====================
 # REGISTRO NO AUDITLOG
 # ====================
@@ -750,3 +852,5 @@ auditlog.register(Estudante)
 auditlog.register(ComissaoProcessoDisciplinar)
 auditlog.register(DocumentoGerado)
 auditlog.register(OcorrenciaRapida)
+auditlog.register(ConfiguracaoLimiteOcorrenciaRapida)
+auditlog.register(AlertaLimiteOcorrenciaRapida)

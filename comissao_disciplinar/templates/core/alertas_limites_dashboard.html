@@ -1,0 +1,229 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Alertas de Limites{% endblock %}
+{% block header_title %}Alertas de Limites de Ocorrências{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Stats -->
+    <div class="stats-grid mb-6">
+        <div class="stat-card border-l-red-500">
+            <div class="stat-label">Total de Alertas (Mês)</div>
+            <div class="stat-value">{{ total_alertas }}</div>
+            <div class="stat-change">Estudantes com limites atingidos</div>
+        </div>
+        
+        <div class="stat-card border-l-orange-500">
+            <div class="stat-label">Alertas Novos (7 dias)</div>
+            <div class="stat-value">{{ alertas_novos }}</div>
+            <div class="stat-change">Requerem atenção</div>
+        </div>
+        
+        <div class="stat-card border-l-blue-500">
+            <div class="stat-label">Estudantes Críticos</div>
+            <div class="stat-value">{{ estudantes_criticos|length }}</div>
+            <div class="stat-change">Múltiplos alertas</div>
+        </div>
+        
+        <div class="stat-card border-l-purple-500">
+            <div class="stat-label">Tipo Mais Frequente</div>
+            <div class="stat-value">
+                {% if tipos_frequentes %}
+                    {{ tipos_frequentes.0.tipo_ocorrencia__codigo }}
+                {% else %}
+                    -
+                {% endif %}
+            </div>
+            <div class="stat-change">Tipo com mais alertas</div>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h2 class="card-title">Filtros</h2>
+        </div>
+        <div class="card-body">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="form-group">
+                    <label class="form-label">Turma</label>
+                    <select name="turma" class="form-control">
+                        <option value="">Todas as turmas</option>
+                        {% for turma in turmas %}
+                        <option value="{{ turma.id }}" {% if request.GET.turma == turma.id|stringformat:"s" %}selected{% endif %}>
+                            {{ turma.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Tipo de Ocorrência</label>
+                    <select name="tipo" class="form-control">
+                        <option value="">Todos os tipos</option>
+                        {% for tipo in tipos %}
+                        <option value="{{ tipo.id }}" {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
+                            {{ tipo.codigo }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group" style="display: flex; align-items: flex-end;">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    <a href="{% url 'core:alertas_limites_dashboard' %}" class="btn btn-outline ml-2">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Lista de Alertas -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h2 class="card-title">Alertas Ativos</h2>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Estudante</th>
+                            <th>Turma</th>
+                            <th>Tipo de Ocorrência</th>
+                            <th>Quantidade</th>
+                            <th>Limite</th>
+                            <th>Notificações Enviadas</th>
+                            <th>Data do Alerta</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alerta in alertas %}
+                        <tr>
+                            <td>
+                                <strong>{{ alerta.estudante.nome }}</strong><br>
+                                <small class="text-gray-600">{{ alerta.estudante.matricula_sga }}</small>
+                            </td>
+                            <td>
+                                {{ alerta.estudante.turma.nome }}<br>
+                                <small class="text-gray-600">{{ alerta.estudante.curso.nome|truncatewords:3 }}</small>
+                            </td>
+                            <td>
+                                <span class="badge badge-info">
+                                    {{ alerta.tipo_ocorrencia.codigo }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-2xl font-bold text-red-600">
+                                    {{ alerta.quantidade_ocorrencias }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-gray-600">
+                                    {{ alerta.configuracao.limite_mensal }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="flex flex-col gap-1">
+                                    {% if alerta.notificacao_sistema_criada %}
+                                        <span class="badge badge-finalizada text-xs">✓ Sistema</span>
+                                    {% endif %}
+                                    {% if alerta.email_coordenacao_enviado %}
+                                        <span class="badge badge-finalizada text-xs">✓ Coordenação</span>
+                                    {% endif %}
+                                    {% if alerta.email_responsaveis_enviado %}
+                                        <span class="badge badge-finalizada text-xs">✓ Responsáveis</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {{ alerta.criado_em|date:"d/m/Y H:i" }}
+                            </td>
+                            <td>
+                                <div class="flex gap-1">
+                                    <a href="{% url 'core:estudante_detail' alerta.estudante.matricula_sga %}" 
+                                       class="btn btn-outline btn-sm" title="Ver Perfil">
+                                        👤
+                                    </a>
+                                    <a href="{% url 'core:relatorio_estudante' alerta.estudante.matricula_sga %}" 
+                                       class="btn btn-outline btn-sm" title="Ver Histórico">
+                                        📊
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center p-12">
+                                <div class="empty-state">
+                                    <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <p>Nenhum alerta no momento</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Grid de Análises -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Estudantes Críticos -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Top 10 - Estudantes com Mais Alertas</h2>
+            </div>
+            <div class="card-body">
+                {% for estudante in estudantes_criticos %}
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md mb-2">
+                    <div>
+                        <div class="font-semibold">{{ estudante.estudante__nome }}</div>
+                        <div class="text-sm text-gray-600">
+                            {{ estudante.estudante__matricula_sga }} - {{ estudante.estudante__turma__nome }}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-red-600">{{ estudante.total_alertas }}</div>
+                        <div class="text-xs text-gray-500">alerta(s)</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-gray-500 p-4">
+                    Nenhum dado disponível
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Tipos Mais Frequentes -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Tipos de Ocorrência Mais Alertados</h2>
+            </div>
+            <div class="card-body">
+                {% for tipo in tipos_frequentes %}
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md mb-2">
+                    <div class="flex-1">
+                        <div class="font-semibold">{{ tipo.tipo_ocorrencia__codigo }}</div>
+                        <div class="text-sm text-gray-600">{{ tipo.tipo_ocorrencia__descricao|truncatewords:8 }}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold text-orange-600">{{ tipo.total }}</div>
+                        <div class="text-xs text-gray-500">alerta(s)</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-gray-500 p-4">
+                    Nenhum dado disponível
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
