@@ -537,17 +537,17 @@ class ConfiguracaoLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
         'limite_mensal',
         'coordenacoes_notificar',
         'gerar_notificacao_sistema',
-        'gerar_email_coordenacao',
         'gerar_email_responsaveis',
-        'ativo'
+        'ativo',
+        'get_email_coordenacao_icone'  # Novo display
     ]
 
-    list_filter = ['ativo', 'coordenacoes_notificar']
+    list_filter = ['ativo', 'coordenacoes_notificar', 'gerar_email_coordenacao']  # Adiciona filtro para email coord.
 
     search_fields = ['tipo_ocorrencia__codigo', 'tipo_ocorrencia__descricao']
 
     fieldsets = (
-        ('Tipo de Ocorrência', {
+        ('Tipo de Ocorrência e Limite', {  # Título mais descritivo
             'fields': ('tipo_ocorrencia', 'limite_mensal', 'ativo')
         }),
         ('Notificações no Sistema', {
@@ -558,33 +558,57 @@ class ConfiguracaoLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
                 'gerar_email_coordenacao',
                 'coordenacoes_notificar',
                 'gerar_email_responsaveis'
-            )
+            ),
+            'description': 'Emails serão enviados mensalmente se o limite for atingido.'  # Adiciona descrição
         }),
     )
 
+    # Pré-carrega o tipo de ocorrência para evitar consultas N+1
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('tipo_ocorrencia')
+
+    # Ações personalizadas
     actions = ['duplicar_configuracao', 'ativar_configuracoes', 'desativar_configuracoes']
 
-    def duplicar_configuracao(self, request, queryset):
-        for config in queryset:
-            # Não duplica, apenas informa
-            self.message_user(
-                request,
-                f'Para duplicar, edite a configuração de {config.tipo_ocorrencia.codigo}'
-            )
+    def get_email_coordenacao_icone(self, obj):
+        """Exibe ícone para o campo gerar_email_coordenacao"""
+        if obj.gerar_email_coordenacao:
+            return format_html('<span style="color: green; font-weight: bold;">✔</span>')
+        return format_html('<span style="color: red; font-weight: bold;">✘</span>')
 
-    duplicar_configuracao.short_description = "Duplicar configurações selecionadas"
+    get_email_coordenacao_icone.short_description = 'E-mail Coord.'
+    get_email_coordenacao_icone.admin_order_field = 'gerar_email_coordenacao'
+
+    def duplicar_configuracao(self, request, queryset):
+        """Duplica as configurações selecionadas"""
+        count = 0
+        for config in queryset:
+            nova_config = ConfiguracaoLimiteOcorrenciaRapida.objects.create(
+                tipo_ocorrencia=config.tipo_ocorrencia,
+                limite_mensal=config.limite_mensal,
+                coordenacoes_notificar=config.coordenacoes_notificar,
+                gerar_notificacao_sistema=config.gerar_notificacao_sistema,
+                gerar_email_coordenacao=config.gerar_email_coordenacao,
+                gerar_email_responsaveis=config.gerar_email_responsaveis,
+                ativo=False  # Cria como inativa por segurança
+            )
+            count += 1
+
+        self.message_user(request, f'{count} configuração(ões) duplicada(s) com sucesso. Criadas como inativas.')
+
+    duplicar_configuracao.short_description = "📋 Duplicar configurações selecionadas"
 
     def ativar_configuracoes(self, request, queryset):
         updated = queryset.update(ativo=True)
         self.message_user(request, f'{updated} configuração(ões) ativada(s).')
 
-    ativar_configuracoes.short_description = "Ativar configurações selecionadas"
+    ativar_configuracoes.short_description = "✅ Ativar configurações selecionadas"
 
     def desativar_configuracoes(self, request, queryset):
         updated = queryset.update(ativo=False)
         self.message_user(request, f'{updated} configuração(ões) desativada(s).')
 
-    desativar_configuracoes.short_description = "Desativar configurações selecionadas"
+    desativar_configuracoes.short_description = "❌ Desativar configurações selecionadas"
 
 
 @admin.register(AlertaLimiteOcorrenciaRapida)
@@ -593,6 +617,7 @@ class AlertaLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
         'estudante',
         'tipo_ocorrencia',
         'quantidade_ocorrencias',
+        'limite_configurado',  # Novo display
         'mes_referencia',
         'notificacao_sistema_criada',
         'email_coordenacao_enviado',
@@ -615,10 +640,12 @@ class AlertaLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
         'tipo_ocorrencia__codigo'
     ]
 
+    # Adiciona a configuração à lista de campos apenas leitura
     readonly_fields = [
         'estudante',
         'tipo_ocorrencia',
         'configuracao',
+        'limite_configurado',  # Adiciona
         'mes_referencia',
         'quantidade_ocorrencias',
         'notificacao_sistema_criada',
@@ -628,6 +655,25 @@ class AlertaLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
     ]
 
     date_hierarchy = 'criado_em'
+
+    # Otimiza o queryset
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            'estudante', 'tipo_ocorrencia', 'configuracao'
+        )
+
+    def limite_configurado(self, obj):
+        """Exibe o limite definido na configuração que gerou o alerta"""
+        if obj.configuracao:
+            # Destaca a cor do limite
+            return format_html(
+                '<span style="font-weight: bold; color: orange;">{}</span>',
+                obj.configuracao.limite_mensal
+            )
+        return 'N/A'
+
+    limite_configurado.short_description = 'Limite'
+    limite_configurado.admin_order_field = 'configuracao__limite_mensal'
 
     def has_add_permission(self, request):
         # Alertas são gerados automaticamente
