@@ -1,11 +1,13 @@
+# core/utils_alertas.py - ATUALIZE ESTA FUNÇÃO COMPLETAMENTE
 from django.utils import timezone
 from django.db.models import Count, Q
-from datetime import date
+from datetime import date, timedelta
 from .models import (
     OcorrenciaRapida,
     ConfiguracaoLimiteOcorrenciaRapida,
     AlertaLimiteOcorrenciaRapida,
-    Estudante
+    Estudante,
+    TipoOcorrenciaRapida
 )
 import logging
 
@@ -17,91 +19,133 @@ def verificar_limites_ocorrencia(ocorrencia):
     Verifica se uma ocorrência específica dispara algum alerta.
     Usado em signals ou no save_model.
     """
-    estudantes = ocorrencia.estudantes.all()
-    tipos = ocorrencia.tipos_rapidos.all()
+    try:
+        estudantes = ocorrencia.estudantes.all()
+        tipos = ocorrencia.tipos_rapidos.all()
 
-    # Data da ocorrência define o mês de referência - CORREÇÃO: Criar objeto date
-    mes_referencia = ocorrencia.data.replace(day=1)
+        if not estudantes or not tipos:
+            return
 
-    # Filtra configurações ativas para os tipos desta ocorrência
-    configs = ConfiguracaoLimiteOcorrenciaRapida.objects.filter(
-        tipo_ocorrencia__in=tipos,
-        ativo=True
-    ).select_related('tipo_ocorrencia')
+        # Data da ocorrência define o mês de referência
+        mes_referencia = ocorrencia.data.replace(day=1)
 
-    for config in configs:
-        for estudante in estudantes:
-            processar_alerta_individual(estudante, config, mes_referencia)
+        logger.info(f"Verificando limites para {estudantes.count()} estudantes e {tipos.count()} tipos")
+
+        # Filtra configurações ativas para os tipos desta ocorrência
+        configs = ConfiguracaoLimiteOcorrenciaRapida.objects.filter(
+            tipo_ocorrencia__in=tipos,
+            ativo=True
+        ).select_related('tipo_ocorrencia')
+
+        logger.info(f"Encontradas {configs.count()} configurações ativas")
+
+        for config in configs:
+            for estudante in estudantes:
+                processar_alerta_individual(estudante, config, mes_referencia)
+
+    except Exception as e:
+        logger.error(f"Erro ao verificar limites: {str(e)}")
 
 
 def processar_alerta_individual(estudante, config, mes_referencia):
     """
     Lógica isolada para verificar e criar/atualizar alerta para um estudante/config específico.
     """
-    # mes_referencia agora é um objeto date (primeiro dia do mês)
-    ano = mes_referencia.year
-    mes = mes_referencia.month
+    try:
+        ano = mes_referencia.year
+        mes = mes_referencia.month
 
-    # CORREÇÃO AQUI: Uso de 'ocorrencias_rapidas' em vez de 'ocorrenciarapida'
-    total_ocorrencias = OcorrenciaRapida.objects.filter(
-        estudantes=estudante,
-        tipos_rapidos=config.tipo_ocorrencia,
-        data__year=ano,
-        data__month=mes
-    ).count()
+        # Contar ocorrências do tipo específico para este estudante no mês
+        total_ocorrencias = OcorrenciaRapida.objects.filter(
+            estudantes=estudante,
+            tipos_rapidos=config.tipo_ocorrencia,
+            data__year=ano,
+            data__month=mes
+        ).count()
 
-    if total_ocorrencias > config.limite_mensal:
-        alerta, created = AlertaLimiteOcorrenciaRapida.objects.update_or_create(
-            estudante=estudante,
-            tipo_ocorrencia=config.tipo_ocorrencia,
-            mes_referencia=mes_referencia,
-            defaults={
-                'configuracao': config,
-                'quantidade_ocorrencias': total_ocorrencias,
-            }
-        )
-        if created:
-            logger.info(f"Novo alerta limite gerado: {estudante} - {config.tipo_ocorrencia}")
-    else:
-        # Remove alerta se o estudante não excede mais o limite (ex: limite aumentou)
-        AlertaLimiteOcorrenciaRapida.objects.filter(
-            estudante=estudante,
-            tipo_ocorrencia=config.tipo_ocorrencia,
-            mes_referencia=mes_referencia
-        ).delete()
+        logger.info(
+            f"Estudante {estudante.nome} - Tipo {config.tipo_ocorrencia.codigo}: {total_ocorrencias}/{config.limite_mensal}")
+
+        if total_ocorrencias >= config.limite_mensal:  # Alterado para >= para incluir quando igual ao limite
+            alerta, created = AlertaLimiteOcorrenciaRapida.objects.update_or_create(
+                estudante=estudante,
+                tipo_ocorrencia=config.tipo_ocorrencia,
+                mes_referencia=mes_referencia,
+                defaults={
+                    'configuracao': config,
+                    'quantidade_ocorrencias': total_ocorrencias,
+                }
+            )
+
+            # Enviar notificações se configurado
+            if created and config.gerar_notificacao_sistema:
+                from .services import ServicoNotificacao
+                try:
+                    ServicoNotificacao.notificar_alerta_limite_atingido(alerta)
+                except Exception as e:
+                    logger.error(f"Erro ao enviar notificação: {str(e)}")
+
+            if created:
+                logger.info(
+                    f"✅ Alerta criado: {estudante.nome} - {config.tipo_ocorrencia.codigo} ({total_ocorrencias}x)")
+
+        else:
+            # Remover alerta se o estudante não excede mais o limite
+            deleted, _ = AlertaLimiteOcorrenciaRapida.objects.filter(
+                estudante=estudante,
+                tipo_ocorrencia=config.tipo_ocorrencia,
+                mes_referencia=mes_referencia
+            ).delete()
+
+            if deleted:
+                logger.info(f"❌ Alerta removido: {estudante.nome} - {config.tipo_ocorrencia.codigo}")
+
+    except Exception as e:
+        logger.error(f"Erro ao processar alerta para {estudante.nome}: {str(e)}")
 
 
 def recalcular_alertas_periodo(mes_referencia=None):
     """
     Força a verificação de TODOS os estudantes e TODAS as configurações ativas.
+    Retorna estatísticas detalhadas.
     """
     if not mes_referencia:
-        # CORREÇÃO: Usar replace(day=1) para obter primeiro dia do mês
         mes_referencia = timezone.now().date().replace(day=1)
-    elif isinstance(mes_referencia, str):
-        # Se for string, converter para date
-        ano, mes = map(int, mes_referencia.split('-'))
-        mes_referencia = date(ano, mes, 1)
+
+    logger.info(f"🔍 RECALCULANDO ALERTAS para {mes_referencia.strftime('%m/%Y')}")
 
     ano = mes_referencia.year
     mes = mes_referencia.month
 
-    # CORREÇÃO: Obter TODAS as configurações ativas
-    configs_ativas = ConfiguracaoLimiteOcorrenciaRapida.objects.filter(ativo=True)
+    # Limpar alertas existentes para este mês
+    deleted_count = AlertaLimiteOcorrenciaRapida.objects.filter(
+        mes_referencia=mes_referencia
+    ).delete()[0]
+
+    logger.info(f"Limpos {deleted_count} alertas antigos")
+
+    # Obter TODAS as configurações ativas
+    configs_ativas = ConfiguracaoLimiteOcorrenciaRapida.objects.filter(
+        ativo=True
+    ).select_related('tipo_ocorrencia')
 
     if not configs_ativas.exists():
-        logger.warning("Nenhuma configuração de limite ativa encontrada.")
-        return 0
+        logger.warning("⚠️ Nenhuma configuração ativa encontrada!")
+        return {
+            'configuracoes_processadas': 0,
+            'alertas_gerados': 0,
+            'estudantes_afetados': 0
+        }
 
-    logger.info(
-        f"Recalculando alertas para {mes_referencia.strftime('%Y-%m')}. Configurações ativas: {configs_ativas.count()}")
+    logger.info(f"📊 Configurações ativas: {configs_ativas.count()}")
 
-    contagem_alertas_gerados = 0
+    alertas_gerados = 0
+    estudantes_afetados = set()
 
     for config in configs_ativas:
-        logger.info(f"Processando configuração: {config.tipo_ocorrencia.codigo} - Limite: {config.limite_mensal}")
+        logger.info(f"Processando {config.tipo_ocorrencia.codigo} (limite: {config.limite_mensal})")
 
-        # CORREÇÃO AQUI: Uso de 'ocorrencias_rapidas' nos filtros e no Count
+        # Buscar estudantes com ocorrências deste tipo no mês
         estudantes_com_ocorrencias = Estudante.objects.filter(
             ocorrencias_rapidas__tipos_rapidos=config.tipo_ocorrencia,
             ocorrencias_rapidas__data__year=ano,
@@ -109,26 +153,43 @@ def recalcular_alertas_periodo(mes_referencia=None):
         ).annotate(
             qtd=Count('ocorrencias_rapidas')
         ).filter(
-            qtd__gt=config.limite_mensal
+            qtd__gte=config.limite_mensal  # Alterado para >=
         ).distinct()
 
-        logger.info(
-            f"Encontrados {estudantes_com_ocorrencias.count()} estudantes com limite excedido para {config.tipo_ocorrencia.codigo}")
+        logger.info(f"  → {estudantes_com_ocorrencias.count()} estudantes excedem o limite")
 
-        for dados_estudante in estudantes_com_ocorrencias:
-            alerta, created = AlertaLimiteOcorrenciaRapida.objects.update_or_create(
-                estudante=dados_estudante,
-                tipo_ocorrencia=config.tipo_ocorrencia,
-                mes_referencia=mes_referencia,
-                defaults={
-                    'configuracao': config,
-                    'quantidade_ocorrencias': dados_estudante.qtd
-                }
-            )
-            contagem_alertas_gerados += 1
-            if created:
-                logger.info(
-                    f"Alerta criado para {dados_estudante.nome} - {config.tipo_ocorrencia.codigo}: {dados_estudante.qtd} ocorrências")
+        for estudante in estudantes_com_ocorrencias:
+            try:
+                # Contar novamente para garantir precisão
+                total_ocorrencias = OcorrenciaRapida.objects.filter(
+                    estudantes=estudante,
+                    tipos_rapidos=config.tipo_ocorrencia,
+                    data__year=ano,
+                    data__month=mes
+                ).count()
 
-    logger.info(f"Recalculo concluído. Total de alertas gerados/atualizados: {contagem_alertas_gerados}")
-    return contagem_alertas_gerados
+                if total_ocorrencias >= config.limite_mensal:
+                    alerta = AlertaLimiteOcorrenciaRapida.objects.create(
+                        estudante=estudante,
+                        tipo_ocorrencia=config.tipo_ocorrencia,
+                        configuracao=config,
+                        mes_referencia=mes_referencia,
+                        quantidade_ocorrencias=total_ocorrencias
+                    )
+
+                    alertas_gerados += 1
+                    estudantes_afetados.add(estudante.id)
+
+                    logger.info(f"    ✅ {estudante.nome}: {total_ocorrencias} ocorrências")
+
+            except Exception as e:
+                logger.error(f"Erro ao criar alerta para {estudante.nome}: {str(e)}")
+
+    logger.info(f"🎯 CONCLUSÃO: {alertas_gerados} alertas gerados para {len(estudantes_afetados)} estudantes")
+
+    return {
+        'configuracoes_processadas': configs_ativas.count(),
+        'alertas_gerados': alertas_gerados,
+        'estudantes_afetados': len(estudantes_afetados),
+        'mes_referencia': mes_referencia.strftime('%m/%Y')
+    }

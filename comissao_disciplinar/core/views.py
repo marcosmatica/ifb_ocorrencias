@@ -1479,6 +1479,7 @@ def proxy_imagem_google_drive(request):
         return HttpResponse(f'Erro ao carregar imagem: {str(e)}', status=500)
 
 
+# core/views.py - ATUALIZE a função alertas_limites_dashboard
 @login_required
 @user_passes_test(is_servidor)
 def alertas_limites_dashboard(request):
@@ -1486,18 +1487,34 @@ def alertas_limites_dashboard(request):
     Dashboard para visualizar alertas de limites de ocorrências rápidas
     """
     from datetime import datetime, timedelta
-    from django.db.models import Count
+    from django.db.models import Count, F
 
-    # CORREÇÃO: Remover chamada automática de recalcular_alertas_periodo
-    # para melhor performance (mantenha apenas se necessário)
-    # recalcular_alertas_periodo()
+    # Opção para recalcular alertas
+    if 'recalcular' in request.GET:
+        resultado = recalcular_alertas_periodo()
+        messages.success(request, f"Recalculado! {resultado['alertas_gerados']} alertas gerados.")
+        return redirect('core:alertas_limites_dashboard')
 
-    # Alertas do mês atual
-    hoje = timezone.now().date()
-    primeiro_dia_mes = hoje.replace(day=1)
+    # Determinar mês de referência (padrão: mês atual)
+    mes_param = request.GET.get('mes')
+    if mes_param:
+        try:
+            ano, mes = map(int, mes_param.split('-'))
+            mes_referencia = date(ano, mes, 1)
+        except:
+            mes_referencia = timezone.now().date().replace(day=1)
+    else:
+        mes_referencia = timezone.now().date().replace(day=1)
 
+    # Lista de meses disponíveis (últimos 6 meses)
+    meses_disponiveis = []
+    for i in range(6):
+        data = (mes_referencia - timedelta(days=30 * i)).replace(day=1)
+        meses_disponiveis.append(data)
+
+    # Alertas do mês selecionado
     alertas_mes = AlertaLimiteOcorrenciaRapida.objects.filter(
-        mes_referencia=primeiro_dia_mes
+        mes_referencia=mes_referencia
     ).select_related(
         'estudante',
         'estudante__turma',
@@ -1506,20 +1523,26 @@ def alertas_limites_dashboard(request):
         'configuracao'
     ).order_by('-quantidade_ocorrencias', '-criado_em')
 
+    # Configurações ativas
+    configuracoes_ativas = ConfiguracaoLimiteOcorrenciaRapida.objects.filter(
+        ativo=True
+    ).select_related('tipo_ocorrencia').order_by('tipo_ocorrencia__codigo')
+
     # Estatísticas
     total_alertas = alertas_mes.count()
     alertas_novos = alertas_mes.filter(
         criado_em__gte=timezone.now() - timedelta(days=7)
     ).count()
 
-    # Estudantes com mais alertas
+    # Top estudantes críticos
     estudantes_criticos = alertas_mes.values(
         'estudante__id',
         'estudante__nome',
         'estudante__matricula_sga',
         'estudante__turma__nome'
     ).annotate(
-        total_alertas=Count('id')
+        total_alertas=Count('id'),
+        total_ocorrencias=Count('quantidade_ocorrencias')
     ).order_by('-total_alertas')[:10]
 
     # Tipos mais frequentes
@@ -1527,10 +1550,11 @@ def alertas_limites_dashboard(request):
         'tipo_ocorrencia__codigo',
         'tipo_ocorrencia__descricao'
     ).annotate(
-        total=Count('id')
+        total=Count('id'),
+        media_ocorrencias=Count('quantidade_ocorrencias') / Count('id')
     ).order_by('-total')[:5]
 
-    # Filtros
+    # Filtros adicionais
     turma_filtro = request.GET.get('turma')
     tipo_filtro = request.GET.get('tipo')
 
@@ -1541,15 +1565,17 @@ def alertas_limites_dashboard(request):
         alertas_mes = alertas_mes.filter(tipo_ocorrencia_id=tipo_filtro)
 
     # Paginação
-    from django.core.paginator import Paginator
     paginator = Paginator(alertas_mes, 20)
     page = request.GET.get('page')
     alertas_page = paginator.get_page(page)
 
-    # CORREÇÃO: Obter configurações ativas para mostrar no template
-    configuracoes_ativas = ConfiguracaoLimiteOcorrenciaRapida.objects.filter(
-        ativo=True
-    ).select_related('tipo_ocorrencia').count()
+    # Contagem de ocorrências rápidas no mês (para contexto)
+    ano = mes_referencia.year
+    mes = mes_referencia.month
+    total_ocorrencias_mes = OcorrenciaRapida.objects.filter(
+        data__year=ano,
+        data__month=mes
+    ).count()
 
     breadcrumbs_list = [
         {'label': 'Dashboard', 'url': '/dashboard/'},
@@ -1565,6 +1591,9 @@ def alertas_limites_dashboard(request):
         'turmas': Turma.objects.filter(ativa=True),
         'tipos': TipoOcorrenciaRapida.objects.filter(ativo=True),
         'configuracoes_ativas': configuracoes_ativas,
+        'mes_referencia': mes_referencia,
+        'meses_disponiveis': meses_disponiveis,
+        'total_ocorrencias_mes': total_ocorrencias_mes,
         'breadcrumbs_list': breadcrumbs_list,
     }
 
