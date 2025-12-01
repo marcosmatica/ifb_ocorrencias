@@ -18,6 +18,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.contrib.auth import get_user_model
 import requests
+from .utils_alertas import recalcular_alertas_periodo
 
 
 def home(request):
@@ -1486,7 +1487,7 @@ def alertas_limites_dashboard(request):
     """
     from datetime import datetime, timedelta
     from django.db.models import Count
-
+    recalcular_alertas_periodo()
     # Alertas do mês atual
     hoje = timezone.now().date()
     primeiro_dia_mes = hoje.replace(day=1)
