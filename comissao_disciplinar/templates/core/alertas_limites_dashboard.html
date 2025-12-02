@@ -4,31 +4,219 @@
 {% block title %}Alertas de Limites{% endblock %}
 {% block header_title %}Alertas de Limites de Ocorrências{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* Animações suaves */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loading-spinner {
+        background: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .badge-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.25rem;
+        height: 1.25rem;
+        padding: 0 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1;
+        color: white;
+        background-color: #3b82f6;
+        border-radius: 9999px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
-    <!-- Stats -->
+    <!-- Header com Controles -->
+    <div class="mb-6">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    Alertas de Limites de Ocorrências
+                </h1>
+                <p class="text-gray-600">
+                    Monitoramento de estudantes que atingiram limites configurados
+                </p>
+            </div>
+
+            <!-- Controles Principais -->
+            <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                <!-- Seletor de Mês -->
+                <div class="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-4 py-2">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <select
+                        id="mes-selector"
+                        class="border-0 focus:ring-0 font-medium text-gray-900 cursor-pointer bg-transparent"
+                        onchange="handleMesChange(this.value)"
+                    >
+                        {% for mes in meses_disponiveis %}
+                        <option value="{{ mes|date:'Y-m' }}" {% if mes == mes_referencia %}selected{% endif %}>
+                            {{ mes|date:'F/Y' }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Botão Recalcular -->
+                <button
+                    onclick="handleRecalcular()"
+                    class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Recalcular
+                </button>
+
+                <!-- Botão Filtros -->
+                <button
+                    onclick="toggleFiltros()"
+                    class="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                    Filtros
+                    {% if request.GET.turma or request.GET.tipo %}
+                    <span class="badge-count">
+                        {% if request.GET.turma and request.GET.tipo %}2{% elif request.GET.turma or request.GET.tipo %}1{% endif %}
+                    </span>
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+
+        <!-- Painel de Filtros (Inicialmente Oculto) -->
+        <div id="filtros-panel" class="hidden animate-fadeIn">
+            <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-semibold text-gray-900">Filtros Avançados</h3>
+                    {% if request.GET.turma or request.GET.tipo %}
+                    <a
+                        href="?mes={{ mes_referencia|date:'Y-m' }}"
+                        class="text-sm text-blue-600 hover:text-blue-700"
+                    >
+                        Limpar filtros
+                    </a>
+                    {% endif %}
+                </div>
+
+                <form method="get" id="filtros-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Campo oculto para preservar o mês -->
+                    <input type="hidden" name="mes" value="{{ mes_referencia|date:'Y-m' }}">
+
+                    <div class="form-group">
+                        <label class="form-label">Turma</label>
+                        <select name="turma" class="form-control">
+                            <option value="">Todas as turmas</option>
+                            {% for turma in turmas %}
+                            <option value="{{ turma.id }}" {% if request.GET.turma == turma.id|stringformat:"s" %}selected{% endif %}>
+                                {{ turma.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Ocorrência</label>
+                        <select name="tipo" class="form-control">
+                            <option value="">Todos os tipos</option>
+                            {% for tipo in tipos %}
+                            <option value="{{ tipo.id }}" {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
+                                {{ tipo.codigo }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group flex items-end">
+                        <button type="submit" class="btn btn-primary w-full">
+                            Aplicar Filtros
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Tags de Filtros Ativos -->
+                {% if request.GET.turma or request.GET.tipo %}
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="text-sm text-gray-600 font-medium">Filtros ativos:</span>
+                    {% if request.GET.turma %}
+                    <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+                        Turma
+                        <a href="?mes={{ mes_referencia|date:'Y-m' }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}"
+                           class="ml-1 hover:text-blue-900">
+                            ×
+                        </a>
+                    </span>
+                    {% endif %}
+                    {% if request.GET.tipo %}
+                    <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+                        Tipo
+                        <a href="?mes={{ mes_referencia|date:'Y-m' }}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}"
+                           class="ml-1 hover:text-blue-900">
+                            ×
+                        </a>
+                    </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
     <div class="stats-grid mb-6">
-        <div class="stat-card border-l-red-500">
+        <div class="stat-card border-l-4" style="border-color: #ef4444;">
             <div class="stat-label">Total de Alertas (Mês)</div>
             <div class="stat-value">{{ total_alertas }}</div>
             <div class="stat-change">Estudantes com limites atingidos</div>
         </div>
-        
-        <div class="stat-card border-l-orange-500">
+
+        <div class="stat-card border-l-4" style="border-color: #f97316;">
             <div class="stat-label">Alertas Novos (7 dias)</div>
             <div class="stat-value">{{ alertas_novos }}</div>
             <div class="stat-change">Requerem atenção</div>
         </div>
-        
-        <div class="stat-card border-l-blue-500">
+
+        <div class="stat-card border-l-4" style="border-color: #3b82f6;">
             <div class="stat-label">Estudantes Críticos</div>
             <div class="stat-value">{{ estudantes_criticos|length }}</div>
             <div class="stat-change">Múltiplos alertas</div>
         </div>
-        
-        <div class="stat-card border-l-purple-500">
+
+        <div class="stat-card border-l-4" style="border-color: #8b5cf6;">
             <div class="stat-label">Tipo Mais Frequente</div>
-            <div class="stat-value">
+            <div class="stat-value" style="font-size: 1.5rem;">
                 {% if tipos_frequentes %}
                     {{ tipos_frequentes.0.tipo_ocorrencia__codigo }}
                 {% else %}
@@ -36,37 +224,6 @@
                 {% endif %}
             </div>
             <div class="stat-change">Tipo com mais alertas</div>
-        </div>
-    </div>
-
-    <!-- Seletor de Mês e Ações -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div class="flex items-center gap-4">
-            <div>
-                <label class="form-label">Mês de Referência</label>
-                <select id="mes-selector" class="form-control">
-                    {% for mes in meses_disponiveis %}
-                    <option value="{{ mes|date:'Y-m' }}"
-                            {% if mes == mes_referencia %}selected{% endif %}>
-                        {{ mes|date:'F/Y' }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="mt-4">
-                <a href="{% url 'core:alertas_limites_dashboard' %}?{% if request.GET.turma %}turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.mes %}&mes={{ request.GET.mes }}{% endif %}&recalcular=true"
-                   class="btn btn-warning">
-                    🔄 Recalcular Alertas
-                </a>
-                <small class="text-gray-500 block mt-1">Gera alertas para {{ mes_referencia|date:'F/Y' }}</small>
-            </div>
-        </div>
-
-        <div class="text-right">
-            <div class="text-sm text-gray-600">
-                <strong>{{ total_ocorrencias_mes }}</strong> ocorrências rápidas neste mês
-            </div>
         </div>
     </div>
 
@@ -82,10 +239,10 @@
                     <thead>
                         <tr>
                             <th>Tipo de Ocorrência</th>
-                            <th>Limite Mensal</th>
-                            <th>Notificar Sistema</th>
-                            <th>Notificar Coordenação</th>
-                            <th>Notificar Responsáveis</th>
+                            <th class="text-center">Limite Mensal</th>
+                            <th class="text-center">Sistema</th>
+                            <th class="text-center">Coordenação</th>
+                            <th class="text-center">Responsáveis</th>
                             <th>Coordenação Alvo</th>
                         </tr>
                     </thead>
@@ -97,27 +254,27 @@
                                 <small class="text-gray-600">{{ config.tipo_ocorrencia.descricao|truncatewords:10 }}</small>
                             </td>
                             <td class="text-center">
-                                <span class="text-2xl font-bold text-red-600">{{ config.limite_mensal }}</span>
+                                <span class="text-2xl font-bold" style="color: #ef4444;">{{ config.limite_mensal }}</span>
                             </td>
                             <td class="text-center">
                                 {% if config.gerar_notificacao_sistema %}
-                                <span class="badge badge-finalizada">✅</span>
+                                    <span class="badge badge-finalizada">✓</span>
                                 {% else %}
-                                <span class="badge badge-arquivada">❌</span>
+                                    <span class="badge badge-arquivada">✗</span>
                                 {% endif %}
                             </td>
                             <td class="text-center">
                                 {% if config.gerar_email_coordenacao %}
-                                <span class="badge badge-finalizada">✅</span>
+                                    <span class="badge badge-finalizada">✓</span>
                                 {% else %}
-                                <span class="badge badge-arquivada">❌</span>
+                                    <span class="badge badge-arquivada">✗</span>
                                 {% endif %}
                             </td>
                             <td class="text-center">
                                 {% if config.gerar_email_responsaveis %}
-                                <span class="badge badge-finalizada">✅</span>
+                                    <span class="badge badge-finalizada">✓</span>
                                 {% else %}
-                                <span class="badge badge-arquivada">❌</span>
+                                    <span class="badge badge-arquivada">✗</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -128,12 +285,8 @@
                         <tr>
                             <td colspan="6" class="text-center p-8">
                                 <div class="empty-state">
-                                    <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
                                     <p>Nenhuma configuração ativa</p>
-                                    <a href="/admin/core/configuracaolimiteocorrenciarapida/add/"
-                                       class="btn btn-primary mt-4">
+                                    <a href="/admin/core/configuracaolimiteocorrenciarapida/add/" class="btn btn-primary mt-4">
                                         Criar Primeira Configuração
                                     </a>
                                 </div>
@@ -145,70 +298,11 @@
             </div>
         </div>
     </div>
-    
-    <!-- Filtros - ATUALIZADO para preservar mês -->
-    <div class="card mb-6">
-        <div class="card-header">
-            <h2 class="card-title">Filtros</h2>
-        </div>
-        <div class="card-body">
-            <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- Campo oculto para o mês -->
-                <input type="hidden" name="mes" value="{{ request.GET.mes|default:mes_referencia|date:'Y-m' }}">
 
-                <div class="form-group">
-                    <label class="form-label">Turma</label>
-                    <select name="turma" class="form-control">
-                        <option value="">Todas as turmas</option>
-                        {% for turma in turmas %}
-                        <option value="{{ turma.id }}"
-                                {% if request.GET.turma == turma.id|stringformat:"s" %}selected{% endif %}>
-                            {{ turma.nome }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Tipo de Ocorrência</label>
-                    <select name="tipo" class="form-control">
-                        <option value="">Todos os tipos</option>
-                        {% for tipo in tipos %}
-                        <option value="{{ tipo.id }}"
-                                {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
-                            {{ tipo.codigo }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Mês (adicional)</label>
-                    <select name="mes" class="form-control">
-                        {% for mes in meses_disponiveis %}
-                        <option value="{{ mes|date:'Y-m' }}"
-                                {% if request.GET.mes == mes|date:'Y-m' or mes == mes_referencia %}selected{% endif %}>
-                            {{ mes|date:'F/Y' }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-group flex items-end">
-                    <button type="submit" class="btn btn-primary">Filtrar</button>
-                    <a href="{% url 'core:alertas_limites_dashboard' %}?mes={{ request.GET.mes|default:mes_referencia|date:'Y-m' }}"
-                       class="btn btn-outline ml-2">
-                        Limpar Filtros
-                    </a>
-                </div>
-            </form>
-        </div>
-    </div>
-    
     <!-- Lista de Alertas -->
     <div class="card mb-6">
         <div class="card-header">
-            <h2 class="card-title">Alertas Ativos</h2>
+            <h2 class="card-title">Alertas Ativos - {{ mes_referencia|date:"F/Y" }}</h2>
         </div>
         <div class="card-body p-0">
             <div class="table-container">
@@ -217,11 +311,11 @@
                         <tr>
                             <th>Estudante</th>
                             <th>Turma</th>
-                            <th>Tipo de Ocorrência</th>
-                            <th>Quantidade</th>
-                            <th>Limite</th>
-                            <th>Notificações Enviadas</th>
-                            <th>Data do Alerta</th>
+                            <th class="text-center">Tipo</th>
+                            <th class="text-center">Qtd</th>
+                            <th class="text-center">Limite</th>
+                            <th>Notificações</th>
+                            <th>Data</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -236,20 +330,16 @@
                                 {{ alerta.estudante.turma.nome }}<br>
                                 <small class="text-gray-600">{{ alerta.estudante.curso.nome|truncatewords:3 }}</small>
                             </td>
-                            <td>
-                                <span class="badge badge-info">
-                                    {{ alerta.tipo_ocorrencia.codigo }}
-                                </span>
+                            <td class="text-center">
+                                <span class="badge badge-info">{{ alerta.tipo_ocorrencia.codigo }}</span>
                             </td>
                             <td class="text-center">
-                                <span class="text-2xl font-bold text-red-600">
+                                <span class="text-2xl font-bold" style="color: #ef4444;">
                                     {{ alerta.quantidade_ocorrencias }}
                                 </span>
                             </td>
                             <td class="text-center">
-                                <span class="text-gray-600">
-                                    {{ alerta.configuracao.limite_mensal }}
-                                </span>
+                                <span class="text-gray-600">{{ alerta.configuracao.limite_mensal }}</span>
                             </td>
                             <td>
                                 <div class="flex flex-col gap-1">
@@ -265,15 +355,15 @@
                                 </div>
                             </td>
                             <td>
-                                {{ alerta.criado_em|date:"d/m/Y H:i" }}
+                                <small>{{ alerta.criado_em|date:"d/m/Y H:i" }}</small>
                             </td>
                             <td>
                                 <div class="flex gap-1">
-                                    <a href="{% url 'core:estudante_detail' alerta.estudante.matricula_sga %}" 
+                                    <a href="{% url 'core:estudante_detail' alerta.estudante.matricula_sga %}"
                                        class="btn btn-outline btn-sm" title="Ver Perfil">
                                         👤
                                     </a>
-                                    <a href="{% url 'core:relatorio_estudante' alerta.estudante.matricula_sga %}" 
+                                    <a href="{% url 'core:relatorio_estudante' alerta.estudante.matricula_sga %}"
                                        class="btn btn-outline btn-sm" title="Ver Histórico">
                                         📊
                                     </a>
@@ -284,10 +374,7 @@
                         <tr>
                             <td colspan="8" class="text-center p-12">
                                 <div class="empty-state">
-                                    <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    <p>Nenhum alerta no momento</p>
+                                    <p>Nenhum alerta no momento para {{ mes_referencia|date:"F/Y" }}</p>
                                 </div>
                             </td>
                         </tr>
@@ -297,7 +384,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Grid de Análises -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Estudantes Críticos -->
@@ -307,7 +394,7 @@
             </div>
             <div class="card-body">
                 {% for estudante in estudantes_criticos %}
-                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md mb-2">
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md mb-2 hover:bg-gray-100 transition-colors">
                     <div>
                         <div class="font-semibold">{{ estudante.estudante__nome }}</div>
                         <div class="text-sm text-gray-600">
@@ -315,7 +402,7 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-2xl font-bold text-red-600">{{ estudante.total_alertas }}</div>
+                        <div class="text-2xl font-bold" style="color: #ef4444;">{{ estudante.total_alertas }}</div>
                         <div class="text-xs text-gray-500">alerta(s)</div>
                     </div>
                 </div>
@@ -326,7 +413,7 @@
                 {% endfor %}
             </div>
         </div>
-        
+
         <!-- Tipos Mais Frequentes -->
         <div class="card">
             <div class="card-header">
@@ -334,13 +421,13 @@
             </div>
             <div class="card-body">
                 {% for tipo in tipos_frequentes %}
-                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md mb-2">
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md mb-2 hover:bg-gray-100 transition-colors">
                     <div class="flex-1">
                         <div class="font-semibold">{{ tipo.tipo_ocorrencia__codigo }}</div>
                         <div class="text-sm text-gray-600">{{ tipo.tipo_ocorrencia__descricao|truncatewords:8 }}</div>
                     </div>
                     <div class="text-right">
-                        <div class="text-2xl font-bold text-orange-600">{{ tipo.total }}</div>
+                        <div class="text-2xl font-bold" style="color: #f97316;">{{ tipo.total }}</div>
                         <div class="text-xs text-gray-500">alerta(s)</div>
                     </div>
                 </div>
@@ -353,69 +440,117 @@
         </div>
     </div>
 </div>
-<script>
-// Script para atualizar o mês quando o seletor principal for alterado
-document.getElementById('mes-selector').addEventListener('change', function() {
-    const selectedMonth = this.value;
-    const url = new URL(window.location.href);
 
-    // Obter todos os parâmetros atuais
+<!-- Loading Overlay (Inicialmente Oculto) -->
+<div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-spinner">
+        <svg class="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-gray-700 font-medium">Processando...</p>
+    </div>
+</div>
+
+<script>
+// Estado do painel de filtros
+let filtrosAbertos = {{ 'true' if request.GET.turma or request.GET.tipo else 'false' }};
+
+// Toggle do painel de filtros
+function toggleFiltros() {
+    const panel = document.getElementById('filtros-panel');
+    filtrosAbertos = !filtrosAbertos;
+
+    if (filtrosAbertos) {
+        panel.classList.remove('hidden');
+    } else {
+        panel.classList.add('hidden');
+    }
+}
+
+// Inicializar painel se houver filtros ativos
+if (filtrosAbertos) {
+    document.getElementById('filtros-panel').classList.remove('hidden');
+}
+
+// Função para preservar parâmetros ao mudar o mês
+function handleMesChange(novoMes) {
+    const url = new URL(window.location.href);
     const params = new URLSearchParams(url.search);
 
-    // Atualizar o parâmetro 'mes'
-    params.set('mes', selectedMonth);
+    // Atualizar mês
+    params.set('mes', novoMes);
+
+    // Preservar outros filtros
+    const turma = params.get('turma');
+    const tipo = params.get('tipo');
 
     // Construir nova URL
-    const newUrl = `${url.pathname}?${params.toString()}`;
+    let newUrl = `${url.pathname}?mes=${novoMes}`;
+    if (turma) newUrl += `&turma=${turma}`;
+    if (tipo) newUrl += `&tipo=${tipo}`;
+
+    // Mostrar loading
+    showLoading();
 
     // Redirecionar
     window.location.href = newUrl;
+}
+
+// Função para recalcular alertas
+function handleRecalcular() {
+    const mesAtual = document.getElementById('mes-selector').value;
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+
+    // Preservar todos os parâmetros + adicionar recalcular
+    let newUrl = `${url.pathname}?mes=${mesAtual}`;
+
+    if (params.get('turma')) {
+        newUrl += `&turma=${params.get('turma')}`;
+    }
+    if (params.get('tipo')) {
+        newUrl += `&tipo=${params.get('tipo')}`;
+    }
+
+    newUrl += '&recalcular=true';
+
+    // Mostrar loading
+    showLoading();
+
+    // Redirecionar
+    window.location.href = newUrl;
+}
+
+// Mostrar/Esconder loading
+function showLoading() {
+    document.getElementById('loading-overlay').classList.remove('hidden');
+}
+
+function hideLoading() {
+    document.getElementById('loading-overlay').classList.add('hidden');
+}
+
+// Interceptar submit do formulário de filtros
+document.getElementById('filtros-form').addEventListener('submit', function(e) {
+    showLoading();
 });
 
-// Script para manter o mês nos links de paginação
+// Atualizar links de paginação para preservar parâmetros
 document.addEventListener('DOMContentLoaded', function() {
-    const currentMonth = '{{ request.GET.mes|default:mes_referencia|date:"Y-m" }}';
+    const mesAtual = '{{ mes_referencia|date:"Y-m" }}';
+    const turmaAtual = '{{ request.GET.turma }}';
+    const tipoAtual = '{{ request.GET.tipo }}';
 
-    // Atualizar links de paginação
+    // Atualizar todos os links de paginação
     const paginationLinks = document.querySelectorAll('.pagination a');
     paginationLinks.forEach(link => {
         const url = new URL(link.href);
-        url.searchParams.set('mes', currentMonth);
+        url.searchParams.set('mes', mesAtual);
+        if (turmaAtual) url.searchParams.set('turma', turmaAtual);
+        if (tipoAtual) url.searchParams.set('tipo', tipoAtual);
         link.href = url.toString();
     });
 });
-
-    // Adicione este script em um arquivo JavaScript separado ou na seção de scripts
-function updateUrlParameter(param, value) {
-    const url = new URL(window.location.href);
-    url.searchParams.set(param, value);
-    window.history.pushState({}, '', url);
-    return url.toString();
-}
-
-function removeUrlParameter(param) {
-    const url = new URL(window.location.href);
-    url.searchParams.delete(param);
-    window.history.pushState({}, '', url);
-    return url.toString();
-}
-
-function reloadWithParams(params) {
-    const url = new URL(window.location.href);
-
-    // Limpar parâmetros existentes
-    for (const key of url.searchParams.keys()) {
-        url.searchParams.delete(key);
-    }
-
-    // Adicionar novos parâmetros
-    Object.keys(params).forEach(key => {
-        if (params[key]) {
-            url.searchParams.set(key, params[key]);
-        }
-    });
-
-    window.location.href = url.toString();
-}
 </script>
 {% endblock %}
