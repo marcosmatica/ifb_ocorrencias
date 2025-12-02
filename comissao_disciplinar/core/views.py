@@ -1480,6 +1480,8 @@ def proxy_imagem_google_drive(request):
 
 
 # core/views.py - ATUALIZE a função alertas_limites_dashboard
+# views.py - Na função alertas_limites_dashboard, adicione esta lógica:
+
 @login_required
 @user_passes_test(is_servidor)
 def alertas_limites_dashboard(request):
@@ -1489,13 +1491,20 @@ def alertas_limites_dashboard(request):
     from datetime import datetime, timedelta
     from django.db.models import Count, F
 
-    # Opção para recalcular alertas
-    if 'recalcular' in request.GET:
+    # Obter todos os parâmetros GET para preservação
+    params = request.GET.copy()
+
+    # Opção para recalcular alertas - mas preservar outros parâmetros
+    if 'recalcular' in params:
         resultado = recalcular_alertas_periodo()
         messages.success(request, f"Recalculado! {resultado['alertas_gerados']} alertas gerados.")
-        return redirect('core:alertas_limites_dashboard')
+        # Remover o parâmetro 'recalcular' para evitar loop
+        if 'recalcular' in params:
+            del params['recalcular']
+        # Redirecionar mantendo outros parâmetros
+        return redirect(f"{request.path}?{params.urlencode()}")
 
-    # Determinar mês de referência (padrão: mês atual)
+    # Determinar mês de referência
     mes_param = request.GET.get('mes')
     if mes_param:
         try:
@@ -1505,6 +1514,11 @@ def alertas_limites_dashboard(request):
             mes_referencia = timezone.now().date().replace(day=1)
     else:
         mes_referencia = timezone.now().date().replace(day=1)
+
+    # Armazenar o mês nos parâmetros para preservação
+    params['mes'] = mes_referencia.strftime('%Y-%m')
+
+    # Resto do código permanece o mesmo...
 
     # Lista de meses disponíveis (últimos 6 meses)
     meses_disponiveis = []

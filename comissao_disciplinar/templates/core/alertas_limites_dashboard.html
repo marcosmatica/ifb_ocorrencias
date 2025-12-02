@@ -39,13 +39,12 @@
         </div>
     </div>
 
-    <div class="container">
     <!-- Seletor de Mês e Ações -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div class="flex items-center gap-4">
             <div>
                 <label class="form-label">Mês de Referência</label>
-                <select onchange="window.location.href='?mes='+this.value" class="form-control">
+                <select id="mes-selector" class="form-control">
                     {% for mes in meses_disponiveis %}
                     <option value="{{ mes|date:'Y-m' }}"
                             {% if mes == mes_referencia %}selected{% endif %}>
@@ -56,7 +55,8 @@
             </div>
 
             <div class="mt-4">
-                <a href="?recalcular=true" class="btn btn-warning">
+                <a href="{% url 'core:alertas_limites_dashboard' %}?{% if request.GET.turma %}turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.mes %}&mes={{ request.GET.mes }}{% endif %}&recalcular=true"
+                   class="btn btn-warning">
                     🔄 Recalcular Alertas
                 </a>
                 <small class="text-gray-500 block mt-1">Gera alertas para {{ mes_referencia|date:'F/Y' }}</small>
@@ -146,40 +146,60 @@
         </div>
     </div>
     
-    <!-- Filtros -->
+    <!-- Filtros - ATUALIZADO para preservar mês -->
     <div class="card mb-6">
         <div class="card-header">
             <h2 class="card-title">Filtros</h2>
         </div>
         <div class="card-body">
-            <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Campo oculto para o mês -->
+                <input type="hidden" name="mes" value="{{ request.GET.mes|default:mes_referencia|date:'Y-m' }}">
+
                 <div class="form-group">
                     <label class="form-label">Turma</label>
                     <select name="turma" class="form-control">
                         <option value="">Todas as turmas</option>
                         {% for turma in turmas %}
-                        <option value="{{ turma.id }}" {% if request.GET.turma == turma.id|stringformat:"s" %}selected{% endif %}>
+                        <option value="{{ turma.id }}"
+                                {% if request.GET.turma == turma.id|stringformat:"s" %}selected{% endif %}>
                             {{ turma.nome }}
                         </option>
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Tipo de Ocorrência</label>
                     <select name="tipo" class="form-control">
                         <option value="">Todos os tipos</option>
                         {% for tipo in tipos %}
-                        <option value="{{ tipo.id }}" {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
+                        <option value="{{ tipo.id }}"
+                                {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
                             {{ tipo.codigo }}
                         </option>
                         {% endfor %}
                     </select>
                 </div>
-                
-                <div class="form-group" style="display: flex; align-items: flex-end;">
+
+                <div class="form-group">
+                    <label class="form-label">Mês (adicional)</label>
+                    <select name="mes" class="form-control">
+                        {% for mes in meses_disponiveis %}
+                        <option value="{{ mes|date:'Y-m' }}"
+                                {% if request.GET.mes == mes|date:'Y-m' or mes == mes_referencia %}selected{% endif %}>
+                            {{ mes|date:'F/Y' }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group flex items-end">
                     <button type="submit" class="btn btn-primary">Filtrar</button>
-                    <a href="{% url 'core:alertas_limites_dashboard' %}" class="btn btn-outline ml-2">Limpar</a>
+                    <a href="{% url 'core:alertas_limites_dashboard' %}?mes={{ request.GET.mes|default:mes_referencia|date:'Y-m' }}"
+                       class="btn btn-outline ml-2">
+                        Limpar Filtros
+                    </a>
                 </div>
             </form>
         </div>
@@ -333,4 +353,69 @@
         </div>
     </div>
 </div>
+<script>
+// Script para atualizar o mês quando o seletor principal for alterado
+document.getElementById('mes-selector').addEventListener('change', function() {
+    const selectedMonth = this.value;
+    const url = new URL(window.location.href);
+
+    // Obter todos os parâmetros atuais
+    const params = new URLSearchParams(url.search);
+
+    // Atualizar o parâmetro 'mes'
+    params.set('mes', selectedMonth);
+
+    // Construir nova URL
+    const newUrl = `${url.pathname}?${params.toString()}`;
+
+    // Redirecionar
+    window.location.href = newUrl;
+});
+
+// Script para manter o mês nos links de paginação
+document.addEventListener('DOMContentLoaded', function() {
+    const currentMonth = '{{ request.GET.mes|default:mes_referencia|date:"Y-m" }}';
+
+    // Atualizar links de paginação
+    const paginationLinks = document.querySelectorAll('.pagination a');
+    paginationLinks.forEach(link => {
+        const url = new URL(link.href);
+        url.searchParams.set('mes', currentMonth);
+        link.href = url.toString();
+    });
+});
+
+    // Adicione este script em um arquivo JavaScript separado ou na seção de scripts
+function updateUrlParameter(param, value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set(param, value);
+    window.history.pushState({}, '', url);
+    return url.toString();
+}
+
+function removeUrlParameter(param) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete(param);
+    window.history.pushState({}, '', url);
+    return url.toString();
+}
+
+function reloadWithParams(params) {
+    const url = new URL(window.location.href);
+
+    // Limpar parâmetros existentes
+    for (const key of url.searchParams.keys()) {
+        url.searchParams.delete(key);
+    }
+
+    // Adicionar novos parâmetros
+    Object.keys(params).forEach(key => {
+        if (params[key]) {
+            url.searchParams.set(key, params[key]);
+        }
+    });
+
+    window.location.href = url.toString();
+}
+</script>
 {% endblock %}

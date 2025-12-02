@@ -1544,3 +1544,40 @@ body.sidebar-open .main-content footer {
 body.sidebar-open .container {
     max-width: min(calc(1280px - 260px), 100%);
 }
+
+/* Adicione no seu arquivo CSS principal */
+.preserve-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.filter-badge {
+    display: inline-flex;
+    align-items: center;
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+.filter-badge .remove-filter {
+    margin-left: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #d32f2f;
+}
+
+/* Estilo para seletor de mês ativo */
+.month-active {
+    background-color: #e8f5e9;
+    border-color: #4caf50;
+}
