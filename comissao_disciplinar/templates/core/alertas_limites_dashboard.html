@@ -1,5 +1,6 @@
 {% extends 'core/base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Alertas de Limites{% endblock %}
 {% block header_title %}Alertas de Limites de Ocorrências{% endblock %}
@@ -16,13 +17,14 @@
         animation: fadeIn 0.3s ease-out;
     }
 
+    /* Loading Overlay */
     .loading-overlay {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.3);
+        background: rgba(0, 0, 0, 0.5);
         z-index: 9999;
         display: flex;
         align-items: center;
@@ -34,348 +36,210 @@
         padding: 2rem;
         border-radius: 0.5rem;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        text-align: center;
     }
 
-    .badge-count {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 1.25rem;
-        height: 1.25rem;
-        padding: 0 0.375rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        line-height: 1;
-        color: white;
-        background-color: #3b82f6;
-        border-radius: 9999px;
+    /* Badges customizados */
+    .badge-status {
+        font-size: 0.85em;
+        padding: 0.5em 0.8em;
+    }
+
+    .card-kpi {
+        border-left: 4px solid;
+        transition: transform 0.2s;
+    }
+    .card-kpi:hover {
+        transform: translateY(-2px);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Header com Controles -->
-    <div class="mb-6">
-        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">
-                    Alertas de Limites de Ocorrências
-                </h1>
-                <p class="text-gray-600">
-                    Monitoramento de estudantes que atingiram limites configurados
-                </p>
-            </div>
+<div class="container-fluid animate-fadeIn">
 
-            <!-- Controles Principais -->
-            <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                <!-- Seletor de Mês -->
-                <div class="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-4 py-2">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <select
-                        id="mes-selector"
-                        class="border-0 focus:ring-0 font-medium text-gray-900 cursor-pointer bg-transparent"
-                        onchange="handleMesChange(this.value)"
-                    >
-                        {% for mes in meses_disponiveis %}
-                        <option value="{{ mes|date:'Y-m' }}" {% if mes == mes_referencia %}selected{% endif %}>
-                            {{ mes|date:'F/Y' }}
-                        </option>
+    <div id="loading-overlay" class="loading-overlay hidden" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <h5>Processando...</h5>
+            <p class="text-muted mb-0">Recalculando alertas e atualizando dados.</p>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">Dashboard de Limites</h2>
+            <p class="text-muted small">Mês de Referência: {{ mes_referencia|date:"F/Y"|default:"Atual" }}</p>
+        </div>
+        <div>
+            <button onclick="recalcularAlertas()" class="btn btn-warning shadow-sm">
+                <i class="fas fa-sync-alt fa-sm text-white-50 mr-2"></i> Recalcular Alertas
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-kpi border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total de Alertas (Mês)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_alertas|default:"0" }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-bell fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-kpi border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Novos (Não Tratados)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ alertas_novos|default:"0" }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card card-kpi border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Estudantes Críticos</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ estudantes_criticos|length|default:"0" }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Filtros de Pesquisa</h6>
+        </div>
+        <div class="card-body">
+            <form id="filtros-form" method="GET" class="row align-items-end">
+                <div class="col-md-3 mb-3">
+                    <label for="mes" class="form-label small font-weight-bold">Mês Referência</label>
+                    <input type="month" name="mes" id="mes"
+                           class="form-control"
+                           value="{{ mes_referencia|date:'Y-m' }}">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label for="turma" class="form-label small font-weight-bold">Turma</label>
+                    <select name="turma" id="turma" class="form-control">
+                        <option value="">Todas as turmas</option>
+                        {% for turma in turmas %}
+                            <option value="{{ turma.id }}" {% if request.GET.turma == turma.id|stringformat:"s" %}selected{% endif %}>
+                                {{ turma.nome }}
+                            </option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <!-- Botão Recalcular -->
-                <button
-                    onclick="handleRecalcular()"
-                    class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
-                    Recalcular
-                </button>
-
-                <!-- Botão Filtros -->
-                <button
-                    onclick="toggleFiltros()"
-                    class="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-2 rounded-lg font-medium transition-colors"
-                >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                    </svg>
-                    Filtros
-                    {% if request.GET.turma or request.GET.tipo %}
-                    <span class="badge-count">
-                        {% if request.GET.turma and request.GET.tipo %}2{% elif request.GET.turma or request.GET.tipo %}1{% endif %}
-                    </span>
-                    {% endif %}
-                </button>
-            </div>
-        </div>
-
-        <!-- Painel de Filtros (Inicialmente Oculto) -->
-        <div id="filtros-panel" class="hidden animate-fadeIn">
-            <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-semibold text-gray-900">Filtros Avançados</h3>
-                    {% if request.GET.turma or request.GET.tipo %}
-                    <a
-                        href="?mes={{ mes_referencia|date:'Y-m' }}"
-                        class="text-sm text-blue-600 hover:text-blue-700"
-                    >
-                        Limpar filtros
-                    </a>
-                    {% endif %}
-                </div>
-
-                <form method="get" id="filtros-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Campo oculto para preservar o mês -->
-                    <input type="hidden" name="mes" value="{{ mes_referencia|date:'Y-m' }}">
-
-                    <div class="form-group">
-                        <label class="form-label">Turma</label>
-                        <select name="turma" class="form-control">
-                            <option value="">Todas as turmas</option>
-                            {% for turma in turmas %}
-                            <option value="{{ turma.id }}" {% if request.GET.turma == turma.id|stringformat:"s" %}selected{% endif %}>
-                                {{ turma.nome }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Tipo de Ocorrência</label>
-                        <select name="tipo" class="form-control">
-                            <option value="">Todos os tipos</option>
-                            {% for tipo in tipos %}
+                <div class="col-md-3 mb-3">
+                    <label for="tipo" class="form-label small font-weight-bold">Tipo de Ocorrência</label>
+                    <select name="tipo" id="tipo" class="form-control">
+                        <option value="">Todos os tipos</option>
+                        {% for tipo in tipos_ocorrencia %}
                             <option value="{{ tipo.id }}" {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
-                                {{ tipo.codigo }}
+                                {{ tipo.nome|default:tipo.codigo }}
                             </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="form-group flex items-end">
-                        <button type="submit" class="btn btn-primary w-full">
-                            Aplicar Filtros
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Tags de Filtros Ativos -->
-                {% if request.GET.turma or request.GET.tipo %}
-                <div class="mt-4 flex flex-wrap gap-2">
-                    <span class="text-sm text-gray-600 font-medium">Filtros ativos:</span>
-                    {% if request.GET.turma %}
-                    <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
-                        Turma
-                        <a href="?mes={{ mes_referencia|date:'Y-m' }}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}"
-                           class="ml-1 hover:text-blue-900">
-                            ×
-                        </a>
-                    </span>
-                    {% endif %}
-                    {% if request.GET.tipo %}
-                    <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
-                        Tipo
-                        <a href="?mes={{ mes_referencia|date:'Y-m' }}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}"
-                           class="ml-1 hover:text-blue-900">
-                            ×
-                        </a>
-                    </span>
-                    {% endif %}
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="stats-grid mb-6">
-        <div class="stat-card border-l-4" style="border-color: #ef4444;">
-            <div class="stat-label">Total de Alertas (Mês)</div>
-            <div class="stat-value">{{ total_alertas }}</div>
-            <div class="stat-change">Estudantes com limites atingidos</div>
-        </div>
-
-        <div class="stat-card border-l-4" style="border-color: #f97316;">
-            <div class="stat-label">Alertas Novos (7 dias)</div>
-            <div class="stat-value">{{ alertas_novos }}</div>
-            <div class="stat-change">Requerem atenção</div>
-        </div>
-
-        <div class="stat-card border-l-4" style="border-color: #3b82f6;">
-            <div class="stat-label">Estudantes Críticos</div>
-            <div class="stat-value">{{ estudantes_criticos|length }}</div>
-            <div class="stat-change">Múltiplos alertas</div>
-        </div>
-
-        <div class="stat-card border-l-4" style="border-color: #8b5cf6;">
-            <div class="stat-label">Tipo Mais Frequente</div>
-            <div class="stat-value" style="font-size: 1.5rem;">
-                {% if tipos_frequentes %}
-                    {{ tipos_frequentes.0.tipo_ocorrencia__codigo }}
-                {% else %}
-                    -
-                {% endif %}
-            </div>
-            <div class="stat-change">Tipo com mais alertas</div>
-        </div>
-    </div>
-
-    <!-- Configurações Ativas -->
-    <div class="card mb-6">
-        <div class="card-header flex justify-between items-center">
-            <h2 class="card-title">Configurações Ativas de Limite</h2>
-            <span class="badge badge-info">{{ configuracoes_ativas|length }} configurações</span>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-container">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Tipo de Ocorrência</th>
-                            <th class="text-center">Limite Mensal</th>
-                            <th class="text-center">Sistema</th>
-                            <th class="text-center">Coordenação</th>
-                            <th class="text-center">Responsáveis</th>
-                            <th>Coordenação Alvo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for config in configuracoes_ativas %}
-                        <tr>
-                            <td>
-                                <strong>{{ config.tipo_ocorrencia.codigo }}</strong><br>
-                                <small class="text-gray-600">{{ config.tipo_ocorrencia.descricao|truncatewords:10 }}</small>
-                            </td>
-                            <td class="text-center">
-                                <span class="text-2xl font-bold" style="color: #ef4444;">{{ config.limite_mensal }}</span>
-                            </td>
-                            <td class="text-center">
-                                {% if config.gerar_notificacao_sistema %}
-                                    <span class="badge badge-finalizada">✓</span>
-                                {% else %}
-                                    <span class="badge badge-arquivada">✗</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                {% if config.gerar_email_coordenacao %}
-                                    <span class="badge badge-finalizada">✓</span>
-                                {% else %}
-                                    <span class="badge badge-arquivada">✗</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                {% if config.gerar_email_responsaveis %}
-                                    <span class="badge badge-finalizada">✓</span>
-                                {% else %}
-                                    <span class="badge badge-arquivada">✗</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge badge-info">{{ config.coordenacoes_notificar }}</span>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center p-8">
-                                <div class="empty-state">
-                                    <p>Nenhuma configuração ativa</p>
-                                    <a href="/admin/core/configuracaolimiteocorrenciarapida/add/" class="btn btn-primary mt-4">
-                                        Criar Primeira Configuração
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                    </select>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-search mr-2"></i> Filtrar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Lista de Alertas -->
-    <div class="card mb-6">
-        <div class="card-header">
-            <h2 class="card-title">Alertas Ativos - {{ mes_referencia|date:"F/Y" }}</h2>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Lista de Alertas Gerados</h6>
         </div>
         <div class="card-body p-0">
-            <div class="table-container">
-                <table class="table">
-                    <thead>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="thead-light">
                         <tr>
+                            <th>Data Alerta</th>
                             <th>Estudante</th>
                             <th>Turma</th>
-                            <th class="text-center">Tipo</th>
-                            <th class="text-center">Qtd</th>
-                            <th class="text-center">Limite</th>
-                            <th>Notificações</th>
-                            <th>Data</th>
-                            <th>Ações</th>
+                            <th>Tipo / Limite</th>
+                            <th class="text-center">Qtd.</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-right">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for alerta in alertas %}
                         <tr>
-                            <td>
-                                <strong>{{ alerta.estudante.nome }}</strong><br>
-                                <small class="text-gray-600">{{ alerta.estudante.matricula_sga }}</small>
+                            <td class="align-middle">
+                                {{ alerta.criado_em|date:"d/m/Y H:i" }}
                             </td>
-                            <td>
-                                {{ alerta.estudante.turma.nome }}<br>
-                                <small class="text-gray-600">{{ alerta.estudante.curso.nome|truncatewords:3 }}</small>
+                            <td class="align-middle font-weight-bold">
+                                {{ alerta.estudante.nome }}
+                                <br>
+                                <small class="text-muted">{{ alerta.estudante.matricula|default:"Sem matrícula" }}</small>
                             </td>
-                            <td class="text-center">
-                                <span class="badge badge-info">{{ alerta.tipo_ocorrencia.codigo }}</span>
+                            <td class="align-middle">
+                                <span class="badge badge-light border">
+                                    {{ alerta.estudante.turma.nome|default:"-" }}
+                                </span>
                             </td>
-                            <td class="text-center">
-                                <span class="text-2xl font-bold" style="color: #ef4444;">
+                            <td class="align-middle">
+                                {{ alerta.tipo_ocorrencia.nome|default:alerta.tipo_ocorrencia.codigo }}
+                            </td>
+                            <td class="align-middle text-center">
+                                <span class="badge badge-danger badge-pill px-3 py-2">
                                     {{ alerta.quantidade_ocorrencias }}
                                 </span>
                             </td>
-                            <td class="text-center">
-                                <span class="text-gray-600">{{ alerta.configuracao.limite_mensal }}</span>
+                            <td class="align-middle text-center">
+                                {% if alerta.email_coordenacao_enviado %}
+                                    <span class="badge badge-success mb-1" title="E-mail enviado à coordenação">Coord. OK</span>
+                                {% else %}
+                                    <span class="badge badge-warning mb-1" title="Pendente envio à coordenação">Coord. Pend.</span>
+                                {% endif %}
+                                <br>
+                                {% if alerta.email_responsaveis_enviado %}
+                                    <span class="badge badge-success" title="E-mail enviado aos responsáveis">Resp. OK</span>
+                                {% else %}
+                                    <span class="badge badge-secondary" title="Pendente envio aos responsáveis">Resp. Pend.</span>
+                                {% endif %}
                             </td>
-                            <td>
-                                <div class="flex flex-col gap-1">
-                                    {% if alerta.notificacao_sistema_criada %}
-                                        <span class="badge badge-finalizada text-xs">✓ Sistema</span>
-                                    {% endif %}
-                                    {% if alerta.email_coordenacao_enviado %}
-                                        <span class="badge badge-finalizada text-xs">✓ Coordenação</span>
-                                    {% endif %}
-                                    {% if alerta.email_responsaveis_enviado %}
-                                        <span class="badge badge-finalizada text-xs">✓ Responsáveis</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td>
-                                <small>{{ alerta.criado_em|date:"d/m/Y H:i" }}</small>
-                            </td>
-                            <td>
-                                <div class="flex gap-1">
-                                    <a href="{% url 'core:estudante_detail' alerta.estudante.matricula_sga %}"
-                                       class="btn btn-outline btn-sm" title="Ver Perfil">
-                                        👤
-                                    </a>
-                                    <a href="{% url 'core:relatorio_estudante' alerta.estudante.matricula_sga %}"
-                                       class="btn btn-outline btn-sm" title="Ver Histórico">
-                                        📊
-                                    </a>
-                                </div>
+                            <td class="align-middle text-right">
+                                <a href="#" class="btn btn-sm btn-info" title="Ver Detalhes">
+                                    <i class="fas fa-eye"></i>
+                                </a>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="8" class="text-center p-12">
-                                <div class="empty-state">
-                                    <p>Nenhum alerta no momento para {{ mes_referencia|date:"F/Y" }}</p>
-                                </div>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-check-circle fa-3x mb-3 text-gray-300"></i>
+                                <p>Nenhum alerta encontrado para os filtros selecionados.</p>
                             </td>
                         </tr>
                         {% endfor %}
@@ -383,174 +247,96 @@
                 </table>
             </div>
         </div>
-    </div>
 
-    <!-- Grid de Análises -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Estudantes Críticos -->
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Top 10 - Estudantes com Mais Alertas</h2>
-            </div>
-            <div class="card-body">
-                {% for estudante in estudantes_criticos %}
-                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md mb-2 hover:bg-gray-100 transition-colors">
-                    <div>
-                        <div class="font-semibold">{{ estudante.estudante__nome }}</div>
-                        <div class="text-sm text-gray-600">
-                            {{ estudante.estudante__matricula_sga }} - {{ estudante.estudante__turma__nome }}
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-2xl font-bold" style="color: #ef4444;">{{ estudante.total_alertas }}</div>
-                        <div class="text-xs text-gray-500">alerta(s)</div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="text-center text-gray-500 p-4">
-                    Nenhum dado disponível
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% if alertas.has_other_pages %}
+        <div class="card-footer bg-white d-flex justify-content-center">
+            <nav aria-label="Navegação de página">
+                <ul class="pagination mb-0">
+                    {% if alertas.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ alertas.previous_page_number }}" aria-label="Anterior">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                    {% endif %}
 
-        <!-- Tipos Mais Frequentes -->
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Tipos de Ocorrência Mais Alertados</h2>
-            </div>
-            <div class="card-body">
-                {% for tipo in tipos_frequentes %}
-                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md mb-2 hover:bg-gray-100 transition-colors">
-                    <div class="flex-1">
-                        <div class="font-semibold">{{ tipo.tipo_ocorrencia__codigo }}</div>
-                        <div class="text-sm text-gray-600">{{ tipo.tipo_ocorrencia__descricao|truncatewords:8 }}</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-2xl font-bold" style="color: #f97316;">{{ tipo.total }}</div>
-                        <div class="text-xs text-gray-500">alerta(s)</div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="text-center text-gray-500 p-4">
-                    Nenhum dado disponível
-                </div>
-                {% endfor %}
-            </div>
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ alertas.number }} de {{ alertas.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if alertas.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ alertas.next_page_number }}" aria-label="Próximo">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
         </div>
+        {% endif %}
     </div>
 </div>
+{% endblock %}
 
-<!-- Loading Overlay (Inicialmente Oculto) -->
-<div id="loading-overlay" class="loading-overlay hidden">
-    <div class="loading-spinner">
-        <svg class="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <p class="text-gray-700 font-medium">Processando...</p>
-    </div>
-</div>
-
+{% block extra_scripts %}
 <script>
-// Estado do painel de filtros
-let filtrosAbertos = {{ 'true' if request.GET.turma or request.GET.tipo else 'false' }};
+    // Função para recalcular alertas
+    function recalcularAlertas() {
+        const urlParams = new URLSearchParams(window.location.search);
 
-// Toggle do painel de filtros
-function toggleFiltros() {
-    const panel = document.getElementById('filtros-panel');
-    filtrosAbertos = !filtrosAbertos;
+        // Mantém os filtros atuais
+        let newUrl = window.location.pathname + '?recalcular=true';
 
-    if (filtrosAbertos) {
-        panel.classList.remove('hidden');
-    } else {
-        panel.classList.add('hidden');
-    }
-}
+        // Adiciona params existentes (exceto 'page' para não quebrar filtro)
+        urlParams.forEach((value, key) => {
+            if (key !== 'recalcular' && key !== 'page') {
+                newUrl += `&${key}=${value}`;
+            }
+        });
 
-// Inicializar painel se houver filtros ativos
-if (filtrosAbertos) {
-    document.getElementById('filtros-panel').classList.remove('hidden');
-}
+        // Mostrar loading
+        document.getElementById('loading-overlay').style.display = 'flex';
+        document.getElementById('loading-overlay').classList.remove('hidden');
 
-// Função para preservar parâmetros ao mudar o mês
-function handleMesChange(novoMes) {
-    const url = new URL(window.location.href);
-    const params = new URLSearchParams(url.search);
-
-    // Atualizar mês
-    params.set('mes', novoMes);
-
-    // Preservar outros filtros
-    const turma = params.get('turma');
-    const tipo = params.get('tipo');
-
-    // Construir nova URL
-    let newUrl = `${url.pathname}?mes=${novoMes}`;
-    if (turma) newUrl += `&turma=${turma}`;
-    if (tipo) newUrl += `&tipo=${tipo}`;
-
-    // Mostrar loading
-    showLoading();
-
-    // Redirecionar
-    window.location.href = newUrl;
-}
-
-// Função para recalcular alertas
-function handleRecalcular() {
-    const mesAtual = document.getElementById('mes-selector').value;
-    const url = new URL(window.location.href);
-    const params = new URLSearchParams(url.search);
-
-    // Preservar todos os parâmetros + adicionar recalcular
-    let newUrl = `${url.pathname}?mes=${mesAtual}`;
-
-    if (params.get('turma')) {
-        newUrl += `&turma=${params.get('turma')}`;
-    }
-    if (params.get('tipo')) {
-        newUrl += `&tipo=${params.get('tipo')}`;
+        // Redirecionar
+        window.location.href = newUrl;
     }
 
-    newUrl += '&recalcular=true';
+    // Ao carregar a página
+    document.addEventListener('DOMContentLoaded', function() {
+        // Interceptar submit do formulário para mostrar loading
+        const form = document.getElementById('filtros-form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                document.getElementById('loading-overlay').style.display = 'flex';
+                document.getElementById('loading-overlay').classList.remove('hidden');
+            });
+        }
 
-    // Mostrar loading
-    showLoading();
+        // Script para preservar parâmetros na paginação
+        const paginationLinks = document.querySelectorAll('.pagination a');
+        const currentParams = new URLSearchParams(window.location.search);
 
-    // Redirecionar
-    window.location.href = newUrl;
-}
+        paginationLinks.forEach(link => {
+            const url = new URL(link.href);
+            const pageParam = url.searchParams.get('page');
 
-// Mostrar/Esconder loading
-function showLoading() {
-    document.getElementById('loading-overlay').classList.remove('hidden');
-}
+            // Adiciona todos os parâmetros atuais da URL ao link de paginação
+            currentParams.forEach((value, key) => {
+                if (key !== 'page') { // Atualiza tudo menos a página, que já vem no link
+                    url.searchParams.set(key, value);
+                }
+            });
 
-function hideLoading() {
-    document.getElementById('loading-overlay').classList.add('hidden');
-}
-
-// Interceptar submit do formulário de filtros
-document.getElementById('filtros-form').addEventListener('submit', function(e) {
-    showLoading();
-});
-
-// Atualizar links de paginação para preservar parâmetros
-document.addEventListener('DOMContentLoaded', function() {
-    const mesAtual = '{{ mes_referencia|date:"Y-m" }}';
-    const turmaAtual = '{{ request.GET.turma }}';
-    const tipoAtual = '{{ request.GET.tipo }}';
-
-    // Atualizar todos os links de paginação
-    const paginationLinks = document.querySelectorAll('.pagination a');
-    paginationLinks.forEach(link => {
-        const url = new URL(link.href);
-        url.searchParams.set('mes', mesAtual);
-        if (turmaAtual) url.searchParams.set('turma', turmaAtual);
-        if (tipoAtual) url.searchParams.set('tipo', tipoAtual);
-        link.href = url.toString();
+            link.href = url.toString();
+        });
     });
-});
 </script>
 {% endblock %}
