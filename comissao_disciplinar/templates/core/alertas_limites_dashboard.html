@@ -4,6 +4,10 @@
 {% block title %}Alertas de Limites{% endblock %}
 {% block header_title %}Alertas de Limites de Ocorrências{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/alertas-dashboard.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid px-4">
     <!-- Breadcrumbs -->
@@ -20,7 +24,7 @@
     </nav>
 
     <!-- Indicadores de Filtros Ativos -->
-    {% if request.GET.turma or request.GET.tipo or request.GET.mes %}
+    {% if request.GET.turma or request.GET.tipo or request.GET.mes or request.GET.estudante or request.GET.status %}
     <div class="preserve-filters mb-4">
         <div class="d-flex flex-wrap align-items-center">
             <span class="me-2 text-muted">Filtros ativos:</span>
@@ -28,7 +32,7 @@
             {% if request.GET.mes %}
             <span class="filter-badge">
                 Mês: {{ mes_referencia|date:"F/Y" }}
-                <a href="?{% if request.GET.turma %}turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}"
+                <a href="?{% if request.GET.estudante %}estudante={{ request.GET.estudante }}{% endif %}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"
                    class="remove-filter text-danger ms-2" title="Remover filtro">
                     ×
                 </a>
@@ -40,7 +44,7 @@
                 {% if turma.id|stringformat:"s" == request.GET.turma %}
                 <span class="filter-badge">
                     Turma: {{ turma.nome }}
-                    <a href="?{% if request.GET.mes %}mes={{ request.GET.mes }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}"
+                    <a href="?{% if request.GET.mes %}mes={{ request.GET.mes }}{% endif %}{% if request.GET.estudante %}&estudante={{ request.GET.estudante }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"
                        class="remove-filter text-danger ms-2" title="Remover filtro">
                         ×
                     </a>
@@ -54,7 +58,7 @@
                 {% if tipo_item.id|stringformat:"s" == request.GET.tipo %}
                 <span class="filter-badge">
                     Tipo: {{ tipo_item.codigo }}
-                    <a href="?{% if request.GET.mes %}mes={{ request.GET.mes }}{% endif %}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}"
+                    <a href="?{% if request.GET.mes %}mes={{ request.GET.mes }}{% endif %}{% if request.GET.estudante %}&estudante={{ request.GET.estudante }}{% endif %}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"
                        class="remove-filter text-danger ms-2" title="Remover filtro">
                         ×
                     </a>
@@ -63,8 +67,28 @@
             {% endfor %}
             {% endif %}
 
+            {% if request.GET.estudante %}
+            <span class="filter-badge">
+                Estudante: "{{ request.GET.estudante }}"
+                <a href="?{% if request.GET.mes %}mes={{ request.GET.mes }}{% endif %}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}"
+                   class="remove-filter text-danger ms-2" title="Remover filtro">
+                    ×
+                </a>
+            </span>
+            {% endif %}
+
+            {% if request.GET.status %}
+            <span class="filter-badge">
+                Status: {% if request.GET.status == 'pendente' %}Pendente{% else %}Enviado{% endif %}
+                <a href="?{% if request.GET.mes %}mes={{ request.GET.mes }}{% endif %}{% if request.GET.estudante %}&estudante={{ request.GET.estudante }}{% endif %}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}"
+                   class="remove-filter text-danger ms-2" title="Remover filtro">
+                    ×
+                </a>
+            </span>
+            {% endif %}
+
             <a href="{% url 'core:alertas_limites_dashboard' %}" class="btn btn-sm btn-outline-secondary ms-3">
-                Limpar todos
+                <i class="fas fa-broom me-1"></i> Limpar todos
             </a>
         </div>
     </div>
@@ -155,7 +179,7 @@
         </div>
     </div>
 
-    !-- Seção de Controles Superiores - CORRIGIDO -->
+    <!-- Seção de Controles Superiores -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow">
@@ -174,12 +198,14 @@
                                             <option value="{{ mes|date:'Y-m' }}"
                                                     {% if mes|date:'Y-m' == request.GET.mes or mes == mes_referencia and not request.GET.mes %}selected{% endif %}>
                                                 {{ mes|date:"F/Y" }}
+                                                {% if mes == mes_referencia and not request.GET.mes %}(atual){% endif %}
                                             </option>
                                             {% endfor %}
                                         </select>
-                                        <a href="?mes={{ request.GET.mes|default:mes_referencia|date:'Y-m' }}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}&recalcular=true"
+                                        <a href="?mes={{ request.GET.mes|default:mes_referencia|date:'Y-m' }}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.estudante %}&estudante={{ request.GET.estudante }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}&recalcular=true"
                                            class="btn btn-warning"
-                                           id="recalcular-btn">
+                                           id="recalcular-btn"
+                                           onclick="return confirm('Recalcular alertas para {{ mes_referencia|date:\"F/Y\" }}?\\n\\nEsta ação limpará alertas existentes e recalculará baseado nas configurações atuais.')">
                                             <i class="fas fa-redo-alt me-1"></i> Recalcular
                                         </a>
                                     </div>
@@ -205,174 +231,130 @@
         </div>
     </div>
 
-    <!-- Configurações Ativas -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="m-0 font-weight-bold">
-                            <i class="fas fa-cog me-2"></i>Configurações Ativas de Limite
-                        </h5>
-                        <span class="badge bg-light text-primary">{{ configuracoes_ativas|length }} configurações</span>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Tipo de Ocorrência</th>
-                                    <th class="text-center">Limite Mensal</th>
-                                    <th class="text-center">Sistema</th>
-                                    <th class="text-center">Coordenação</th>
-                                    <th class="text-center">Responsáveis</th>
-                                    <th>Coordenação Alvo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for config in configuracoes_ativas %}
-                                <tr>
-                                    <td>
-                                        <strong class="d-block">{{ config.tipo_ocorrencia.codigo }}</strong>
-                                        <small class="text-muted">{{ config.tipo_ocorrencia.descricao|truncatewords:10 }}</small>
-                                    </td>
-                                    <td class="text-center align-middle">
-                                        <span class="badge bg-danger fs-6">{{ config.limite_mensal }}</span>
-                                    </td>
-                                    <td class="text-center align-middle">
-                                        {% if config.gerar_notificacao_sistema %}
-                                        <span class="badge bg-success">
-                                            <i class="fas fa-check"></i>
-                                        </span>
-                                        {% else %}
-                                        <span class="badge bg-secondary">
-                                            <i class="fas fa-times"></i>
-                                        </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center align-middle">
-                                        {% if config.gerar_email_coordenacao %}
-                                        <span class="badge bg-success">
-                                            <i class="fas fa-check"></i>
-                                        </span>
-                                        {% else %}
-                                        <span class="badge bg-secondary">
-                                            <i class="fas fa-times"></i>
-                                        </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center align-middle">
-                                        {% if config.gerar_email_responsaveis %}
-                                        <span class="badge bg-success">
-                                            <i class="fas fa-check"></i>
-                                        </span>
-                                        {% else %}
-                                        <span class="badge bg-secondary">
-                                            <i class="fas fa-times"></i>
-                                        </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="align-middle">
-                                        <span class="badge bg-info">{{ config.coordenacoes_notificar }}</span>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="6" class="text-center py-5">
-                                        <div class="text-center text-muted">
-                                            <i class="fas fa-cogs fa-3x mb-3"></i>
-                                            <h5>Nenhuma configuração ativa</h5>
-                                            <p class="mb-3">Configure os limites de ocorrências para gerar alertas automáticos</p>
-                                            <a href="/admin/core/configuracaolimiteocorrenciarapida/add/"
-                                               class="btn btn-primary">
-                                                <i class="fas fa-plus me-1"></i>Criar Primeira Configuração
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filtros - CORRIGIDO -->
+    <!-- Filtros Avançados com Busca -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-header bg-white py-3">
                     <h5 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-filter me-2"></i>Filtros
+                        <i class="fas fa-search me-2"></i>Busca e Filtros
                     </h5>
                 </div>
                 <div class="card-body">
                     <form method="get" id="filter-form">
-                        <!-- Campo Mês Oculto - SEMPRE presente -->
+                        <!-- Campo Mês Oculto -->
                         <input type="hidden"
                                name="mes"
                                id="hidden-mes"
                                value="{{ request.GET.mes|default:mes_referencia|date:'Y-m' }}">
 
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Turma</label>
-                                <select name="turma" class="form-select">
-                                    <option value="">Todas as turmas</option>
-                                    {% for turma in turmas %}
-                                    <option value="{{ turma.id }}"
-                                            {% if request.GET.turma == turma.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ turma.nome }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Tipo de Ocorrência</label>
-                                <select name="tipo" class="form-select">
-                                    <option value="">Todos os tipos</option>
-                                    {% for tipo in tipos %}
-                                    <option value="{{ tipo.id }}"
-                                            {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ tipo.codigo }} - {{ tipo.descricao|truncatewords:5 }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <!-- Seletor de mês visível (opcional) -->
-                            <div class="col-md-12">
+                            <!-- Busca Rápida por Estudante -->
+                            <div class="col-lg-6">
                                 <label class="form-label fw-bold">
-                                    <i class="fas fa-calendar me-1"></i>
-                                    Alterar Mês (opcional)
+                                    <i class="fas fa-user-graduate me-1"></i>
+                                    Buscar Estudante
                                 </label>
-                                <select name="mes" class="form-select" id="mes-selector-2">
-                                    {% for mes in meses_disponiveis %}
-                                    <option value="{{ mes|date:'Y-m' }}"
-                                            {% if mes|date:'Y-m' == request.GET.mes or mes == mes_referencia and not request.GET.mes %}selected{% endif %}>
-                                        {{ mes|date:"F/Y" }}
-                                        {% if mes == mes_referencia and not request.GET.mes %}(atual){% endif %}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                <small class="text-muted d-block mt-1">
-                                    Selecione outro mês para aplicar os filtros
-                                </small>
+                                <div class="input-group">
+                                    <input type="text"
+                                           name="estudante"
+                                           class="form-control"
+                                           placeholder="Digite nome ou matrícula..."
+                                           value="{{ request.GET.estudante }}"
+                                           id="estudante-busca">
+                                    <button class="btn btn-outline-secondary" type="button" id="limpar-busca">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">Busque por nome ou matrícula do estudante</small>
                             </div>
 
+                            <!-- Filtros Rápidos -->
+                            <div class="col-lg-6">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-filter me-1"></i>
+                                    Filtros Rápidos
+                                </label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <select name="turma" class="form-select">
+                                            <option value="">Todas as turmas</option>
+                                            {% for turma in turmas %}
+                                            <option value="{{ turma.id }}"
+                                                    {% if request.GET.turma == turma.id|stringformat:"s" %}selected{% endif %}>
+                                                {{ turma.nome }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <select name="tipo" class="form-select">
+                                            <option value="">Todos os tipos</option>
+                                            {% for tipo in tipos %}
+                                            <option value="{{ tipo.id }}"
+                                                    {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
+                                                {{ tipo.codigo }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Filtros Avançados (colapsável) -->
+                            <div class="col-12">
+                                <div class="accordion" id="filtrosAvancados">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFiltros">
+                                                <i class="fas fa-sliders-h me-2"></i>Filtros Avançados
+                                            </button>
+                                        </h2>
+                                        <div id="collapseFiltros" class="accordion-collapse collapse" data-bs-parent="#filtrosAvancados">
+                                            <div class="accordion-body">
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-bold">Status Notificação</label>
+                                                        <select name="status" class="form-select">
+                                                            <option value="">Todos os status</option>
+                                                            <option value="pendente" {% if request.GET.status == 'pendente' %}selected{% endif %}>Pendentes de envio</option>
+                                                            <option value="enviado" {% if request.GET.status == 'enviado' %}selected{% endif %}>Notificações enviadas</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-bold">
+                                                            <i class="fas fa-calendar me-1"></i>
+                                                            Mês Específico
+                                                        </label>
+                                                        <select name="mes" class="form-select" id="mes-selector-2">
+                                                            {% for mes in meses_disponiveis %}
+                                                            <option value="{{ mes|date:'Y-m' }}"
+                                                                    {% if mes|date:'Y-m' == request.GET.mes or mes == mes_referencia and not request.GET.mes %}selected{% endif %}>
+                                                                {{ mes|date:"F/Y" }}
+                                                                {% if mes == mes_referencia and not request.GET.mes %}(atual){% endif %}
+                                                            </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botões de Ação -->
                             <div class="col-12">
                                 <div class="d-flex justify-content-end gap-2 pt-3 border-top">
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-search me-1"></i> Aplicar Filtros
                                     </button>
-                                    <a href="{% url 'core:alertas_limites_dashboard' %}?mes={{ request.GET.mes|default:mes_referencia|date:'Y-m' }}"
-                                       class="btn btn-outline-secondary">
-                                        <i class="fas fa-times me-1"></i> Limpar Filtros
+                                    <a href="{% url 'core:alertas_limites_dashboard' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i> Limpar Tudo
                                     </a>
+                                    <button type="button" class="btn btn-outline-info" id="exportar-dados">
+                                        <i class="fas fa-download me-1"></i> Exportar
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -382,33 +364,43 @@
         </div>
     </div>
 
-    <!-- Lista de Alertas -->
+    <!-- Layout em Grid -->
     <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-white py-3">
+        <!-- Coluna Principal - Lista de Alertas -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-exclamation-triangle me-2"></i>Alertas Ativos
+                        <span class="badge bg-danger ms-2">{{ total_alertas }}</span>
                     </h5>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" id="toggle-visualizacao">
+                            <i class="fas fa-th-large me-1"></i> Cards
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
+                    <!-- Visualização em Tabela -->
+                    <div class="table-responsive" id="tabela-view">
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th>Estudante</th>
                                     <th>Turma</th>
-                                    <th>Tipo de Ocorrência</th>
-                                    <th class="text-center">Quantidade</th>
+                                    <th>Tipo</th>
+                                    <th class="text-center">Qtd</th>
                                     <th class="text-center">Limite</th>
-                                    <th>Notificações Enviadas</th>
-                                    <th>Data do Alerta</th>
+                                    <th>Status</th>
+                                    <th>Data</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for alerta in alertas %}
-                                <tr class="{% if alerta.quantidade_ocorrencias > alerta.configuracao.limite_mensal %}table-warning{% endif %}">
+                                <tr class="alerta-row {% if alerta.quantidade_ocorrencias > alerta.configuracao.limite_mensal %}table-warning{% endif %}"
+                                    data-estudante-id="{{ alerta.estudante.id }}"
+                                    data-tipo-id="{{ alerta.tipo_ocorrencia.id }}">
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="me-3">
@@ -427,14 +419,13 @@
                                                 {% endif %}
                                             </div>
                                             <div>
-                                                <strong>{{ alerta.estudante.nome }}</strong>
-                                                <div class="text-muted small">{{ alerta.estudante.matricula_sga }}</div>
+                                                <strong class="d-block">{{ alerta.estudante.nome }}</strong>
+                                                <small class="text-muted">{{ alerta.estudante.matricula_sga }}</small>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="fw-medium">{{ alerta.estudante.turma.nome }}</div>
-                                        <div class="text-muted small">{{ alerta.estudante.curso.nome|truncatewords:3 }}</div>
+                                        <span class="badge bg-light text-dark">{{ alerta.estudante.turma.nome }}</span>
                                     </td>
                                     <td>
                                         <span class="badge bg-info">
@@ -450,27 +441,29 @@
                                     <td>
                                         <div class="d-flex flex-wrap gap-1">
                                             {% if alerta.notificacao_sistema_criada %}
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-bell me-1"></i>Sistema
+                                            <span class="badge bg-success" data-bs-toggle="tooltip" title="Notificação do Sistema">
+                                                <i class="fas fa-bell"></i>
                                             </span>
                                             {% endif %}
                                             {% if alerta.email_coordenacao_enviado %}
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-envelope me-1"></i>Coordenação
+                                            <span class="badge bg-success" data-bs-toggle="tooltip" title="E-mail Coordenação">
+                                                <i class="fas fa-envelope"></i>
                                             </span>
                                             {% endif %}
                                             {% if alerta.email_responsaveis_enviado %}
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-users me-1"></i>Responsáveis
+                                            <span class="badge bg-success" data-bs-toggle="tooltip" title="E-mail Responsáveis">
+                                                <i class="fas fa-users"></i>
                                             </span>
                                             {% endif %}
                                             {% if not alerta.notificacao_sistema_criada and not alerta.email_coordenacao_enviado and not alerta.email_responsaveis_enviado %}
-                                            <span class="badge bg-secondary">Pendente</span>
+                                            <span class="badge bg-warning" data-bs-toggle="tooltip" title="Pendente de Envio">
+                                                <i class="fas fa-clock"></i>
+                                            </span>
                                             {% endif %}
                                         </div>
                                     </td>
                                     <td class="align-middle">
-                                        {{ alerta.criado_em|date:"d/m/Y" }}<br>
+                                        <small>{{ alerta.criado_em|date:"d/m/Y" }}</small><br>
                                         <small class="text-muted">{{ alerta.criado_em|date:"H:i" }}</small>
                                     </td>
                                     <td class="align-middle">
@@ -489,7 +482,7 @@
                                             </a>
                                             <a href="{% url 'core:ocorrencia_rapida_list' %}?estudante={{ alerta.estudante.matricula_sga }}"
                                                class="btn btn-outline-warning"
-                                               title="Ver Ocorrências Rápidas"
+                                               title="Ver Ocorrências"
                                                data-bs-toggle="tooltip">
                                                 <i class="fas fa-list"></i>
                                             </a>
@@ -503,7 +496,7 @@
                                             <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
                                             <h5>Nenhum alerta encontrado</h5>
                                             <p>Nenhum estudante atingiu os limites configurados neste período.</p>
-                                            {% if request.GET.turma or request.GET.tipo or request.GET.mes %}
+                                            {% if request.GET %}
                                             <a href="{% url 'core:alertas_limites_dashboard' %}" class="btn btn-primary">
                                                 <i class="fas fa-eye me-1"></i> Ver Todos
                                             </a>
@@ -515,6 +508,74 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Visualização em Cards (oculta por padrão) -->
+                    <div class="d-none" id="cards-view">
+                        <div class="row row-cols-1 row-cols-md-2 g-4 p-3">
+                            {% for alerta in alertas %}
+                            <div class="col">
+                                <div class="card h-100 border-start-4 {% if alerta.quantidade_ocorrencias > alerta.configuracao.limite_mensal %}border-warning{% else %}border-danger{% endif %}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div class="d-flex align-items-center">
+                                                {% if alerta.estudante.get_foto_url %}
+                                                <img src="{{ alerta.estudante.get_foto_url_proxy }}"
+                                                     alt="{{ alerta.estudante.nome }}"
+                                                     class="rounded-circle me-3"
+                                                     width="50"
+                                                     height="50">
+                                                {% else %}
+                                                <div class="avatar-circle bg-secondary text-white d-flex align-items-center justify-content-center rounded-circle me-3"
+                                                     style="width: 50px; height: 50px;">
+                                                    {{ alerta.estudante.get_iniciais }}
+                                                </div>
+                                                {% endif %}
+                                                <div>
+                                                    <h6 class="mb-0">{{ alerta.estudante.nome }}</h6>
+                                                    <small class="text-muted">{{ alerta.estudante.matricula_sga }}</small>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-info">{{ alerta.tipo_ocorrencia.codigo }}</span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>Turma:</span>
+                                                <strong>{{ alerta.estudante.turma.nome }}</strong>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>Ocorrências:</span>
+                                                <span class="fs-5 fw-bold text-danger">{{ alerta.quantidade_ocorrencias }}/{{ alerta.configuracao.limite_mensal }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                {% if alerta.notificacao_sistema_criada %}
+                                                <span class="badge bg-success me-1" title="Sistema"><i class="fas fa-bell"></i></span>
+                                                {% endif %}
+                                                {% if alerta.email_coordenacao_enviado %}
+                                                <span class="badge bg-success me-1" title="Coordenação"><i class="fas fa-envelope"></i></span>
+                                                {% endif %}
+                                                {% if alerta.email_responsaveis_enviado %}
+                                                <span class="badge bg-success me-1" title="Responsáveis"><i class="fas fa-users"></i></span>
+                                                {% endif %}
+                                            </div>
+                                            <small class="text-muted">{{ alerta.criado_em|date:"d/m H:i" }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-transparent border-top-0">
+                                        <div class="btn-group w-100">
+                                            <a href="{% url 'core:estudante_detail' alerta.estudante.matricula_sga %}" class="btn btn-sm btn-outline-primary">Perfil</a>
+                                            <a href="{% url 'core:relatorio_estudante' alerta.estudante.matricula_sga %}" class="btn btn-sm btn-outline-info">Histórico</a>
+                                            <a href="{% url 'core:ocorrencia_rapida_list' %}?estudante={{ alerta.estudante.matricula_sga }}" class="btn btn-sm btn-outline-warning">Ocorrências</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Paginação -->
@@ -524,7 +585,7 @@
                         <ul class="pagination justify-content-center mb-0">
                             {% if alertas.has_previous %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ alertas.previous_page_number }}{% if request.GET.mes %}&mes={{ request.GET.mes }}{% endif %}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}">
+                                <a class="page-link" href="?page={{ alertas.previous_page_number }}{% if request.GET.mes %}&mes={{ request.GET.mes }}{% endif %}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.estudante %}&estudante={{ request.GET.estudante }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
                             </li>
@@ -537,14 +598,14 @@
                                 </li>
                                 {% elif num > alertas.number|add:'-3' and num < alertas.number|add:'3' %}
                                 <li class="page-item">
-                                    <a class="page-link" href="?page={{ num }}{% if request.GET.mes %}&mes={{ request.GET.mes }}{% endif %}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}">{{ num }}</a>
+                                    <a class="page-link" href="?page={{ num }}{% if request.GET.mes %}&mes={{ request.GET.mes }}{% endif %}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.estudante %}&estudante={{ request.GET.estudante }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a>
                                 </li>
                                 {% endif %}
                             {% endfor %}
 
                             {% if alertas.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="?page={{ alertas.next_page_number }}{% if request.GET.mes %}&mes={{ request.GET.mes }}{% endif %}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}">
+                                <a class="page-link" href="?page={{ alertas.next_page_number }}{% if request.GET.mes %}&mes={{ request.GET.mes }}{% endif %}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.estudante %}&estudante={{ request.GET.estudante }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>
                             </li>
@@ -552,79 +613,118 @@
                         </ul>
                         <div class="text-center text-muted small mt-2">
                             Página {{ alertas.number }} de {{ alertas.paginator.num_pages }}
+                            • {{ alertas.start_index }}-{{ alertas.end_index }} de {{ alertas.paginator.count }} alertas
                         </div>
                     </nav>
                 </div>
                 {% endif %}
             </div>
         </div>
-    </div>
 
-    <!-- Grid de Análises -->
-    <div class="row mt-4">
-        <!-- Estudantes Críticos -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow h-100">
+        <!-- Coluna Lateral - Estatísticas e Filtros -->
+        <div class="col-lg-4">
+            <!-- Configurações Ativas -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold">
+                            <i class="fas fa-cog me-2"></i>Configurações Ativas
+                        </h6>
+                        <span class="badge bg-light text-primary">{{ configuracoes_ativas|length }}</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for config in configuracoes_ativas %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="d-block">{{ config.tipo_ocorrencia.codigo }}</strong>
+                                    <small class="text-muted">Limite: {{ config.limite_mensal }}/mês</small>
+                                </div>
+                                <div>
+                                    {% if config.gerar_notificacao_sistema %}
+                                    <span class="badge bg-success me-1" title="Sistema">S</span>
+                                    {% endif %}
+                                    {% if config.gerar_email_coordenacao %}
+                                    <span class="badge bg-info me-1" title="Coordenação">C</span>
+                                    {% endif %}
+                                    {% if config.gerar_email_responsaveis %}
+                                    <span class="badge bg-warning" title="Responsáveis">R</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item text-center text-muted py-4">
+                            <i class="fas fa-cogs fa-2x mb-3"></i>
+                            <p class="mb-0">Nenhuma configuração ativa</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Estudantes Críticos -->
+            <div class="card shadow mb-4">
                 <div class="card-header bg-white py-3">
-                    <h5 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-user-times me-2"></i>Top 10 - Estudantes com Mais Alertas
-                    </h5>
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user-times me-2"></i>Top 10 - Estudantes Críticos
+                    </h6>
                 </div>
                 <div class="card-body">
                     {% for estudante in estudantes_criticos %}
-                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
-                        <div class="d-flex align-items-center">
-                            <div class="me-3">
+                    <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded mb-2">
+                        <div class="d-flex align-items-center" style="min-width: 0;">
+                            <div class="me-3 flex-shrink-0">
                                 <span class="badge bg-danger rounded-circle p-2">
                                     {{ forloop.counter }}
                                 </span>
                             </div>
-                            <div>
-                                <div class="fw-semibold">{{ estudante.estudante__nome }}</div>
-                                <div class="text-muted small">
-                                    {{ estudante.estudante__matricula_sga }} - {{ estudante.estudante__turma__nome }}
+                            <div class="flex-grow-1" style="min-width: 0;">
+                                <div class="fw-semibold text-truncate">{{ estudante.estudante__nome }}</div>
+                                <div class="text-muted small text-truncate">
+                                    {{ estudante.estudante__turma__nome }}
                                 </div>
                             </div>
                         </div>
-                        <div class="text-end">
-                            <div class="fs-4 fw-bold text-danger">{{ estudante.total_alertas }}</div>
+                        <div class="text-end flex-shrink-0">
+                            <div class="fs-6 fw-bold text-danger">{{ estudante.total_alertas }}</div>
                             <div class="text-muted small">alerta(s)</div>
                         </div>
                     </div>
                     {% empty %}
-                    <div class="text-center text-muted p-4">
+                    <div class="text-center text-muted p-3">
                         <i class="fas fa-user-check fa-2x mb-3"></i>
-                        <p>Nenhum estudante crítico encontrado</p>
+                        <p class="mb-0">Nenhum estudante crítico</p>
                     </div>
                     {% endfor %}
                 </div>
             </div>
-        </div>
 
-        <!-- Tipos Mais Frequentes -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow h-100">
+            <!-- Tipos Mais Frequentes -->
+            <div class="card shadow mb-4">
                 <div class="card-header bg-white py-3">
-                    <h5 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-chart-pie me-2"></i>Tipos de Ocorrência Mais Alertados
-                    </h5>
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-pie me-2"></i>Tipos Mais Frequentes
+                    </h6>
                 </div>
                 <div class="card-body">
                     {% for tipo in tipos_frequentes %}
-                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
-                        <div class="flex-grow-1">
-                            <div class="fw-semibold">{{ tipo.tipo_ocorrencia__codigo }}</div>
-                            <div class="text-muted small">{{ tipo.tipo_ocorrencia__descricao|truncatewords:8 }}</div>
+                    <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded mb-2">
+                        <div class="flex-grow-1" style="min-width: 0;">
+                            <div class="fw-semibold text-truncate">{{ tipo.tipo_ocorrencia__codigo }}</div>
+                            <div class="text-muted small text-truncate">{{ tipo.tipo_ocorrencia__descricao|truncatewords:5 }}</div>
                         </div>
-                        <div class="text-end">
-                            <div class="fs-4 fw-bold text-warning">{{ tipo.total }}</div>
-                            <div class="text-muted small">alerta(s)</div>
+                        <div class="text-end flex-shrink-0">
+                            <div class="fs-6 fw-bold text-warning">{{ tipo.total }}</div>
+                            <div class="text-muted small">vezes</div>
                         </div>
                     </div>
                     {% empty %}
-                    <div class="text-center text-muted p-4">
+                    <div class="text-center text-muted p-3">
                         <i class="fas fa-chart-bar fa-2x mb-3"></i>
-                        <p>Nenhum tipo frequente encontrado</p>
+                        <p class="mb-0">Nenhum tipo frequente</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -633,140 +733,188 @@
     </div>
 </div>
 
-<style>
-.preserve-filters {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 10px;
-    padding: 15px 20px;
-    border-left: 4px solid #3498db;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
+<!-- Modal de Exportação -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportModalLabel">
+                    <i class="fas fa-download me-2"></i>Exportar Dados
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Formato de Exportação</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="exportFormat" id="formatCsv" value="csv" checked>
+                        <label class="form-check-label" for="formatCsv">
+                            CSV (Excel)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="exportFormat" id="formatPdf" value="pdf">
+                        <label class="form-check-label" for="formatPdf">
+                            PDF
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Período</label>
+                    <select class="form-select" id="exportPeriod">
+                        <option value="current">Mês Atual ({{ mes_referencia|date:"F/Y" }})</option>
+                        <option value="all">Todos os Meses</option>
+                        <option value="custom">Período Personalizado</option>
+                    </select>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Serão exportados os dados conforme os filtros aplicados.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmExport">
+                    <i class="fas fa-download me-1"></i> Exportar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-.filter-badge {
-    background: #e3f2fd;
-    color: #1976d2;
-    padding: 6px 15px;
-    border-radius: 20px;
-    font-size: 14px;
-    margin-right: 10px;
-    margin-bottom: 8px;
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid #bbdefb;
-}
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="mt-3 text-primary">Processando...</div>
+</div>
+{% endblock %}
 
-.filter-badge .remove-filter {
-    margin-left: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    color: #d32f2f;
-    transition: color 0.2s;
-}
-
-.filter-badge .remove-filter:hover {
-    color: #b71c1c;
-}
-
-.month-selector {
-    border: 2px solid #e0e0e0;
-    transition: all 0.3s;
-}
-
-.month-selector:hover, .month-selector:focus {
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
-
-.month-active {
-    background-color: #e8f5e9 !important;
-    color: #2e7d32 !important;
-    font-weight: 600;
-}
-
-.avatar-circle {
-    font-weight: 600;
-    font-size: 16px;
-}
-
-.table-hover tbody tr:hover {
-    background-color: rgba(52, 152, 219, 0.05);
-    cursor: pointer;
-}
-
-.card {
-    border: none;
-    border-radius: 10px;
-    transition: transform 0.3s;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-}
-
-.border-left-danger { border-left-color: #e74c3c !important; }
-.border-left-warning { border-left-color: #f39c12 !important; }
-.border-left-info { border-left-color: #3498db !important; }
-.border-left-primary { border-left-color: #9b59b6 !important; }
-</style>
-
+{% block extra_js %}
+<script src="{% static 'js/alertas-dashboard.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Configurar tooltips do Bootstrap
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    // Inicializar tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
-    // Atualizar mês no seletor principal
-    document.getElementById('mes-selector').addEventListener('change', function() {
-        const selectedMonth = this.value;
-        updateUrlWithParam('mes', selectedMonth);
-    });
-
-    // Atualizar mês no seletor secundário
-    document.getElementById('mes-selector-2').addEventListener('change', function() {
-        const selectedMonth = this.value;
-        document.getElementById('hidden-mes').value = selectedMonth;
-    });
-
-    // Atualizar links de paginação com parâmetros atuais
-    function updatePaginationLinks() {
-        const currentMonth = '{{ request.GET.mes|default:mes_referencia|date:"Y-m" }}';
-        const currentTurma = '{{ request.GET.turma }}';
-        const currentTipo = '{{ request.GET.tipo }}';
-
-        const paginationLinks = document.querySelectorAll('.pagination a');
-        paginationLinks.forEach(link => {
-            const url = new URL(link.href);
-            if (currentMonth) url.searchParams.set('mes', currentMonth);
-            if (currentTurma) url.searchParams.set('turma', currentTurma);
-            if (currentTipo) url.searchParams.set('tipo', currentTipo);
-            link.href = url.toString();
+    // Configurar seletor de mês principal
+    const mesSelector = document.getElementById('mes-selector');
+    if (mesSelector) {
+        mesSelector.addEventListener('change', function() {
+            const selectedMonth = this.value;
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('mes', selectedMonth);
+            window.location.href = currentUrl.toString();
         });
     }
 
-    // Função para atualizar URL mantendo parâmetros existentes
-    function updateUrlWithParam(param, value) {
-        const url = new URL(window.location.href);
-        const params = new URLSearchParams(url.search);
-
-        // Obter valores atuais dos filtros
-        const currentTurma = params.get('turma') || '';
-        const currentTipo = params.get('tipo') || '';
-
-        // Construir nova URL mantendo filtros existentes
-        let newUrl = `${url.pathname}?${param}=${value}`;
-        if (currentTurma) newUrl += `&turma=${currentTurma}`;
-        if (currentTipo) newUrl += `&tipo=${currentTipo}`;
-
-        // Redirecionar
-        window.location.href = newUrl;
+    // Configurar seletor de mês secundário
+    const mesSelector2 = document.getElementById('mes-selector-2');
+    const hiddenMes = document.getElementById('hidden-mes');
+    if (mesSelector2 && hiddenMes) {
+        mesSelector2.addEventListener('change', function() {
+            hiddenMes.value = this.value;
+        });
     }
 
-    // Inicializar
-    updatePaginationLinks();
+    // Limpar busca de estudante
+    const limparBuscaBtn = document.getElementById('limpar-busca');
+    const estudanteBusca = document.getElementById('estudante-busca');
+    if (limparBuscaBtn && estudanteBusca) {
+        limparBuscaBtn.addEventListener('click', function() {
+            estudanteBusca.value = '';
+        });
+    }
 
-    // Configurar remoção de filtros
+    // Alternar entre visualização de tabela e cards
+    const toggleVisualizacaoBtn = document.getElementById('toggle-visualizacao');
+    const tabelaView = document.getElementById('tabela-view');
+    const cardsView = document.getElementById('cards-view');
+
+    if (toggleVisualizacaoBtn && tabelaView && cardsView) {
+        toggleVisualizacaoBtn.addEventListener('click', function() {
+            if (tabelaView.classList.contains('d-none')) {
+                // Mostrar tabela
+                tabelaView.classList.remove('d-none');
+                cardsView.classList.add('d-none');
+                this.innerHTML = '<i class="fas fa-th-large me-1"></i> Cards';
+            } else {
+                // Mostrar cards
+                tabelaView.classList.add('d-none');
+                cardsView.classList.remove('d-none');
+                this.innerHTML = '<i class="fas fa-table me-1"></i> Tabela';
+            }
+        });
+    }
+
+    // Exportar dados
+    const exportarBtn = document.getElementById('exportar-dados');
+    const exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
+    const confirmExportBtn = document.getElementById('confirmExport');
+
+    if (exportarBtn) {
+        exportarBtn.addEventListener('click', function() {
+            exportModal.show();
+        });
+    }
+
+    if (confirmExportBtn) {
+        confirmExportBtn.addEventListener('click', function() {
+            const format = document.querySelector('input[name="exportFormat"]:checked').value;
+            const period = document.getElementById('exportPeriod').value;
+
+            // Mostrar loading
+            document.getElementById('loadingOverlay').classList.add('active');
+
+            // Simular exportação (substituir por chamada real à API)
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').classList.remove('active');
+                exportModal.hide();
+
+                // Mostrar mensagem de sucesso
+                const toast = document.createElement('div');
+                toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed bottom-0 end-0 m-3';
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Exportação iniciada. O arquivo será baixado em instantes.
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+
+                // Remover toast após 5 segundos
+                setTimeout(() => toast.remove(), 5000);
+            }, 1500);
+        });
+    }
+
+    // Busca em tempo real (debounced)
+    let searchTimeout;
+    if (estudanteBusca) {
+        estudanteBusca.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                // Atualizar URL com o parâmetro de busca
+                const url = new URL(window.location.href);
+                if (this.value.trim()) {
+                    url.searchParams.set('estudante', this.value.trim());
+                } else {
+                    url.searchParams.delete('estudante');
+                }
+                url.searchParams.delete('page'); // Resetar para primeira página
+                window.location.href = url.toString();
+            }, 500);
+        });
+    }
+
+    // Configurar links de remoção de filtro
     document.querySelectorAll('.remove-filter').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
@@ -775,28 +923,53 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Configurar submit do formulário para manter o mês oculto
-    document.getElementById('filter-form').addEventListener('submit', function(e) {
-        const mesSelector = document.getElementById('mes-selector-2');
-        const hiddenMes = document.getElementById('hidden-mes');
-        hiddenMes.value = mesSelector.value;
-    });
+    const filterForm = document.getElementById('filter-form');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            if (mesSelector2 && hiddenMes) {
+                hiddenMes.value = mesSelector2.value;
+            }
+        });
+    }
 
-    // Adicionar classe ativa para o mês selecionado no dropdown
-    const currentMonth = '{{ request.GET.mes|default:mes_referencia|date:"Y-m" }}';
-    document.querySelectorAll('.month-selector option').forEach(option => {
-        if (option.value === currentMonth) {
-            option.classList.add('month-active');
-        }
+    // Destacar mês ativo nos dropdowns
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentMonth = urlParams.get('mes');
+    if (currentMonth) {
+        document.querySelectorAll('.month-selector option').forEach(option => {
+            if (option.value === currentMonth) {
+                option.classList.add('month-active');
+            }
+        });
+    }
+
+    // Adicionar funcionalidade de clique nas linhas da tabela
+    document.querySelectorAll('.alerta-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Não fazer nada se clicou em um botão ou link
+            if (e.target.closest('a') || e.target.closest('button')) {
+                return;
+            }
+            // Navegar para o perfil do estudante
+            const estudanteId = this.getAttribute('data-estudante-id');
+            const estudanteLink = this.querySelector('a[href*="estudante_detail"]');
+            if (estudanteLink) {
+                window.location.href = estudanteLink.href;
+            }
+        });
     });
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('=== DEBUG TEMPLATE ===');
-    console.log('Mês de referência (backend):', '{{ mes_referencia|date:"Y-m" }}');
-    console.log('Mês GET param:', '{{ request.GET.mes }}');
-    console.log('Total alertas:', '{{ total_alertas }}');
-    console.log('=====================');
+// Debug info
+console.log('=== ALERTAS DASHBOARD ===');
+console.log('Mês de referência:', '{{ mes_referencia|date:"Y-m" }}');
+console.log('Total de alertas:', {{ total_alertas }});
+console.log('Filtros ativos:', {
+    mes: '{{ request.GET.mes }}',
+    turma: '{{ request.GET.turma }}',
+    tipo: '{{ request.GET.tipo }}',
+    estudante: '{{ request.GET.estudante }}',
+    status: '{{ request.GET.status }}'
 });
-
 </script>
 {% endblock %}

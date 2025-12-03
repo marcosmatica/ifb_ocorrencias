@@ -388,3 +388,138 @@
     border-left: 4px solid #ef4444;
     animation: slideDown 0.3s ease-out;
 }
+
+/* Novos estilos para a versão otimizada */
+
+/* Estilos para filtros ativos */
+.filter-badge {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    margin-right: 10px;
+    margin-bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #bbdefb;
+    transition: all 0.3s ease;
+}
+
+.filter-badge:hover {
+    background: #bbdefb;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Accordion personalizado */
+.accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+    box-shadow: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(0,0,0,.125);
+}
+
+/* Cards view */
+.card.border-start-4 {
+    border-left-width: 4px !important;
+}
+
+.card.border-warning {
+    border-left-color: #ffc107 !important;
+}
+
+.card.border-danger {
+    border-left-color: #dc3545 !important;
+}
+
+/* Avatar circle */
+.avatar-circle {
+    font-weight: 600;
+    font-size: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.loading-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .filter-badge {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+
+    .card-header .btn-group {
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    .table-responsive {
+        font-size: 14px;
+    }
+}
+
+/* Animações */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.alerta-row {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Scroll personalizado */
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

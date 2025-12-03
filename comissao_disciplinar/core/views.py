@@ -1479,9 +1479,6 @@ def proxy_imagem_google_drive(request):
         return HttpResponse(f'Erro ao carregar imagem: {str(e)}', status=500)
 
 
-# core/views.py - ATUALIZE a função alertas_limites_dashboard
-# views.py - Na função alertas_limites_dashboard, adicione esta lógica:
-
 @login_required
 @user_passes_test(is_servidor)
 def alertas_limites_dashboard(request):
@@ -1489,7 +1486,7 @@ def alertas_limites_dashboard(request):
     Dashboard para visualizar alertas de limites de ocorrências rápidas
     """
     from datetime import datetime, timedelta
-    from django.db.models import Count, F
+    from django.db.models import Count, F, Q
 
     # Obter todos os parâmetros GET para preservação
     params = request.GET.copy()
@@ -1521,14 +1518,14 @@ def alertas_limites_dashboard(request):
     # Armazenar o mês nos parâmetros para preservação
     params['mes'] = mes_referencia.strftime('%Y-%m')
 
-    # Lista de meses disponíveis (últimos 6 meses)
+    # Lista de meses disponíveis (últimos 12 meses)
     meses_disponiveis = []
     hoje = timezone.now().date().replace(day=1)
-    for i in range(6):
+    for i in range(12):
         data = (hoje - timedelta(days=30 * i)).replace(day=1)
         meses_disponiveis.append(data)
 
-    # **CORREÇÃO PRINCIPAL**: Filtrar alertas do mês selecionado
+    # **OTIMIZAÇÃO**: Filtrar alertas do mês selecionado com prefetch
     alertas_mes = AlertaLimiteOcorrenciaRapida.objects.filter(
         mes_referencia=mes_referencia
     ).select_related(
@@ -1539,19 +1536,56 @@ def alertas_limites_dashboard(request):
         'configuracao'
     ).order_by('-quantidade_ocorrencias', '-criado_em')
 
-    print(f"DEBUG: Mês de referência: {mes_referencia}")
-    print(f"DEBUG: Total de alertas encontrados: {alertas_mes.count()}")
-
     # Configurações ativas
     configuracoes_ativas = ConfiguracaoLimiteOcorrenciaRapida.objects.filter(
         ativo=True
     ).select_related('tipo_ocorrencia').order_by('tipo_ocorrencia__codigo')
 
-    # Estatísticas
+    # **NOVO**: Busca por estudante
+    busca_estudante = request.GET.get('estudante', '').strip()
+    if busca_estudante:
+        alertas_mes = alertas_mes.filter(
+            Q(estudante__nome__icontains=busca_estudante) |
+            Q(estudante__matricula_sga__icontains=busca_estudante)
+        )
+
+    # **NOVO**: Filtro por status de notificação
+    status_notificacao = request.GET.get('status')
+    if status_notificacao:
+        if status_notificacao == 'pendente':
+            alertas_mes = alertas_mes.filter(
+                notificacao_sistema_criada=False,
+                email_coordenacao_enviado=False,
+                email_responsaveis_enviado=False
+            )
+        elif status_notificacao == 'enviado':
+            alertas_mes = alertas_mes.filter(
+                Q(notificacao_sistema_criada=True) |
+                Q(email_coordenacao_enviado=True) |
+                Q(email_responsaveis_enviado=True)
+            )
+
+    # Estatísticas (ANTES de outros filtros para ter o total correto)
     total_alertas = alertas_mes.count()
     alertas_novos = alertas_mes.filter(
         criado_em__gte=timezone.now() - timedelta(days=7)
     ).count()
+
+    # Filtros adicionais
+    turma_filtro = request.GET.get('turma')
+    tipo_filtro = request.GET.get('tipo')
+
+    if turma_filtro:
+        try:
+            alertas_mes = alertas_mes.filter(estudante__turma_id=int(turma_filtro))
+        except (ValueError, TypeError):
+            pass
+
+    if tipo_filtro:
+        try:
+            alertas_mes = alertas_mes.filter(tipo_ocorrencia_id=int(tipo_filtro))
+        except (ValueError, TypeError):
+            pass
 
     # Top estudantes críticos
     estudantes_criticos = alertas_mes.values(
@@ -1571,24 +1605,6 @@ def alertas_limites_dashboard(request):
         total=Count('id')
     ).order_by('-total')[:5]
 
-    # Filtros adicionais
-    turma_filtro = request.GET.get('turma')
-    tipo_filtro = request.GET.get('tipo')
-
-    if turma_filtro:
-        try:
-            alertas_mes = alertas_mes.filter(estudante__turma_id=int(turma_filtro))
-            print(f"DEBUG: Filtrado por turma {turma_filtro}: {alertas_mes.count()} alertas")
-        except (ValueError, TypeError):
-            pass
-
-    if tipo_filtro:
-        try:
-            alertas_mes = alertas_mes.filter(tipo_ocorrencia_id=int(tipo_filtro))
-            print(f"DEBUG: Filtrado por tipo {tipo_filtro}: {alertas_mes.count()} alertas")
-        except (ValueError, TypeError):
-            pass
-
     # Paginação
     paginator = Paginator(alertas_mes, 20)
     page = request.GET.get('page')
@@ -1601,6 +1617,18 @@ def alertas_limites_dashboard(request):
         data__year=ano,
         data__month=mes
     ).count()
+
+    # **NOVO**: Estudantes com alertas por mês (para gráfico)
+    alertas_por_mes = []
+    for i in range(6):
+        mes_data = (hoje - timedelta(days=30 * i)).replace(day=1)
+        count = AlertaLimiteOcorrenciaRapida.objects.filter(
+            mes_referencia=mes_data
+        ).count()
+        alertas_por_mes.append({
+            'mes': mes_data.strftime('%b/%Y'),
+            'total': count
+        })
 
     breadcrumbs_list = [
         {'label': 'Dashboard', 'url': '/dashboard/'},
@@ -1619,6 +1647,7 @@ def alertas_limites_dashboard(request):
         'mes_referencia': mes_referencia,
         'meses_disponiveis': meses_disponiveis,
         'total_ocorrencias_mes': total_ocorrencias_mes,
+        'alertas_por_mes': alertas_por_mes,
         'breadcrumbs_list': breadcrumbs_list,
     }
 
