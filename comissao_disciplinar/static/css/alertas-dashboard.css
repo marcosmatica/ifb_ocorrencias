@@ -1,0 +1,390 @@
+/**
+ * alertas-dashboard.css
+ * Estilos específicos para o dashboard de alertas
+ */
+
+/* === Filtros Ativos === */
+.preserve-filters {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 15px 20px;
+    border-left: 4px solid #3498db;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.filter-badge {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    margin-right: 10px;
+    margin-bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #bbdefb;
+    transition: all 0.3s ease;
+}
+
+.filter-badge:hover {
+    background: #bbdefb;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filter-badge .remove-filter {
+    margin-left: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #d32f2f;
+    transition: color 0.2s;
+    text-decoration: none;
+}
+
+.filter-badge .remove-filter:hover {
+    color: #b71c1c;
+    transform: scale(1.2);
+}
+
+/* === Seletores de Mês === */
+.month-selector {
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.month-selector:hover {
+    border-color: #3498db;
+}
+
+.month-selector:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.month-active {
+    background-color: #e8f5e9 !important;
+    color: #2e7d32 !important;
+    font-weight: 600;
+}
+
+/* === Avatar e Iniciais === */
+.avatar-circle {
+    font-weight: 600;
+    font-size: 16px;
+    transition: transform 0.3s;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.1);
+}
+
+/* === Tabela === */
+.table-hover tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(52, 152, 219, 0.05);
+    cursor: pointer;
+    transform: translateX(2px);
+}
+
+.table-hover tbody tr:active {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+/* === Cards === */
+.card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-bottom: 2px solid #f0f0f0;
+}
+
+/* === Bordas de Status === */
+.border-left-danger {
+    border-left: 4px solid #e74c3c !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid #f39c12 !important;
+}
+
+.border-left-info {
+    border-left: 4px solid #3498db !important;
+}
+
+.border-left-primary {
+    border-left: 4px solid #9b59b6 !important;
+}
+
+/* === Badges === */
+.badge {
+    font-weight: 600;
+    padding: 6px 12px;
+    transition: all 0.2s;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+.badge.bg-success {
+    background-color: #10b981 !important;
+}
+
+.badge.bg-danger {
+    background-color: #ef4444 !important;
+}
+
+.badge.bg-warning {
+    background-color: #f59e0b !important;
+}
+
+.badge.bg-info {
+    background-color: #3b82f6 !important;
+}
+
+.badge.bg-secondary {
+    background-color: #6b7280 !important;
+}
+
+/* === Botões === */
+.btn-group-sm .btn {
+    transition: all 0.2s;
+}
+
+.btn-group-sm .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-outline-primary:hover {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+.btn-outline-info:hover {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.btn-outline-warning:hover {
+    background-color: #f59e0b;
+    border-color: #f59e0b;
+}
+
+/* === Alertas de Cards de Estatísticas === */
+.alert-info {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border: none;
+    border-left: 4px solid #2196f3;
+}
+
+/* === Animações para Estado Vazio === */
+.text-center.text-muted i {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* === Input Group === */
+.input-group {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-radius: 8px;
+}
+
+.input-group .form-select {
+    border-right: none;
+}
+
+.input-group .btn {
+    border-left: none;
+}
+
+/* === Cards de Estudantes Críticos === */
+.bg-light.rounded {
+    transition: all 0.3s;
+}
+
+.bg-light.rounded:hover {
+    background-color: #e3f2fd !important;
+    transform: translateX(5px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* === Paginação === */
+.pagination .page-item .page-link {
+    border-radius: 8px;
+    margin: 0 2px;
+    transition: all 0.2s;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #3498db;
+    border-color: #3498db;
+    transform: scale(1.1);
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: #e3f2fd;
+    border-color: #3498db;
+    transform: translateY(-2px);
+}
+
+/* === Tooltips Customizados === */
+.tooltip-inner {
+    background-color: #2c3e50;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #2c3e50;
+}
+
+/* === Loading States === */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.loading-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* === Responsividade === */
+@media (max-width: 768px) {
+    .preserve-filters {
+        padding: 12px 15px;
+    }
+
+    .filter-badge {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+
+    .table-responsive {
+        font-size: 14px;
+    }
+
+    .btn-group-sm {
+        flex-direction: column;
+    }
+
+    .card-body {
+        padding: 15px;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    .input-group .btn {
+        border-left: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .input-group .form-select {
+        border-right: 1px solid #dee2e6;
+        border-radius: 8px 8px 0 0;
+    }
+}
+
+/* === Impressão === */
+@media print {
+    .preserve-filters,
+    .card-header,
+    .btn,
+    .pagination {
+        display: none !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: transparent !important;
+    }
+}
+
+/* === Acessibilidade === */
+.form-select:focus,
+.form-control:focus {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+.btn:focus {
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+}
+
+/* === Estados de Sucesso/Erro === */
+.alert-success-custom {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-left: 4px solid #10b981;
+    animation: slideDown 0.3s ease-out;
+}
+
+.alert-danger-custom {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-left: 4px solid #ef4444;
+    animation: slideDown 0.3s ease-out;
+}

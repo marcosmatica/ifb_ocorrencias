@@ -155,7 +155,7 @@
         </div>
     </div>
 
-    <!-- Seção de Controles Superiores -->
+    !-- Seção de Controles Superiores - CORRIGIDO -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow">
@@ -172,18 +172,20 @@
                                         <select id="mes-selector" class="form-select month-selector">
                                             {% for mes in meses_disponiveis %}
                                             <option value="{{ mes|date:'Y-m' }}"
-                                                    {% if mes == mes_referencia %}selected{% endif %}
-                                                    {% if mes == mes_referencia %}class="month-active"{% endif %}>
+                                                    {% if mes|date:'Y-m' == request.GET.mes or mes == mes_referencia and not request.GET.mes %}selected{% endif %}>
                                                 {{ mes|date:"F/Y" }}
                                             </option>
                                             {% endfor %}
                                         </select>
-                                        <a href="?{% if request.GET.turma %}turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.mes %}&mes={{ request.GET.mes }}{% endif %}&recalcular=true"
-                                           class="btn btn-warning" onclick="return confirm('Tem certeza que deseja recalcular os alertas para este mês?')">
+                                        <a href="?mes={{ request.GET.mes|default:mes_referencia|date:'Y-m' }}{% if request.GET.turma %}&turma={{ request.GET.turma }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}&recalcular=true"
+                                           class="btn btn-warning"
+                                           id="recalcular-btn">
                                             <i class="fas fa-redo-alt me-1"></i> Recalcular
                                         </a>
                                     </div>
-                                    <small class="text-muted d-block mt-1">Gera alertas para {{ mes_referencia|date:"F/Y" }}</small>
+                                    <small class="text-muted d-block mt-1">
+                                        Exibindo alertas de {{ mes_referencia|date:"F/Y" }}
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -298,7 +300,7 @@
         </div>
     </div>
 
-    <!-- Filtros -->
+    <!-- Filtros - CORRIGIDO -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow">
@@ -309,11 +311,14 @@
                 </div>
                 <div class="card-body">
                     <form method="get" id="filter-form">
-                        <div class="row g-3">
-                            <!-- Campo Mês (oculto e visível) -->
-                            <input type="hidden" name="mes" id="hidden-mes" value="{{ request.GET.mes|default:mes_referencia|date:'Y-m' }}">
+                        <!-- Campo Mês Oculto - SEMPRE presente -->
+                        <input type="hidden"
+                               name="mes"
+                               id="hidden-mes"
+                               value="{{ request.GET.mes|default:mes_referencia|date:'Y-m' }}">
 
-                            <div class="col-md-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">Turma</label>
                                 <select name="turma" class="form-select">
                                     <option value="">Todas as turmas</option>
@@ -326,33 +331,41 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">Tipo de Ocorrência</label>
                                 <select name="tipo" class="form-select">
                                     <option value="">Todos os tipos</option>
                                     {% for tipo in tipos %}
                                     <option value="{{ tipo.id }}"
                                             {% if request.GET.tipo == tipo.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ tipo.codigo }}
+                                        {{ tipo.codigo }} - {{ tipo.descricao|truncatewords:5 }}
                                     </option>
                                     {% endfor %}
                                 </select>
                             </div>
 
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">Mês (alternativo)</label>
+                            <!-- Seletor de mês visível (opcional) -->
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Alterar Mês (opcional)
+                                </label>
                                 <select name="mes" class="form-select" id="mes-selector-2">
                                     {% for mes in meses_disponiveis %}
                                     <option value="{{ mes|date:'Y-m' }}"
-                                            {% if request.GET.mes == mes|date:'Y-m' or mes == mes_referencia %}selected{% endif %}>
+                                            {% if mes|date:'Y-m' == request.GET.mes or mes == mes_referencia and not request.GET.mes %}selected{% endif %}>
                                         {{ mes|date:"F/Y" }}
+                                        {% if mes == mes_referencia and not request.GET.mes %}(atual){% endif %}
                                     </option>
                                     {% endfor %}
                                 </select>
+                                <small class="text-muted d-block mt-1">
+                                    Selecione outro mês para aplicar os filtros
+                                </small>
                             </div>
 
                             <div class="col-12">
-                                <div class="d-flex justify-content-end gap-2 pt-3">
+                                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
                                     <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-search me-1"></i> Aplicar Filtros
                                     </button>
@@ -776,5 +789,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DEBUG TEMPLATE ===');
+    console.log('Mês de referência (backend):', '{{ mes_referencia|date:"Y-m" }}');
+    console.log('Mês GET param:', '{{ request.GET.mes }}');
+    console.log('Total alertas:', '{{ total_alertas }}');
+    console.log('=====================');
+});
+
 </script>
 {% endblock %}

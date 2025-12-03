@@ -108,11 +108,20 @@ def recalcular_alertas_periodo(mes_referencia=None):
     """
     Força a verificação de TODOS os estudantes e TODAS as configurações ativas.
     Retorna estatísticas detalhadas.
+
+    Args:
+        mes_referencia: Data do primeiro dia do mês (datetime.date)
+
+    Returns:
+        dict com estatísticas do recálculo
     """
     if not mes_referencia:
         mes_referencia = timezone.now().date().replace(day=1)
 
     logger.info(f"🔍 RECALCULANDO ALERTAS para {mes_referencia.strftime('%m/%Y')}")
+    print(f"\n{'=' * 60}")
+    print(f"🔍 RECALCULANDO ALERTAS para {mes_referencia.strftime('%m/%Y')}")
+    print(f"{'=' * 60}\n")
 
     ano = mes_referencia.year
     mes = mes_referencia.month
@@ -123,6 +132,7 @@ def recalcular_alertas_periodo(mes_referencia=None):
     ).delete()[0]
 
     logger.info(f"Limpos {deleted_count} alertas antigos")
+    print(f"🗑️  Limpos {deleted_count} alertas antigos")
 
     # Obter TODAS as configurações ativas
     configs_ativas = ConfiguracaoLimiteOcorrenciaRapida.objects.filter(
@@ -131,19 +141,23 @@ def recalcular_alertas_periodo(mes_referencia=None):
 
     if not configs_ativas.exists():
         logger.warning("⚠️ Nenhuma configuração ativa encontrada!")
+        print("⚠️ Nenhuma configuração ativa encontrada!")
         return {
             'configuracoes_processadas': 0,
             'alertas_gerados': 0,
-            'estudantes_afetados': 0
+            'estudantes_afetados': 0,
+            'mes_referencia': mes_referencia.strftime('%m/%Y')
         }
 
     logger.info(f"📊 Configurações ativas: {configs_ativas.count()}")
+    print(f"📊 Configurações ativas: {configs_ativas.count()}")
 
     alertas_gerados = 0
     estudantes_afetados = set()
 
     for config in configs_ativas:
-        logger.info(f"Processando {config.tipo_ocorrencia.codigo} (limite: {config.limite_mensal})")
+        logger.info(f"\nProcessando {config.tipo_ocorrencia.codigo} (limite: {config.limite_mensal})")
+        print(f"\n📋 Processando {config.tipo_ocorrencia.codigo} (limite: {config.limite_mensal})")
 
         # Buscar estudantes com ocorrências deste tipo no mês
         estudantes_com_ocorrencias = Estudante.objects.filter(
@@ -151,12 +165,13 @@ def recalcular_alertas_periodo(mes_referencia=None):
             ocorrencias_rapidas__data__year=ano,
             ocorrencias_rapidas__data__month=mes
         ).annotate(
-            qtd=Count('ocorrencias_rapidas')
+            qtd=Count('ocorrencias_rapidas', distinct=True)
         ).filter(
-            qtd__gte=config.limite_mensal  # Alterado para >=
+            qtd__gte=config.limite_mensal
         ).distinct()
 
         logger.info(f"  → {estudantes_com_ocorrencias.count()} estudantes excedem o limite")
+        print(f"  → {estudantes_com_ocorrencias.count()} estudantes excedem o limite")
 
         for estudante in estudantes_com_ocorrencias:
             try:
@@ -168,14 +183,23 @@ def recalcular_alertas_periodo(mes_referencia=None):
                     data__month=mes
                 ).count()
 
+                print(f"    📌 {estudante.nome}: {total_ocorrencias} ocorrências")
+
                 if total_ocorrencias >= config.limite_mensal:
-                    alerta = AlertaLimiteOcorrenciaRapida.objects.create(
+                    alerta, created = AlertaLimiteOcorrenciaRapida.objects.get_or_create(
                         estudante=estudante,
                         tipo_ocorrencia=config.tipo_ocorrencia,
-                        configuracao=config,
                         mes_referencia=mes_referencia,
-                        quantidade_ocorrencias=total_ocorrencias
+                        defaults={
+                            'configuracao': config,
+                            'quantidade_ocorrencias': total_ocorrencias
+                        }
                     )
+
+                    if not created:
+                        # Atualizar quantidade se já existir
+                        alerta.quantidade_ocorrencias = total_ocorrencias
+                        alerta.save(update_fields=['quantidade_ocorrencias'])
 
                     alertas_gerados += 1
                     estudantes_afetados.add(estudante.id)
@@ -184,8 +208,13 @@ def recalcular_alertas_periodo(mes_referencia=None):
 
             except Exception as e:
                 logger.error(f"Erro ao criar alerta para {estudante.nome}: {str(e)}")
+                print(f"    ❌ Erro: {str(e)}")
 
-    logger.info(f"🎯 CONCLUSÃO: {alertas_gerados} alertas gerados para {len(estudantes_afetados)} estudantes")
+    logger.info(f"\n🎯 CONCLUSÃO: {alertas_gerados} alertas gerados para {len(estudantes_afetados)} estudantes")
+    print(f"\n{'=' * 60}")
+    print(f"🎯 CONCLUSÃO: {alertas_gerados} alertas gerados")
+    print(f"👥 Estudantes afetados: {len(estudantes_afetados)}")
+    print(f"{'=' * 60}\n")
 
     return {
         'configuracoes_processadas': configs_ativas.count(),

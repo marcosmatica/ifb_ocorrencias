@@ -1494,17 +1494,7 @@ def alertas_limites_dashboard(request):
     # Obter todos os parâmetros GET para preservação
     params = request.GET.copy()
 
-    # Opção para recalcular alertas - mas preservar outros parâmetros
-    if 'recalcular' in params:
-        resultado = recalcular_alertas_periodo()
-        messages.success(request, f"Recalculado! {resultado['alertas_gerados']} alertas gerados.")
-        # Remover o parâmetro 'recalcular' para evitar loop
-        if 'recalcular' in params:
-            del params['recalcular']
-        # Redirecionar mantendo outros parâmetros
-        return redirect(f"{request.path}?{params.urlencode()}")
-
-    # Determinar mês de referência
+    # Determinar mês de referência ANTES do recálculo
     mes_param = request.GET.get('mes')
     if mes_param:
         try:
@@ -1515,18 +1505,30 @@ def alertas_limites_dashboard(request):
     else:
         mes_referencia = timezone.now().date().replace(day=1)
 
+    # Opção para recalcular alertas - mas preservar outros parâmetros
+    if 'recalcular' in params:
+        resultado = recalcular_alertas_periodo(mes_referencia)
+        messages.success(
+            request,
+            f"Recalculado! {resultado['alertas_gerados']} alertas gerados para {resultado['mes_referencia']}."
+        )
+        # Remover o parâmetro 'recalcular' para evitar loop
+        if 'recalcular' in params:
+            del params['recalcular']
+        # Redirecionar mantendo outros parâmetros
+        return redirect(f"{request.path}?{params.urlencode()}")
+
     # Armazenar o mês nos parâmetros para preservação
     params['mes'] = mes_referencia.strftime('%Y-%m')
 
-    # Resto do código permanece o mesmo...
-
     # Lista de meses disponíveis (últimos 6 meses)
     meses_disponiveis = []
+    hoje = timezone.now().date().replace(day=1)
     for i in range(6):
-        data = (mes_referencia - timedelta(days=30 * i)).replace(day=1)
+        data = (hoje - timedelta(days=30 * i)).replace(day=1)
         meses_disponiveis.append(data)
 
-    # Alertas do mês selecionado
+    # **CORREÇÃO PRINCIPAL**: Filtrar alertas do mês selecionado
     alertas_mes = AlertaLimiteOcorrenciaRapida.objects.filter(
         mes_referencia=mes_referencia
     ).select_related(
@@ -1536,6 +1538,9 @@ def alertas_limites_dashboard(request):
         'tipo_ocorrencia',
         'configuracao'
     ).order_by('-quantidade_ocorrencias', '-criado_em')
+
+    print(f"DEBUG: Mês de referência: {mes_referencia}")
+    print(f"DEBUG: Total de alertas encontrados: {alertas_mes.count()}")
 
     # Configurações ativas
     configuracoes_ativas = ConfiguracaoLimiteOcorrenciaRapida.objects.filter(
@@ -1555,8 +1560,7 @@ def alertas_limites_dashboard(request):
         'estudante__matricula_sga',
         'estudante__turma__nome'
     ).annotate(
-        total_alertas=Count('id'),
-        total_ocorrencias=Count('quantidade_ocorrencias')
+        total_alertas=Count('id')
     ).order_by('-total_alertas')[:10]
 
     # Tipos mais frequentes
@@ -1564,8 +1568,7 @@ def alertas_limites_dashboard(request):
         'tipo_ocorrencia__codigo',
         'tipo_ocorrencia__descricao'
     ).annotate(
-        total=Count('id'),
-        media_ocorrencias=Count('quantidade_ocorrencias') / Count('id')
+        total=Count('id')
     ).order_by('-total')[:5]
 
     # Filtros adicionais
@@ -1573,10 +1576,18 @@ def alertas_limites_dashboard(request):
     tipo_filtro = request.GET.get('tipo')
 
     if turma_filtro:
-        alertas_mes = alertas_mes.filter(estudante__turma_id=turma_filtro)
+        try:
+            alertas_mes = alertas_mes.filter(estudante__turma_id=int(turma_filtro))
+            print(f"DEBUG: Filtrado por turma {turma_filtro}: {alertas_mes.count()} alertas")
+        except (ValueError, TypeError):
+            pass
 
     if tipo_filtro:
-        alertas_mes = alertas_mes.filter(tipo_ocorrencia_id=tipo_filtro)
+        try:
+            alertas_mes = alertas_mes.filter(tipo_ocorrencia_id=int(tipo_filtro))
+            print(f"DEBUG: Filtrado por tipo {tipo_filtro}: {alertas_mes.count()} alertas")
+        except (ValueError, TypeError):
+            pass
 
     # Paginação
     paginator = Paginator(alertas_mes, 20)
