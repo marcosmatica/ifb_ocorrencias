@@ -1,0 +1,78 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Registrar Parecer {{ tipo }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Parecer {{ tipo }} - Ocorrência #{{ ocorrencia.id }}</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if parecer_existente and tipo == 'FINAL' %}
+                <div class="alert alert-info mb-4">
+                    <strong>Seu parecer semifinal:</strong> {{ parecer_existente.get_decisao_display }}
+                </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label class="form-label">Decisão *</label>
+                    <select name="decisao" class="form-control" required>
+                        <option value="">Selecione...</option>
+                        {% for value, label in decisoes %}
+                        <option value="{{ value }}" {% if parecer_existente and parecer_existente.decisao == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Justificativa *</label>
+                    <textarea name="justificativa" class="form-control" rows="6" required>{% if parecer_existente %}{{ parecer_existente.justificativa }}{% endif %}</textarea>
+                    <div class="form-help">Fundamente sua decisão com base nos fatos e no regulamento.</div>
+                </div>
+                
+                {% if tipo == 'FINAL' and parecer_existente %}
+                <div class="form-group" id="justificativa-mudanca-group" style="display: none;">
+                    <label class="form-label">Justificativa da Mudança</label>
+                    <textarea name="justificativa_mudanca" class="form-control" rows="3"></textarea>
+                    <div class="form-help">Obrigatório se alterar o voto.</div>
+                </div>
+                {% endif %}
+                
+                <div class="flex gap-2 mt-4">
+                    <a href="{% url 'core:parecer_painel' ocorrencia.pk %}" class="btn btn-outline">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if parecer_existente %}Atualizar{% else %}Registrar{% endif %} Parecer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const decisaoSelect = document.querySelector('select[name="decisao"]');
+    const justificativaMudanca = document.getElementById('justificativa-mudanca-group');
+    
+    {% if tipo == 'FINAL' and parecer_existente %}
+    const decisaoOriginal = "{{ parecer_existente.decisao }}";
+    
+    decisaoSelect.addEventListener('change', function() {
+        if (this.value && this.value !== decisaoOriginal) {
+            justificativaMudanca.style.display = 'block';
+            justificativaMudanca.querySelector('textarea').required = true;
+        } else {
+            justificativaMudanca.style.display = 'none';
+            justificativaMudanca.querySelector('textarea').required = false;
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}

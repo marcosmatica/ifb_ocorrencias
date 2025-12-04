@@ -73,6 +73,10 @@ urlpatterns = [
         template_name='registration/password_reset_complete.html'
     ), name='password_reset_complete_simple'),
 
+    # Adicionar nas urlpatterns
+    path('ocorrencias/<int:pk>/pareceres/', views.parecer_painel, name='parecer_painel'),
+    path('ocorrencias/<int:pk>/pareceres/<str:tipo>/registrar/', views.parecer_registrar, name='parecer_registrar'),
+
     # Notificações (mantenha as existentes)
     path('notificacoes/', views.notificacoes_list, name='notificacoes_list'),
     path('notificacoes/<int:pk>/marcar-lida/', views.notificacao_marcar_lida, name='notificacao_marcar_lida'),

@@ -843,6 +843,41 @@ class AlertaLimiteOcorrenciaRapida(models.Model):
         return f"Alerta: {self.estudante.nome} - {self.tipo_ocorrencia.codigo} ({self.quantidade_ocorrencias}x)"
 
 
+class ParecerMembro(models.Model):
+    TIPO_CHOICES = [
+        ('SEMIFINAL', 'Parecer Semifinal'),
+        ('FINAL', 'Parecer Final'),
+    ]
+
+    DECISAO_CHOICES = [
+        ('ARQUIVAR', 'Arquivar'),
+        ('ADVERTENCIA_VERBAL', 'Advertência Verbal'),
+        ('ADVERTENCIA_ESCRITA', 'Advertência Escrita'),
+        ('SUSPENSAO', 'Suspensão'),
+        ('OUTRAS_MEDIDAS', 'Outras Medidas'),
+    ]
+
+    ocorrencia = models.ForeignKey(Ocorrencia, on_delete=models.CASCADE, related_name='pareceres')
+    membro = models.ForeignKey(Servidor, on_delete=models.CASCADE, related_name='pareceres_dados')
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
+    decisao = models.CharField(max_length=30, choices=DECISAO_CHOICES)
+    justificativa = models.TextField()
+    data_registro = models.DateTimeField(auto_now_add=True)
+    mudou_voto = models.BooleanField(default=False)
+    justificativa_mudanca = models.TextField(blank=True)
+
+    class Meta:
+        unique_together = ['ocorrencia', 'membro', 'tipo']
+        ordering = ['-data_registro']
+
+    def __str__(self):
+        return f"{self.membro.nome} - {self.tipo} - {self.ocorrencia.id}"
+
+
+# Adicionar no final
+auditlog.register(ParecerMembro)
+
+
 # ====================
 # REGISTRO NO AUDITLOG
 # ====================

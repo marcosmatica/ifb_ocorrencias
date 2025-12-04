@@ -1,0 +1,235 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Painel de Pareceres - #{{ ocorrencia.id }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1200px;">
+    <div class="mb-4">
+        <a href="{% url 'core:ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline btn-sm">
+            ← Voltar para Ocorrência
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="card-title">Painel de Pareceres - Ocorrência #{{ ocorrencia.id }}</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid-2 mb-4">
+                <div>
+                    <strong>Membros da Comissão:</strong> {{ total_membros }}
+                </div>
+                <div>
+                    <strong>Status:</strong>
+                    {% if finais_completos %}
+                        <span class="badge bg-success">Pareceres Finalizados</span>
+                    {% elif semifinais_completos %}
+                        <span class="badge bg-warning">Aguardando Finais</span>
+                    {% else %}
+                        <span class="badge bg-info">Em Votação</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pareceres Semifinais -->
+    <div class="card mb-4">
+        <div class="card-header flex-between">
+            <h3 class="card-title">Pareceres Semifinais ({{ pareceres_semifinal.count }}/{{ total_membros }})</h3>
+            {% if not meu_parecer_semifinal %}
+            <a href="{% url 'core:parecer_registrar' ocorrencia.pk 'SEMIFINAL' %}" class="btn btn-primary btn-sm">
+                Registrar Meu Parecer
+            </a>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if meu_parecer_semifinal %}
+            <div class="alert alert-info mb-4">
+                <strong>Meu Parecer:</strong> {{ meu_parecer_semifinal.get_decisao_display }}
+                <a href="{% url 'core:parecer_registrar' ocorrencia.pk 'SEMIFINAL' %}" class="btn btn-outline btn-sm float-right">
+                    Editar
+                </a>
+            </div>
+            {% endif %}
+
+            <div class="parecer-stats">
+                {% for stat in stats_semifinal %}
+                <div class="parecer-card">
+                    <div class="parecer-decisao">{{ stat.decisao|upper }}</div>
+                    <div class="parecer-votos">{{ stat.total }} voto{{ stat.total|pluralize }}</div>
+                    <div class="parecer-progresso">
+                        <div class="parecer-barra" style="width: {{ stat.total|multiply:100|divide:total_membros }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if semifinais_completos %}
+            <div class="mt-4">
+                <h4 class="mb-3">Justificativas Anônimas</h4>
+                <div class="justificativas-grid">
+                    {% for parecer in pareceres_semifinal %}
+                    <div class="justificativa-card">
+                        <div class="justificativa-decisao">
+                            <span class="badge badge-primary">{{ parecer.get_decisao_display }}</span>
+                        </div>
+                        <p class="justificativa-texto">{{ parecer.justificativa }}</p>
+                        <small class="text-muted">{{ parecer.data_registro|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pareceres Finais -->
+    {% if semifinais_completos %}
+    <div class="card">
+        <div class="card-header flex-between">
+            <h3 class="card-title">Pareceres Finais ({{ pareceres_final.count }}/{{ total_membros }})</h3>
+            {% if not meu_parecer_final %}
+            <a href="{% url 'core:parecer_registrar' ocorrencia.pk 'FINAL' %}" class="btn btn-primary btn-sm">
+                Confirmar Parecer Final
+            </a>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if meu_parecer_final %}
+            <div class="alert alert-success mb-4">
+                <strong>Meu Parecer Final:</strong> {{ meu_parecer_final.get_decisao_display }}
+                {% if meu_parecer_final.mudou_voto %}
+                <span class="badge bg-warning ml-2">Voto Alterado</span>
+                {% endif %}
+                <a href="{% url 'core:parecer_registrar' ocorrencia.pk 'FINAL' %}" class="btn btn-outline btn-sm float-right">
+                    Revisar
+                </a>
+            </div>
+            {% endif %}
+
+            <div class="parecer-stats">
+                {% for stat in stats_final %}
+                <div class="parecer-card">
+                    <div class="parecer-decisao">{{ stat.decisao|upper }}</div>
+                    <div class="parecer-votos">{{ stat.total }} voto{{ stat.total|pluralize }}</div>
+                    <div class="parecer-progresso">
+                        <div class="parecer-barra final" style="width: {{ stat.total|multiply:100|divide:total_membros }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if finais_completos %}
+            <div class="mt-4">
+                <h4 class="mb-3">Justificativas Finais</h4>
+                <div class="justificativas-grid">
+                    {% for parecer in pareceres_final %}
+                    <div class="justificativa-card">
+                        <div class="justificativa-decisao">
+                            <span class="badge badge-success">{{ parecer.get_decisao_display }}</span>
+                            {% if parecer.mudou_voto %}
+                            <span class="badge bg-warning ml-2">Alterou Voto</span>
+                            {% endif %}
+                        </div>
+                        <p class="justificativa-texto">{{ parecer.justificativa }}</p>
+                        {% if parecer.mudou_voto and parecer.justificativa_mudanca %}
+                        <div class="mudanca-voto">
+                            <strong>Justificativa da mudança:</strong>
+                            <p>{{ parecer.justificativa_mudanca }}</p>
+                        </div>
+                        {% endif %}
+                        <small class="text-muted">{{ parecer.data_registro|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.parecer-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.parecer-card {
+    padding: 1rem;
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    border: 2px solid var(--gray-200);
+}
+
+.parecer-decisao {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.parecer-votos {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ifb-verde);
+    margin-bottom: 0.5rem;
+}
+
+.parecer-progresso {
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.parecer-barra {
+    height: 100%;
+    background: var(--ifb-verde);
+    transition: width 0.3s;
+}
+
+.parecer-barra.final {
+    background: #10b981;
+}
+
+.justificativas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.justificativa-card {
+    padding: 1rem;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+}
+
+.justificativa-decisao {
+    margin-bottom: 0.75rem;
+}
+
+.justificativa-texto {
+    color: var(--gray-700);
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.mudanca-voto {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-200);
+    font-size: 0.875rem;
+}
+
+.mudanca-voto p {
+    color: var(--gray-600);
+    margin-top: 0.5rem;
+}
+</style>
+{% endblock %}

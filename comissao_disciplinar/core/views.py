@@ -1652,3 +1652,109 @@ def alertas_limites_dashboard(request):
     }
 
     return render(request, 'core/alertas_limites_dashboard.html', context)
+
+
+@login_required
+@user_passes_test(is_comissao)
+def parecer_painel(request, pk):
+    ocorrencia = get_object_or_404(Ocorrencia, pk=pk)
+    servidor = request.user.servidor
+
+    # Verificar se é membro da comissão desta ocorrência
+    if not ocorrencia.comissao or servidor not in ocorrencia.comissao.membros.all():
+        messages.error(request, 'Você não é membro desta comissão.')
+        return redirect('core:ocorrencia_detail', pk=pk)
+
+    # Pareceres semifinais
+    pareceres_semifinal = ocorrencia.pareceres.filter(tipo='SEMIFINAL')
+    total_membros = ocorrencia.comissao.membros.count()
+    semifinais_completos = pareceres_semifinal.count() == total_membros
+
+    # Pareceres finais
+    pareceres_final = ocorrencia.pareceres.filter(tipo='FINAL')
+    finais_completos = pareceres_final.count() == total_membros
+
+    # Meu parecer
+    meu_parecer_semifinal = pareceres_semifinal.filter(membro=servidor).first()
+    meu_parecer_final = pareceres_final.filter(membro=servidor).first()
+
+    # Estatísticas anônimas
+    stats_semifinal = pareceres_semifinal.values('decisao').annotate(total=Count('id'))
+    stats_final = pareceres_final.values('decisao').annotate(total=Count('id'))
+
+    context = {
+        'ocorrencia': ocorrencia,
+        'total_membros': total_membros,
+        'semifinais_completos': semifinais_completos,
+        'finais_completos': finais_completos,
+        'meu_parecer_semifinal': meu_parecer_semifinal,
+        'meu_parecer_final': meu_parecer_final,
+        'stats_semifinal': stats_semifinal,
+        'stats_final': stats_final,
+        'pareceres_semifinal': pareceres_semifinal,
+        'pareceres_final': pareceres_final,
+    }
+
+    return render(request, 'core/parecer_painel.html', context)
+
+
+@login_required
+@user_passes_test(is_comissao)
+def parecer_registrar(request, pk, tipo):
+    ocorrencia = get_object_or_404(Ocorrencia, pk=pk)
+    servidor = request.user.servidor
+
+    if not ocorrencia.comissao or servidor not in ocorrencia.comissao.membros.all():
+        messages.error(request, 'Acesso negado.')
+        return redirect('core:ocorrencia_detail', pk=pk)
+
+    # Verificar se pode registrar final (precisa ter semifinal)
+    if tipo == 'FINAL':
+        if not ocorrencia.pareceres.filter(membro=servidor, tipo='SEMIFINAL').exists():
+            messages.error(request, 'Registre primeiro o parecer semifinal.')
+            return redirect('core:parecer_painel', pk=pk)
+
+        # Verificar se todos semifinais foram dados
+        total_membros = ocorrencia.comissao.membros.count()
+        semifinais = ocorrencia.pareceres.filter(tipo='SEMIFINAL').count()
+        if semifinais < total_membros:
+            messages.error(request, 'Aguarde todos os pareceres semifinais.')
+            return redirect('core:parecer_painel', pk=pk)
+
+    parecer_existente = ocorrencia.pareceres.filter(membro=servidor, tipo=tipo).first()
+
+    if request.method == 'POST':
+        decisao = request.POST.get('decisao')
+        justificativa = request.POST.get('justificativa')
+
+        if parecer_existente:
+            # Atualizar
+            mudou = parecer_existente.decisao != decisao
+            parecer_existente.decisao = decisao
+            parecer_existente.justificativa = justificativa
+            parecer_existente.mudou_voto = mudou
+            if mudou:
+                parecer_existente.justificativa_mudanca = request.POST.get('justificativa_mudanca', '')
+            parecer_existente.save()
+            messages.success(request, 'Parecer atualizado.')
+        else:
+            # Criar novo
+            ParecerMembro.objects.create(
+                ocorrencia=ocorrencia,
+                membro=servidor,
+                tipo=tipo,
+                decisao=decisao,
+                justificativa=justificativa
+            )
+            messages.success(request, 'Parecer registrado.')
+
+        return redirect('core:parecer_painel', pk=pk)
+
+    context = {
+        'ocorrencia': ocorrencia,
+        'tipo': tipo,
+        'parecer_existente': parecer_existente,
+        'decisoes': ParecerMembro.DECISAO_CHOICES,
+    }
+
+    return render(request, 'core/parecer_form.html', context)
