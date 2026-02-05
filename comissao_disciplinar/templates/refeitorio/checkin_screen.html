@@ -1,0 +1,50 @@
+{% extends 'refeitorio/base_kiosk.html' %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen">
+    <div class="text-center mb-8 text-white">
+        <h1 class="text-5xl font-bold mb-4">Refeitório IFB</h1>
+        <p class="text-2xl">Aproxime seu cartão do leitor</p>
+        <p class="text-lg mt-2 opacity-80">{{ horario_atual|time:"H:i" }}</p>
+    </div>
+    
+    <form 
+        hx-post="{% url 'refeitorio:validar_checkin' %}" 
+        hx-target="#resultado" 
+        hx-swap="innerHTML"
+        hx-on::after-request="this.reset(); document.getElementById('barcode-input').focus();"
+        class="w-full max-w-md">
+        {% csrf_token %}
+        <input 
+            type="text" 
+            id="barcode-input" 
+            name="barcode" 
+            autofocus 
+            autocomplete="off"
+            class="opacity-0 absolute">
+    </form>
+    
+    <div id="resultado" class="w-full max-w-2xl">
+        <div class="bg-white bg-opacity-20 p-12 rounded-2xl text-center text-white">
+            <svg class="w-24 h-24 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+            </svg>
+            <p class="text-2xl">Aguardando leitura...</p>
+        </div>
+    </div>
+    
+    <!-- Horários disponíveis -->
+    <div class="mt-8 text-white text-center">
+        <p class="text-sm opacity-75 mb-2">Horários de atendimento:</p>
+        <div class="flex gap-4 flex-wrap justify-center">
+            {% for config in configs_ativas %}
+            <div class="bg-white bg-opacity-10 px-4 py-2 rounded">
+                <strong>{{ config.get_nome_display }}</strong>
+                <br>
+                {{ config.horario_inicio|time:"H:i" }} - {{ config.horario_fim|time:"H:i" }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

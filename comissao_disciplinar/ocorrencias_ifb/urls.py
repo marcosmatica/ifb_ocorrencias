@@ -11,6 +11,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('napne/', include('napne.urls')),
     path('projetos/', include('projetos.urls', namespace='projetos')),
+    path('refeitorio/', include('refeitorio.urls')),
 ]
 
 if settings.DEBUG:

@@ -1,0 +1,19 @@
+<div class="bg-green-500 p-12 rounded-2xl text-center text-white shadow-2xl animate-pulse">
+    <svg class="w-32 h-32 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <h2 class="text-4xl font-bold mb-4">BEM-VINDO(A)!</h2>
+    <p class="text-3xl mb-2">{{ nome }}</p>
+    <p class="text-xl">{{ tipo_refeicao }} - {{ horario }}</p>
+</div>
+
+<script>
+    setTimeout(() => {
+        document.getElementById('resultado').innerHTML = `
+            <div class="bg-white bg-opacity-20 p-12 rounded-2xl text-center text-white">
+                <p class="text-2xl">Aguardando leitura...</p>
+            </div>
+        `;
+    }, 3000);
+    playSound('success');
+</script>

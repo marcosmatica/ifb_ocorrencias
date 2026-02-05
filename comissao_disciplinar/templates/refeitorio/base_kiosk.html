@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refeitório IFB</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #006633 0%, #00994d 100%);
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    {% block content %}{% endblock %}
+
+    <script>
+        // Mantém foco no input do leitor
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('barcode-input');
+            if (input) {
+                input.focus();
+                document.addEventListener('click', () => input.focus());
+            }
+        });
+
+        // Som de feedback (opcional)
+        function playSound(type) {
+            const audio = new Audio(`{% static 'refeitorio/sounds/' %}${type}.mp3`);
+            audio.play().catch(e => console.log('Áudio não disponível'));
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

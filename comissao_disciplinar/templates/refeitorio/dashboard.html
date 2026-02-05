@@ -1,0 +1,186 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Refeitório{% endblock %}
+
+{% block content %}
+<div class="page-header mb-5">
+    <div>
+        <h1 class="page-title">Dashboard do Refeitório</h1>
+        <p class="page-subtitle">Controle de acesso e estatísticas</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="{% url 'refeitorio:relatorio' %}" class="btn btn-outline">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+            </svg>
+            Relatórios
+        </a>
+        <a href="{% url 'refeitorio:bloqueios' %}" class="btn btn-outline">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+            </svg>
+            Bloqueios
+        </a>
+        <a href="{% url 'refeitorio:checkin_screen' %}" class="btn btn-primary" target="_blank">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            Abrir Totem
+        </a>
+    </div>
+</div>
+
+<!-- Stats do Dia -->
+<div class="stats-grid mb-5">
+    <div class="stat-card">
+        <div class="stat-label">Total Hoje</div>
+        <div class="stat-value" id="total-hoje">{{ total_hoje }}</div>
+        <div class="stat-change">Refeições servidas</div>
+    </div>
+    
+    <div class="stat-card" style="border-left-color: #3b82f6;">
+        <div class="stat-label">Estudantes</div>
+        <div class="stat-value" id="estudantes-hoje">{{ estudantes_hoje }}</div>
+        <div class="stat-change">Do total de hoje</div>
+    </div>
+    
+    <div class="stat-card" style="border-left-color: #8b5cf6;">
+        <div class="stat-label">Servidores</div>
+        <div class="stat-value" id="servidores-hoje">{{ servidores_hoje }}</div>
+        <div class="stat-change">Do total de hoje</div>
+    </div>
+    
+    <div class="stat-card" style="border-left-color: #10b981;">
+        <div class="stat-label">Configurações Ativas</div>
+        <div class="stat-value">{{ configs.count }}</div>
+        <div class="stat-change">Horários disponíveis</div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="grid grid-2 mb-5">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Por Tipo de Refeição</h2>
+        </div>
+        <div class="card-body">
+            {% if por_tipo %}
+            <canvas id="tipoChart" style="max-height: 300px;"></canvas>
+            {% else %}
+            <div class="empty-state">
+                <p>Nenhuma refeição registrada hoje</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Horários Configurados</h2>
+        </div>
+        <div class="card-body">
+            <div class="space-y-3">
+                {% for config in configs %}
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <div>
+                        <strong>{{ config.get_nome_display }}</strong>
+                        <span class="text-sm text-gray-600 ml-2">
+                            {{ config.horario_inicio|time:"H:i" }} - {{ config.horario_fim|time:"H:i" }}
+                        </span>
+                    </div>
+                    <span class="badge badge-finalizada">
+                        {{ config.intervalo_minimo_horas }}h intervalo
+                    </span>
+                </div>
+                {% empty %}
+                <p class="text-gray-500">Nenhuma configuração ativa</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Últimos Registros -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Últimos Registros (Hoje)</h2>
+        <p class="text-sm text-gray-600">Atualização automática a cada 30s</p>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Horário</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Refeição</th>
+                    <th>Matrícula/SIAPE</th>
+                </tr>
+            </thead>
+            <tbody id="registros-tbody">
+                {% for registro in ultimos_registros %}
+                <tr>
+                    <td class="whitespace-nowrap">{{ registro.data_hora|time:"H:i:s" }}</td>
+                    <td>{{ registro.pessoa.nome|truncatewords:3 }}</td>
+                    <td>
+                        <span class="badge {% if registro.estudante %}badge-analise{% else %}badge-registrada{% endif %}">
+                            {{ registro.tipo_pessoa }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-finalizada">
+                            {{ registro.get_tipo_refeicao_display|default:registro.tipo_refeicao }}
+                        </span>
+                    </td>
+                    <td class="text-gray-600 text-sm">
+                        {{ registro.codigo_barras_usado }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-gray-500">
+                        Nenhum registro hoje
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'refeitorio/js/dashboard.js' %}"></script>
+{% if por_tipo %}
+<script>
+const tipoCtx = document.getElementById('tipoChart');
+new Chart(tipoCtx, {
+    type: 'bar',
+    data: {
+        labels: [
+            {% for item in por_tipo %}
+                '{{ item.tipo_refeicao }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Quantidade',
+            data: [
+                {% for item in por_tipo %}
+                    {{ item.total }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(0, 102, 51, 0.8)',
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: { y: { beginAtZero: true } },
+        plugins: { legend: { display: false } }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,58 @@
+/* Kiosk Mode - Fullscreen sem distrações */
+body.kiosk-mode {
+    cursor: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Animações de feedback */
+@keyframes pulseSuccess {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes pulseError {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.1) rotate(-5deg); }
+    75% { transform: scale(1.1) rotate(5deg); }
+}
+
+.animate-pulse-success {
+    animation: pulseSuccess 0.5s ease-in-out;
+}
+
+.animate-pulse-error {
+    animation: pulseError 0.5s ease-in-out;
+}
+
+/* Esconder scrollbars no kiosk */
+.kiosk-mode::-webkit-scrollbar {
+    display: none;
+}
+
+/* Indicador de leitura ativa */
+.reading-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 20px;
+    height: 20px;
+    background: rgba(16, 185, 129, 0.8);
+    border-radius: 50%;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Prevenção de seleção de texto */
+.no-select {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}

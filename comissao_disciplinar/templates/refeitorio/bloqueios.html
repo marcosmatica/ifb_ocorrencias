@@ -1,0 +1,66 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Bloqueios - Refeitório{% endblock %}
+
+{% block content %}
+<div class="page-header mb-5">
+    <h1 class="page-title">Gerenciar Bloqueios</h1>
+    <a href="{% url 'refeitorio:dashboard' %}" class="btn btn-outline">Voltar</a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Bloqueios Ativos e Histórico</h2>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Pessoa</th>
+                    <th>Tipo</th>
+                    <th>Motivo</th>
+                    <th>Início</th>
+                    <th>Fim</th>
+                    <th>Status</th>
+                    <th>Criado Por</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bloqueio in bloqueios %}
+                <tr>
+                    <td>{{ bloqueio.estudante.nome|default:bloqueio.servidor.nome }}</td>
+                    <td>
+                        <span class="badge {% if bloqueio.estudante %}badge-analise{% else %}badge-registrada{% endif %}">
+                            {% if bloqueio.estudante %}Estudante{% else %}Servidor{% endif %}
+                        </span>
+                    </td>
+                    <td>{{ bloqueio.motivo|truncatewords:8 }}</td>
+                    <td>{{ bloqueio.data_inicio|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if bloqueio.data_fim %}
+                            {{ bloqueio.data_fim|date:"d/m/Y" }}
+                        {% else %}
+                            <span class="text-gray-500">Permanente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if bloqueio.esta_ativo %}
+                            <span class="badge badge-grave">Ativo</span>
+                        {% else %}
+                            <span class="badge badge-arquivada">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-sm text-gray-600">{{ bloqueio.criado_por.nome }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-gray-500">
+                        Nenhum bloqueio registrado
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

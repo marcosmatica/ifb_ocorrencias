@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'atendimentos',
     'napne',
     'projetos',
+    'refeitorio',
 ]
 
 MIDDLEWARE = [

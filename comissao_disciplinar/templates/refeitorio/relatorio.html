@@ -1,0 +1,122 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Relatórios - Refeitório{% endblock %}
+
+{% block content %}
+<div class="page-header mb-5">
+    <h1 class="page-title">Relatórios do Refeitório</h1>
+    <a href="{% url 'refeitorio:dashboard' %}" class="btn btn-outline">Voltar</a>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-5">
+    <div class="card-header">
+        <h2 class="card-title">Selecionar Período</h2>
+    </div>
+    <div class="card-body">
+        <form method="get" class="flex gap-3 items-end flex-wrap">
+            <div class="form-group">
+                <label class="form-label">Data Início</label>
+                <input type="date" name="data_inicio" class="form-control" 
+                       value="{{ data_inicio }}" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Data Fim</label>
+                <input type="date" name="data_fim" class="form-control" 
+                       value="{{ data_fim }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                </svg>
+                Gerar Relatório
+            </button>
+        </form>
+    </div>
+</div>
+
+{% if total %}
+<!-- Resultado -->
+<div class="stats-grid mb-5">
+    <div class="stat-card">
+        <div class="stat-label">Total no Período</div>
+        <div class="stat-value">{{ total }}</div>
+    </div>
+    <div class="stat-card" style="border-left-color: #3b82f6;">
+        <div class="stat-label">Média por Dia</div>
+        <div class="stat-value">{{ total|floatformat:0|div:por_dia|length|default:1 }}</div>
+    </div>
+</div>
+
+<!-- Gráfico por Dia -->
+<div class="card mb-5">
+    <div class="card-header">
+        <h2 class="card-title">Evolução Diária</h2>
+    </div>
+    <div class="card-body">
+        <canvas id="evolucaoChart" style="max-height: 300px;"></canvas>
+    </div>
+</div>
+
+<!-- Tabela Detalhada -->
+<div class="card">
+    <div class="card-header flex-between">
+        <h2 class="card-title">Registros Detalhados</h2>
+        <button onclick="window.print()" class="btn btn-outline btn-sm">
+            Imprimir
+        </button>
+    </div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Data/Hora</th>
+                    <th>Nome</th>
+                    <th>Tipo Pessoa</th>
+                    <th>Refeição</th>
+                    <th>Código</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg in registros %}
+                <tr>
+                    <td>{{ reg.data_hora|date:"d/m/Y H:i" }}</td>
+                    <td>{{ reg.pessoa.nome }}</td>
+                    <td>
+                        <span class="badge {% if reg.estudante %}badge-analise{% else %}badge-registrada{% endif %}">
+                            {{ reg.tipo_pessoa }}
+                        </span>
+                    </td>
+                    <td>{{ reg.tipo_refeicao }}</td>
+                    <td class="text-sm text-gray-600">{{ reg.codigo_barras_usado }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+const ctx = document.getElementById('evolucaoChart');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [{% for d in por_dia %}'{{ d.dia|date:"d/m" }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Refeições',
+            data: [{% for d in por_dia %}{{ d.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            borderColor: 'rgb(0, 102, 51)',
+            backgroundColor: 'rgba(0, 102, 51, 0.1)',
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
