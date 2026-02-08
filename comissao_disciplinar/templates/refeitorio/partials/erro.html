@@ -1,19 +1,83 @@
-<div class="bg-red-500 p-12 rounded-2xl text-center text-white shadow-2xl">
-    <svg class="w-32 h-32 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-    <h2 class="text-4xl font-bold mb-4">{{ mensagem }}</h2>
-    {% if nome %}<p class="text-2xl mb-4">{{ nome }}</p>{% endif %}
-    <p class="text-xl">{{ detalhes }}</p>
+<div class="resultado-erro">
+    <div class="error-card">
+        <!-- Ícone de Erro Animado -->
+        <div class="error-icon-container">
+            <svg class="error-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="error-circle"></div>
+        </div>
+
+        <!-- Mensagem de Erro -->
+        <h2 class="error-titulo">{{ mensagem }}</h2>
+
+        <!-- Card da Pessoa (se disponível) -->
+        {% if nome %}
+        <div class="pessoa-card-erro">
+            {% if foto_url or iniciais %}
+            <div class="foto-container-kiosk-small" data-iniciais="{{ iniciais }}">
+                {% if foto_url %}
+                    <img src="{{ foto_url }}" 
+                         alt="{{ nome }}" 
+                         class="foto-pessoa"
+                         referrerpolicy="no-referrer"
+                         onerror="mostrarIniciaisKiosk(this)">
+                {% else %}
+                    <div class="foto-placeholder-kiosk">{{ iniciais }}</div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <div class="pessoa-nome-erro">{{ nome }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Detalhes do Erro -->
+        <div class="error-detalhes">
+            <svg class="icon-info" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <p>{{ detalhes }}</p>
+        </div>
+
+        <!-- Instruções -->
+        <div class="error-instrucoes">
+            <p>Por favor, procure a administração do refeitório</p>
+        </div>
+    </div>
 </div>
 
 <script>
-    setTimeout(() => {
-        document.getElementById('resultado').innerHTML = `
-            <div class="bg-white bg-opacity-20 p-12 rounded-2xl text-center text-white">
-                <p class="text-2xl">Aguardando leitura...</p>
+// Função para mostrar iniciais quando imagem falha
+function mostrarIniciaisKiosk(img) {
+    const container = img.parentElement;
+    const iniciais = container.getAttribute('data-iniciais') || '?';
+    container.innerHTML = `<div class="foto-placeholder-kiosk">${iniciais}</div>`;
+}
+
+// Resetar para estado inicial após 5 segundos
+setTimeout(() => {
+    document.getElementById('resultado').innerHTML = `
+        <div class="card-aguardando">
+            <div class="scan-animation">
+                <div class="scan-line"></div>
+                <svg class="icon-card" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+                    <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/>
+                </svg>
             </div>
-        `;
-    }, 4000);
+            <p class="texto-aguardando">Aguardando leitura do cartão...</p>
+            <div class="pulse-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    `;
+}, 5000);
+
+// Tocar som de erro (se disponível)
+if (typeof playSound === 'function') {
     playSound('error');
+}
 </script>

@@ -7,7 +7,9 @@ from django.contrib import messages
 from datetime import timedelta, datetime
 from .models import RegistroRefeicao, ConfigRefeitorio, BloqueioAcesso
 from core.models import Estudante, Servidor
+import logging
 
+logger = logging.getLogger(__name__)
 
 def is_servidor(user):
     return hasattr(user, 'servidor')
@@ -20,7 +22,7 @@ def checkin_screen(request):
 
     context = {
         'configs_ativas': configs_ativas,
-        'horario_atual': timezone.now().time(),
+        'horario_atual': timezone.localtime(timezone.now()).time(),
     }
 
     return render(request, 'refeitorio/checkin_screen.html', context)
@@ -39,9 +41,24 @@ def validar_checkin(request):
             'detalhes': 'Aproxime novamente o cartão do leitor'
         })
 
+    # Limpar formatação de CPF (remover . e -)
+    barcode_clean = barcode.replace('.', '').replace('-', '').replace('/', '')
+
     # 1. Buscar pessoa (estudante ou servidor)
-    estudante = Estudante.objects.filter(matricula_sga=barcode).first()
-    servidor = Servidor.objects.filter(siape=barcode).first()
+    # Busca por matrícula, SIAPE ou CPF
+    estudante = Estudante.objects.filter(
+        Q(matricula_sga=barcode) |
+        Q(matricula_sga=barcode_clean) |
+        Q(cpf=barcode) |
+        Q(cpf=barcode_clean)
+    ).first()
+
+    servidor = Servidor.objects.filter(
+        Q(siape=barcode) |
+        Q(siape=barcode_clean) |
+        Q(cpf=barcode) |
+        Q(cpf=barcode_clean)
+    ).first()
 
     if not estudante and not servidor:
         return render(request, 'refeitorio/partials/erro.html', {
@@ -62,11 +79,14 @@ def validar_checkin(request):
         return render(request, 'refeitorio/partials/erro.html', {
             'mensagem': 'ACESSO BLOQUEADO',
             'detalhes': bloqueio.motivo,
-            'nome': pessoa.nome
+            'nome': pessoa.nome,
+            'foto_url': pessoa.get_foto_url_proxy() if estudante else None,
+            'iniciais': pessoa.get_iniciais() if estudante else None,
         })
 
     # 3. Determinar tipo de refeição atual
     agora = timezone.now()
+    logger.info(f"Horário atual: {agora} | Timezone: {settings.TIME_ZONE}")
     config_atual = ConfigRefeitorio.objects.filter(
         ativo=True,
         horario_inicio__lte=agora.time(),
@@ -77,7 +97,9 @@ def validar_checkin(request):
         return render(request, 'refeitorio/partials/erro.html', {
             'mensagem': 'Fora do horário',
             'detalhes': 'Não há refeição disponível neste momento',
-            'nome': pessoa.nome
+            'nome': pessoa.nome,
+            'foto_url': pessoa.get_foto_url_proxy() if estudante else None,
+            'iniciais': pessoa.get_iniciais() if estudante else None,
         })
 
     # 4. Verificar se já comeu (mesmo tipo de refeição)
@@ -93,7 +115,9 @@ def validar_checkin(request):
         return render(request, 'refeitorio/partials/erro.html', {
             'mensagem': 'Já realizou esta refeição',
             'detalhes': f'{config_atual.get_nome_display()} já registrado',
-            'nome': pessoa.nome
+            'nome': pessoa.nome,
+            'foto_url': pessoa.get_foto_url_proxy() if estudante else None,
+            'iniciais': pessoa.get_iniciais() if estudante else None,
         })
 
     # 5. Registrar acesso
@@ -104,11 +128,33 @@ def validar_checkin(request):
         ip_acesso=request.META.get('REMOTE_ADDR')
     )
 
-    return render(request, 'refeitorio/partials/sucesso.html', {
+    # Contexto para sucesso
+    context = {
         'nome': pessoa.nome,
         'tipo_refeicao': config_atual.get_nome_display(),
-        'horario': agora.strftime('%H:%M')
-    })
+        'horario': agora.strftime('%H:%M'),
+        'is_estudante': bool(estudante),
+        'is_servidor': bool(servidor),
+    }
+
+    # Dados específicos de estudante
+    if estudante:
+        context.update({
+            'foto_url': estudante.get_foto_url_proxy(),
+            'iniciais': estudante.get_iniciais(),
+            'matricula': estudante.matricula_sga,
+            'turma': estudante.turma.nome if estudante.turma else 'Sem turma',
+            'curso': estudante.turma.curso.nome if estudante.turma else '',
+        })
+
+    # Dados específicos de servidor
+    if servidor:
+        context.update({
+            'siape': servidor.siape,
+            'cargo': servidor.cargo if hasattr(servidor, 'cargo') else 'Servidor',
+        })
+
+    return render(request, 'refeitorio/partials/sucesso.html', context)
 
 
 # === DASHBOARD ADMINISTRATIVO ===
