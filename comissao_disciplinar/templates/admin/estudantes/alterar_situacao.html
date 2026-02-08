@@ -1,0 +1,141 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .form-row {
+            margin-bottom: 20px;
+        }
+        .estudantes-lista {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .estudante-item {
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .estudante-item:last-child {
+            border-bottom: none;
+        }
+        .situacao-badge {
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .situacao-ATIVO { background-color: #d4edda; color: #155724; }
+        .situacao-INATIVO { background-color: #e2e3e5; color: #383d41; }
+        .situacao-TRANCADO { background-color: #fff3cd; color: #856404; }
+        .situacao-EVADIDO { background-color: #f8d7da; color: #721c24; }
+        .situacao-FORMADO { background-color: #d1ecf1; color: #0c5460; }
+        .situacao-TRANSFERIDO { background-color: #e2d9f3; color: #5a2d82; }
+        
+        .nova-situacao-select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #417690;
+            border-radius: 5px;
+            background-color: white;
+        }
+        
+        .submit-row {
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            margin-top: 20px;
+        }
+        
+        .submit-row input[type="submit"] {
+            background-color: #417690;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .submit-row input[type="submit"]:hover {
+            background-color: #2e5a6f;
+        }
+        
+        .cancel-link {
+            margin-left: 15px;
+            color: #666;
+            text-decoration: none;
+        }
+        
+        .cancel-link:hover {
+            text-decoration: underline;
+        }
+        
+        .info-box {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #0c5460;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<h1>Alterar Situação de Múltiplos Estudantes</h1>
+
+<div class="info-box">
+    <strong>ℹ️ Informação:</strong> Você está prestes a alterar a situação de {{ estudantes.count }} estudante(s). 
+    Selecione a nova situação e clique em "Aplicar" para confirmar.
+</div>
+
+<form action="" method="post">
+    {% csrf_token %}
+    
+    <div class="form-row">
+        <h2>Estudantes Selecionados ({{ estudantes.count }})</h2>
+        <div class="estudantes-lista">
+            {% for estudante in estudantes %}
+                <div class="estudante-item">
+                    <span>
+                        <strong>{{ estudante.matricula_sga }}</strong> - {{ estudante.nome }}
+                    </span>
+                    <span class="situacao-badge situacao-{{ estudante.situacao }}">
+                        {{ estudante.get_situacao_display }}
+                    </span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <h2>Nova Situação</h2>
+        <select name="nova_situacao" required class="nova-situacao-select">
+            <option value="">-- Selecione uma situação --</option>
+            {% for value, label in situacao_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="submit-row">
+        <input type="submit" name="aplicar" value="✓ Aplicar Alteração" />
+        <a href="{% url opts.app_label|add:':'|add:opts.model_name|add:'_changelist' %}" class="cancel-link">Cancelar</a>
+    </div>
+    
+    <input type="hidden" name="action" value="alterar_situacao_personalizada">
+    {% for obj in queryset %}
+        <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk }}">
+    {% endfor %}
+</form>
+
+{% endblock %}

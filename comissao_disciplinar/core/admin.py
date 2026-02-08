@@ -1,11 +1,9 @@
 from django.contrib import admin
+from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.urls import path
 from .models import *
 from django.utils.html import format_html
-
-
-
-
-
 
 
 @admin.register(Servidor)
@@ -67,14 +65,14 @@ class OcorrenciaRapidaAdmin(admin.ModelAdmin):
         'data',
         'horario',
         'turma',
-        'listar_tipos',  # Novo método para listar os tipos
+        'listar_tipos',
         'quantidade_estudantes',
         'responsavel_registro'
     ]
     list_filter = [
         'data',
         'turma__curso__campus',
-        'tipos_rapidos'  # Agora filtra pelos tipos (ManyToMany)
+        'tipos_rapidos'
     ]
     search_fields = [
         'estudantes__nome',
@@ -84,9 +82,8 @@ class OcorrenciaRapidaAdmin(admin.ModelAdmin):
         'tipos_rapidos__descricao'
     ]
     date_hierarchy = 'data'
-    filter_horizontal = ['tipos_rapidos', 'estudantes']  # Adicionado para facilitar a seleção
+    filter_horizontal = ['tipos_rapidos', 'estudantes']
 
-    # Campos para exibição no formulário de edição
     fieldsets = (
         ('Informações Básicas', {
             'fields': ('data', 'horario', 'turma')
@@ -118,7 +115,6 @@ class OcorrenciaRapidaAdmin(admin.ModelAdmin):
         ).prefetch_related('estudantes', 'tipos_rapidos')
 
     def listar_tipos(self, obj):
-        """Lista os tipos de ocorrência rápida associados"""
         tipos = obj.tipos_rapidos.all()
         if tipos:
             return ", ".join([tipo.codigo for tipo in tipos])
@@ -127,7 +123,6 @@ class OcorrenciaRapidaAdmin(admin.ModelAdmin):
     listar_tipos.short_description = 'Tipos de Ocorrência'
 
     def quantidade_estudantes(self, obj):
-        """Mostra a quantidade de estudantes envolvidos"""
         count = obj.estudantes.count()
         return format_html(
             '<span style="font-weight: bold; color: {};">{}</span>',
@@ -138,19 +133,15 @@ class OcorrenciaRapidaAdmin(admin.ModelAdmin):
     quantidade_estudantes.short_description = 'Estudantes'
 
     def save_model(self, request, obj, form, change):
-        """Garante que o responsável pelo registro seja definido"""
         if not obj.responsavel_registro_id:
-            # Tenta encontrar um servidor associado ao usuário atual
             try:
                 servidor = Servidor.objects.get(user=request.user)
                 obj.responsavel_registro = servidor
             except Servidor.DoesNotExist:
-                # Se não encontrar, usa o primeiro servidor disponível (fallback)
                 primeiro_servidor = Servidor.objects.first()
                 if primeiro_servidor:
                     obj.responsavel_registro = primeiro_servidor
 
-        # Gera a descrição automaticamente se estiver vazia
         if not obj.descricao and obj.tipos_rapidos.exists():
             tipos_selecionados = obj.tipos_rapidos.all()
             descricoes = [tipo.descricao for tipo in tipos_selecionados]
@@ -158,11 +149,9 @@ class OcorrenciaRapidaAdmin(admin.ModelAdmin):
 
         super().save_model(request, obj, form, change)
 
-    # Ações personalizadas
     actions = ['gerar_recibos_termicos', 'duplicar_ocorrencias']
 
     def gerar_recibos_termicos(self, request, queryset):
-        """Ação para gerar recibos térmicos para ocorrências selecionadas"""
         from .utils import gerar_recibo_termico_ocorrencia_rapida
         from django.core.files.base import ContentFile
 
@@ -193,11 +182,9 @@ class OcorrenciaRapidaAdmin(admin.ModelAdmin):
     gerar_recibos_termicos.short_description = "🖨️ Gerar recibos térmicos para selecionados"
 
     def duplicar_ocorrencias(self, request, queryset):
-        """Duplica as ocorrências rápidas selecionadas"""
         count = 0
         for ocorrencia in queryset:
             try:
-                # Cria uma nova ocorrência com os mesmos dados
                 nova_ocorrencia = OcorrenciaRapida.objects.create(
                     data=ocorrencia.data,
                     horario=ocorrencia.horario,
@@ -206,7 +193,6 @@ class OcorrenciaRapidaAdmin(admin.ModelAdmin):
                     responsavel_registro=ocorrencia.responsavel_registro
                 )
 
-                # Copia os tipos e estudantes
                 nova_ocorrencia.tipos_rapidos.set(ocorrencia.tipos_rapidos.all())
                 nova_ocorrencia.estudantes.set(ocorrencia.estudantes.all())
 
@@ -214,250 +200,80 @@ class OcorrenciaRapidaAdmin(admin.ModelAdmin):
             except Exception as e:
                 self.message_user(request, f"Erro ao duplicar ocorrência #{ocorrencia.id}: {str(e)}", level='ERROR')
 
-        self.message_user(request, f'{count} ocorrências duplicadas com sucesso.')
+        self.message_user(request, f'{count} ocorrência(s) duplicada(s) com sucesso.')
 
     duplicar_ocorrencias.short_description = "📋 Duplicar ocorrências selecionadas"
 
 
-# Registrar o novo modelo TipoOcorrenciaRapida
 @admin.register(TipoOcorrenciaRapida)
 class TipoOcorrenciaRapidaAdmin(admin.ModelAdmin):
-    list_display = ['codigo', 'descricao', 'ativo', 'quantidade_uso']
+    list_display = ['codigo', 'descricao_resumida', 'ativo']
     list_filter = ['ativo']
     search_fields = ['codigo', 'descricao']
-    list_editable = ['ativo']
 
-    def quantidade_uso(self, obj):
-        """Mostra quantas vezes este tipo foi usado"""
-        count = obj.ocorrencias_rapidas.count()
-        return format_html(
-            '<span style="font-weight: bold; color: {};">{}</span>',
-            'green' if count > 0 else 'gray',
-            f"{count} uso(s)"
-        )
+    def descricao_resumida(self, obj):
+        if len(obj.descricao) > 80:
+            return obj.descricao[:80] + '...'
+        return obj.descricao
 
-    quantidade_uso.short_description = 'Uso'
-
-    def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('ocorrencias_rapidas')
+    descricao_resumida.short_description = 'Descrição'
 
 
 @admin.register(Responsavel)
 class ResponsavelAdmin(admin.ModelAdmin):
-    list_display = [
-        'nome',
-        'email',
-        'celular_formatado',
-        'tipo_vinculo',
-        'preferencia_contato',
-        'total_estudantes_display',
-        'estudantes_ativos_display'
-    ]
+    list_display = ['nome', 'tipo_vinculo', 'email', 'celular', 'total_estudantes_display']
+    list_filter = ['tipo_vinculo', 'preferencia_contato']
+    search_fields = ['nome', 'email', 'celular']
+    filter_horizontal = ['estudantes']
 
-    list_filter = [
-        'tipo_vinculo',
-        'preferencia_contato',
-    ]
-
-    search_fields = [
-        'nome',
-        'email',
-        'celular',
-        'estudante__nome',  # Busca através da relação reversa
-        'estudante__matricula_sga'
-    ]
-
-    # REMOVIDO: filter_horizontal já que não temos mais o campo ManyToMany
-    # filter_horizontal = ['estudantes']
-
-    readonly_fields = [
-        'total_estudantes_display',
-        'estudantes_ativos_display',
-        'ultima_atualizacao',
-        'info_contato',
-        'lista_estudantes'
-    ]
+    readonly_fields = ['total_estudantes_display', 'estudantes_ativos_display', 'ultima_atualizacao']
 
     fieldsets = (
         ('Informações Pessoais', {
-            'fields': (
-                'nome',
-                'email',
-                'celular',
-                'tipo_vinculo'
-            )
+            'fields': ('nome', 'tipo_vinculo', 'endereco')
         }),
-        ('Preferências de Contato', {
-            'fields': (
-                'preferencia_contato',
-                'endereco',
-                'info_contato'
-            ),
-            'description': 'Configure como e quando este responsável prefere ser contactado'
+        ('Contatos', {
+            'fields': ('email', 'celular', 'preferencia_contato')
         }),
         ('Estudantes Vinculados', {
-            'fields': ('lista_estudantes',),
-            'description': 'Estudantes vinculados a este responsável (gerenciado através do admin de Estudantes)'
+            'fields': ('estudantes', 'total_estudantes_display', 'estudantes_ativos_display'),
+            'description': 'Estudantes vinculados a este responsável'
         }),
-        ('Estatísticas', {
-            'fields': (
-                'total_estudantes_display',
-                'estudantes_ativos_display'
-            ),
-            'classes': ('collapse',)
-        }),
-        ('Metadados', {
+        ('Informações do Sistema', {
             'fields': ('ultima_atualizacao',),
             'classes': ('collapse',)
         }),
     )
 
-    ordering = ['nome']
-    list_per_page = 25
-
-    actions = [
-        'marcar_preferencia_email',
-        'marcar_preferencia_celular',
-        'marcar_preferencia_whatsapp',
-        'exportar_contatos'
-    ]
-
-    # Métodos customizados para display
-    def celular_formatado(self, obj):
-        """Formata o número de celular para exibição"""
-        if obj.celular:
-            return format_html('<span style="font-family: monospace;">{}</span>', obj.celular)
-        return "-"
-
-    celular_formatado.short_description = 'Celular'
-
     def total_estudantes_display(self, obj):
-        """Retorna o total de estudantes vinculados"""
         count = obj.total_estudantes
         return format_html(
             '<span style="font-weight: bold; color: {};">{}</span>',
-            'green' if count > 0 else 'red',
-            count
+            'green' if count > 0 else 'orange',
+            f"{count} estudante(s)"
         )
 
-    total_estudantes_display.short_description = '📚 Total Estudantes'
+    total_estudantes_display.short_description = 'Total de Estudantes'
 
     def estudantes_ativos_display(self, obj):
-        """Mostra quantos estudantes estão ativos"""
-        ativos = obj.estudantes_ativos.count()
+        count = obj.estudantes_ativos.count()
         total = obj.total_estudantes
-        color = "green" if ativos == total else "orange" if ativos > 0 else "red"
         return format_html(
-            '<span style="font-weight: bold; color: {};">{}/{} ativos</span>',
-            color, ativos, total
+            '<span style="font-weight: bold; color: green;">{}/{}</span> ativos',
+            count, total
         )
 
-    estudantes_ativos_display.short_description = '✅ Estudantes Ativos'
-
-    def info_contato(self, obj):
-        """Informações de contato formatadas"""
-        info = []
-        if obj.email:
-            info.append(f"📧 {obj.email}")
-        if obj.celular:
-            info.append(f"📱 {obj.celular}")
-        if obj.endereco:
-            info.append(f"🏠 {obj.endereco[:50]}...")
-
-        if not info:
-            return "Nenhuma informação de contato disponível"
-
-        return format_html("<br>".join(info))
-
-    info_contato.short_description = 'Informações de Contato'
-
-    def lista_estudantes(self, obj):
-        """Lista os estudantes vinculados"""
-        estudantes = obj.estudantes.all()
-        if not estudantes:
-            return "Nenhum estudante vinculado"
-
-        lista = []
-        for estudante in estudantes:
-            status = "✅" if estudante.situacao == 'ATIVO' else "❌"
-            lista.append(f"{status} {estudante.nome} ({estudante.matricula_sga}) - {estudante.get_situacao_display()}")
-
-        return format_html("<br>".join(lista))
-
-    lista_estudantes.short_description = 'Estudantes Vinculados'
+    estudantes_ativos_display.short_description = 'Estudantes Ativos'
 
     def get_queryset(self, request):
-        """Otimiza as queries para a listagem"""
         return super().get_queryset(request).prefetch_related('estudantes')
 
-    # Actions personalizadas
-    def marcar_preferencia_email(self, request, queryset):
-        updated = queryset.update(preferencia_contato='EMAIL')
-        self.message_user(request, f'{updated} responsável(eis) marcado(s) com preferência por Email.')
 
-    marcar_preferencia_email.short_description = "🗳️ Definir preferência: Email"
-
-    def marcar_preferencia_celular(self, request, queryset):
-        updated = queryset.update(preferencia_contato='CELULAR')
-        self.message_user(request, f'{updated} responsável(eis) marcado(s) com preferência por Celular.')
-
-    marcar_preferencia_celular.short_description = "📱 Definir preferência: Celular"
-
-    def marcar_preferencia_whatsapp(self, request, queryset):
-        updated = queryset.update(preferencia_contato='WHATSAPP')
-        self.message_user(request, f'{updated} responsável(eis) marcado(s) com preferência por WhatsApp.')
-
-    marcar_preferencia_whatsapp.short_description = "💚 Definir preferência: WhatsApp"
-
-    def exportar_contatos(self, request, queryset):
-        self.message_user(request,
-                          f'Exportação de {queryset.count()} contatos preparada. Esta funcionalidade será implementada em breve.')
-
-    exportar_contatos.short_description = "📤 Exportar contatos selecionados"
-
-
-# Inline para mostrar responsáveis no admin de Estudante
-class ResponsavelInline(admin.TabularInline):
-    model = Estudante.responsaveis.through
-    extra = 1
-    verbose_name = "Responsável"
-    verbose_name_plural = "Responsáveis"
-    autocomplete_fields = ['responsavel']
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "responsavel":
-            kwargs["queryset"] = Responsavel.objects.all().order_by('nome')
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-
-# Atualizar o admin de Estudante
 @admin.register(Estudante)
 class EstudanteAdmin(admin.ModelAdmin):
-    list_display = [
-        'matricula_sga',
-        'nome',
-        'turma',
-        'situacao',
-        'tem_foto',
-        'total_responsaveis_display'
-    ]
-
-    list_filter = [
-        'situacao',
-        'campus',
-        'curso',
-        'turma',
-        'responsaveis__tipo_vinculo'
-    ]
-
-    search_fields = [
-        'nome',
-        'matricula_sga',
-        'email',
-        'responsaveis__nome'
-    ]
-
-    inlines = [ResponsavelInline]
+    list_display = ['matricula_sga', 'nome', 'situacao_formatada', 'turma', 'curso', 'campus', 'tem_foto']
+    list_filter = ['situacao', 'campus', 'curso', 'turma']
+    search_fields = ['nome', 'matricula_sga', 'cpf', 'email']
     filter_horizontal = ['responsaveis']
 
     readonly_fields = ['total_responsaveis_display']
@@ -486,8 +302,38 @@ class EstudanteAdmin(admin.ModelAdmin):
         }),
     )
 
+    # AÇÕES CUSTOMIZADAS PARA ALTERAR SITUAÇÃO
+    actions = [
+        'marcar_como_ativo',
+        'marcar_como_inativo',
+        'marcar_como_trancado',
+        'marcar_como_evadido',
+        'marcar_como_formado',
+        'marcar_como_transferido',
+        'alterar_situacao_personalizada',
+    ]
+
+    def situacao_formatada(self, obj):
+        """Exibe a situação com cores"""
+        cores = {
+            'ATIVO': 'green',
+            'INATIVO': 'gray',
+            'TRANCADO': 'orange',
+            'EVADIDO': 'red',
+            'FORMADO': 'blue',
+            'TRANSFERIDO': 'purple',
+        }
+        cor = cores.get(obj.situacao, 'black')
+        return format_html(
+            '<span style="font-weight: bold; color: {};">{}</span>',
+            cor,
+            obj.get_situacao_display()
+        )
+
+    situacao_formatada.short_description = 'Situação'
+    situacao_formatada.admin_order_field = 'situacao'
+
     def total_responsaveis_display(self, obj):
-        """Retorna o total de responsáveis vinculados"""
         count = obj.responsaveis.count()
         return format_html(
             '<span style="font-weight: bold; color: {};">{}</span>',
@@ -505,10 +351,93 @@ class EstudanteAdmin(admin.ModelAdmin):
     tem_foto.short_description = 'Foto'
 
     def get_queryset(self, request):
-        """Otimiza as queries para a listagem"""
         return super().get_queryset(request).prefetch_related('responsaveis')
 
-# Mantenha os outros registros admin existentes...
+    # AÇÕES PARA ALTERAR SITUAÇÃO
+    def marcar_como_ativo(self, request, queryset):
+        """Marca os estudantes selecionados como ATIVO"""
+        updated = queryset.update(situacao='ATIVO')
+        self.message_user(request, f'{updated} estudante(s) marcado(s) como ATIVO.')
+
+    marcar_como_ativo.short_description = "✅ Marcar como ATIVO"
+
+    def marcar_como_inativo(self, request, queryset):
+        """Marca os estudantes selecionados como INATIVO"""
+        updated = queryset.update(situacao='INATIVO')
+        self.message_user(request, f'{updated} estudante(s) marcado(s) como INATIVO.')
+
+    marcar_como_inativo.short_description = "⚫ Marcar como INATIVO"
+
+    def marcar_como_trancado(self, request, queryset):
+        """Marca os estudantes selecionados como TRANCADO"""
+        updated = queryset.update(situacao='TRANCADO')
+        self.message_user(request, f'{updated} estudante(s) marcado(s) como TRANCADO.')
+
+    marcar_como_trancado.short_description = "🔶 Marcar como TRANCADO"
+
+    def marcar_como_evadido(self, request, queryset):
+        """Marca os estudantes selecionados como EVADIDO"""
+        updated = queryset.update(situacao='EVADIDO')
+        self.message_user(request, f'{updated} estudante(s) marcado(s) como EVADIDO.')
+
+    marcar_como_evadido.short_description = "❌ Marcar como EVADIDO"
+
+    def marcar_como_formado(self, request, queryset):
+        """Marca os estudantes selecionados como FORMADO"""
+        updated = queryset.update(situacao='FORMADO')
+        self.message_user(request, f'{updated} estudante(s) marcado(s) como FORMADO.')
+
+    marcar_como_formado.short_description = "🎓 Marcar como FORMADO"
+
+    def marcar_como_transferido(self, request, queryset):
+        """Marca os estudantes selecionados como TRANSFERIDO"""
+        updated = queryset.update(situacao='TRANSFERIDO')
+        self.message_user(request, f'{updated} estudante(s) marcado(s) como TRANSFERIDO.')
+
+    marcar_como_transferido.short_description = "🔄 Marcar como TRANSFERIDO"
+
+    def alterar_situacao_personalizada(self, request, queryset):
+        """
+        Permite selecionar a situação desejada através de uma página intermediária
+        """
+        # Salva os IDs dos estudantes selecionados na sessão
+        request.session['estudantes_ids'] = list(queryset.values_list('id', flat=True))
+        
+        # Se o formulário foi submetido
+        if 'aplicar' in request.POST:
+            nova_situacao = request.POST.get('nova_situacao')
+            estudantes_ids = request.session.get('estudantes_ids', [])
+            
+            if nova_situacao and estudantes_ids:
+                updated = Estudante.objects.filter(id__in=estudantes_ids).update(situacao=nova_situacao)
+                self.message_user(
+                    request,
+                    f'{updated} estudante(s) alterado(s) para {dict(Estudante.SITUACAO_CHOICES)[nova_situacao]}.'
+                )
+                # Limpa a sessão
+                del request.session['estudantes_ids']
+                return HttpResponseRedirect(request.get_full_path())
+        
+        # Template HTML inline para o formulário intermediário
+        from django.template.response import TemplateResponse
+        
+        context = {
+            'estudantes': queryset,
+            'situacao_choices': Estudante.SITUACAO_CHOICES,
+            'opts': self.model._meta,
+            'action_checkbox_name': admin.ACTION_CHECKBOX_NAME,
+        }
+        
+        return TemplateResponse(
+            request,
+            'admin/estudantes/alterar_situacao.html',
+            context
+        )
+
+    alterar_situacao_personalizada.short_description = "🔧 Alterar situação (escolher)"
+
+
+# Registro dos outros modelos
 @admin.register(Campus)
 class CampusAdmin(admin.ModelAdmin):
     list_display = ['nome', 'sigla', 'ativo']
@@ -539,15 +468,15 @@ class ConfiguracaoLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
         'gerar_notificacao_sistema',
         'gerar_email_responsaveis',
         'ativo',
-        'get_email_coordenacao_icone'  # Novo display
+        'get_email_coordenacao_icone'
     ]
 
-    list_filter = ['ativo', 'coordenacoes_notificar', 'gerar_email_coordenacao']  # Adiciona filtro para email coord.
+    list_filter = ['ativo', 'coordenacoes_notificar', 'gerar_email_coordenacao']
 
     search_fields = ['tipo_ocorrencia__codigo', 'tipo_ocorrencia__descricao']
 
     fieldsets = (
-        ('Tipo de Ocorrência e Limite', {  # Título mais descritivo
+        ('Tipo de Ocorrência e Limite', {
             'fields': ('tipo_ocorrencia', 'limite_mensal', 'ativo')
         }),
         ('Notificações no Sistema', {
@@ -559,19 +488,16 @@ class ConfiguracaoLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
                 'coordenacoes_notificar',
                 'gerar_email_responsaveis'
             ),
-            'description': 'Emails serão enviados mensalmente se o limite for atingido.'  # Adiciona descrição
+            'description': 'Emails serão enviados mensalmente se o limite for atingido.'
         }),
     )
 
-    # Pré-carrega o tipo de ocorrência para evitar consultas N+1
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('tipo_ocorrencia')
 
-    # Ações personalizadas
     actions = ['duplicar_configuracao', 'ativar_configuracoes', 'desativar_configuracoes']
 
     def get_email_coordenacao_icone(self, obj):
-        """Exibe ícone para o campo gerar_email_coordenacao"""
         if obj.gerar_email_coordenacao:
             return format_html('<span style="color: green; font-weight: bold;">✔</span>')
         return format_html('<span style="color: red; font-weight: bold;">✘</span>')
@@ -580,7 +506,6 @@ class ConfiguracaoLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
     get_email_coordenacao_icone.admin_order_field = 'gerar_email_coordenacao'
 
     def duplicar_configuracao(self, request, queryset):
-        """Duplica as configurações selecionadas"""
         count = 0
         for config in queryset:
             nova_config = ConfiguracaoLimiteOcorrenciaRapida.objects.create(
@@ -590,7 +515,7 @@ class ConfiguracaoLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
                 gerar_notificacao_sistema=config.gerar_notificacao_sistema,
                 gerar_email_coordenacao=config.gerar_email_coordenacao,
                 gerar_email_responsaveis=config.gerar_email_responsaveis,
-                ativo=False  # Cria como inativa por segurança
+                ativo=False
             )
             count += 1
 
@@ -617,7 +542,7 @@ class AlertaLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
         'estudante',
         'tipo_ocorrencia',
         'quantidade_ocorrencias',
-        'limite_configurado',  # Novo display
+        'limite_configurado',
         'mes_referencia',
         'notificacao_sistema_criada',
         'email_coordenacao_enviado',
@@ -640,12 +565,11 @@ class AlertaLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
         'tipo_ocorrencia__codigo'
     ]
 
-    # Adiciona a configuração à lista de campos apenas leitura
     readonly_fields = [
         'estudante',
         'tipo_ocorrencia',
         'configuracao',
-        'limite_configurado',  # Adiciona
+        'limite_configurado',
         'mes_referencia',
         'quantidade_ocorrencias',
         'notificacao_sistema_criada',
@@ -656,16 +580,13 @@ class AlertaLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
 
     date_hierarchy = 'criado_em'
 
-    # Otimiza o queryset
     def get_queryset(self, request):
         return super().get_queryset(request).select_related(
             'estudante', 'tipo_ocorrencia', 'configuracao'
         )
 
     def limite_configurado(self, obj):
-        """Exibe o limite definido na configuração que gerou o alerta"""
         if obj.configuracao:
-            # Destaca a cor do limite
             return format_html(
                 '<span style="font-weight: bold; color: orange;">{}</span>',
                 obj.configuracao.limite_mensal
@@ -676,9 +597,7 @@ class AlertaLimiteOcorrenciaRapidaAdmin(admin.ModelAdmin):
     limite_configurado.admin_order_field = 'configuracao__limite_mensal'
 
     def has_add_permission(self, request):
-        # Alertas são gerados automaticamente
         return False
 
     def has_delete_permission(self, request, obj=None):
-        # Permitir exclusão apenas para administradores
         return request.user.is_superuser
