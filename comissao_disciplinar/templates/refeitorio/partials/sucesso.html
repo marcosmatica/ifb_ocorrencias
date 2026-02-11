@@ -16,8 +16,8 @@
                 <!-- Card de Estudante -->
                 <div class="foto-container-kiosk" data-iniciais="{{ iniciais }}">
                     {% if foto_url %}
-                        <img src="{{ foto_url }}" 
-                             alt="{{ nome }}" 
+                        <img src="{{ foto_url }}"
+                             alt="{{ nome }}"
                              class="foto-pessoa"
                              referrerpolicy="no-referrer"
                              onerror="mostrarIniciaisKiosk(this)">
@@ -25,7 +25,7 @@
                         <div class="foto-placeholder-kiosk">{{ iniciais }}</div>
                     {% endif %}
                 </div>
-                
+
                 <div class="pessoa-info">
                     <h3 class="pessoa-nome">{{ nome }}</h3>
                     <div class="pessoa-detalhes">
@@ -61,7 +61,7 @@
                         </svg>
                     </div>
                 </div>
-                
+
                 <div class="pessoa-info">
                     <h3 class="pessoa-nome">{{ nome }}</h3>
                     <div class="pessoa-detalhes">

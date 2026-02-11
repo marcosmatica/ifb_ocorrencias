@@ -361,7 +361,7 @@ class ServicoNotificacao:
 
             # Enviar via Twilio
             print(f"\n Enviando SMS via Twilio...")
-            sucesso = ServicoNotificacao._enviar_sms_via_twilio(numero_envio, mensagem)
+            #sucesso = ServicoNotificacao._enviar_sms_via_twilio(numero_envio, mensagem)
             return sucesso
 
         except Exception as e:

@@ -33,7 +33,7 @@ class ConfigRefeitorio(models.Model):
 
     def esta_no_horario(self):
         """Verifica se está no horário desta refeição"""
-        agora = timezone.now().time()
+        agora = timezone.localtime(timezone.now()).time()  # ← Converte para America/Sao_Paulo
         return self.horario_inicio <= agora <= self.horario_fim
 
 

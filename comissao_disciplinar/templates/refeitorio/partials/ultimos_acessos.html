@@ -1,0 +1,94 @@
+<!-- Contador de Acessos -->
+<div class="contador-refeicao">
+    {% if config_atual %}
+    <div class="contador-header">
+        <svg class="contador-icon" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+        </svg>
+        <span>{{ config_atual.get_nome_display }}</span>
+    </div>
+    <div class="contador-numero">{{ total_refeicao_atual }}</div>
+    <div class="contador-label">Acessos nesta refeição</div>
+    {% else %}
+    <div class="contador-vazio">
+        <svg class="contador-icon-empty" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+        </svg>
+        <p>Nenhuma refeição ativa no momento</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Lista de Últimos Acessos -->
+{% if ultimos_acessos %}
+<div class="ultimos-acessos-lista">
+    <h3 class="ultimos-titulo">
+        <svg class="inline w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+        </svg>
+        Últimos Acessos
+    </h3>
+    
+    <div class="acessos-grid">
+        {% for registro in ultimos_acessos %}
+        <div class="acesso-item">
+            <!-- Foto/Avatar -->
+            <div class="acesso-avatar">
+                {% if registro.estudante %}
+                    {% if registro.estudante.get_foto_url_proxy %}
+                        <img src="{{ registro.estudante.get_foto_url_proxy }}" 
+                             alt="{{ registro.pessoa.nome }}"
+                             class="avatar-img"
+                             referrerpolicy="no-referrer"
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'avatar-placeholder\'>{{ registro.estudante.get_iniciais }}</div>';">
+                    {% else %}
+                        <div class="avatar-placeholder">
+                            {{ registro.estudante.get_iniciais }}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="avatar-placeholder avatar-servidor">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                {% endif %}
+                
+                <!-- Badge de tipo -->
+                <div class="acesso-tipo-badge">
+                    {% if registro.estudante %}
+                        📚
+                    {% else %}
+                        👔
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Info -->
+            <div class="acesso-info">
+                <div class="acesso-nome">{{ registro.pessoa.nome|truncatewords:3 }}</div>
+                <div class="acesso-detalhes">
+                    {% if registro.estudante and registro.estudante.turma %}
+                        {{ registro.estudante.turma.nome }}
+                    {% elif registro.estudante %}
+                        Estudante
+                    {% else %}
+                        Servidor
+                    {% endif %}
+                </div>
+                <div class="acesso-horario">
+                    {{ registro.data_hora|time:"H:i" }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="ultimos-acessos-vazio">
+    <svg class="vazio-icon" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+    </svg>
+    <p>Nenhum acesso registrado ainda</p>
+</div>
+{% endif %}

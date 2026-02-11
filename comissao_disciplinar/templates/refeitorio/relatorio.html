@@ -3,93 +3,435 @@
 
 {% block title %}Relatórios - Refeitório{% endblock %}
 
+{% block extra_css %}
+<style>
+    @media print {
+        .no-print { display: none !important; }
+        .page-header, .btn, nav { display: none !important; }
+        .card { page-break-inside: avoid; }
+    }
+    
+    .filter-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-comparison {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .stat-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-weight: 500;
+    }
+    
+    .stat-badge.estudantes {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .stat-badge.servidores {
+        background-color: #ede9fe;
+        color: #5b21b6;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 1rem 0;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #6b7280;
+    }
+    
+    .empty-state svg {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1rem;
+        opacity: 0.3;
+    }
+    
+    .top-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .top-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        background-color: #f9fafb;
+        border-radius: 0.5rem;
+        border-left: 3px solid #10b981;
+    }
+    
+    .top-item .info {
+        flex: 1;
+    }
+    
+    .top-item .count {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #059669;
+    }
+    
+    .active-filter {
+        background-color: #10b981 !important;
+        color: white !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-header mb-5">
-    <h1 class="page-title">Relatórios do Refeitório</h1>
-    <a href="{% url 'refeitorio:dashboard' %}" class="btn btn-outline">Voltar</a>
+<div class="page-header mb-5 no-print">
+    <div>
+        <h1 class="page-title">Relatórios do Refeitório</h1>
+        <p class="page-subtitle">Análise detalhada do período selecionado</p>
+    </div>
+    <a href="{% url 'refeitorio:dashboard' %}" class="btn btn-outline">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+        </svg>
+        Voltar ao Dashboard
+    </a>
 </div>
 
-<!-- Filtros -->
-<div class="card mb-5">
+<!-- Formulário de Filtros -->
+<div class="card mb-5 no-print">
     <div class="card-header">
-        <h2 class="card-title">Selecionar Período</h2>
+        <h2 class="card-title">Filtros do Relatório</h2>
+        <p class="text-sm text-gray-600">Selecione os critérios para gerar o relatório</p>
     </div>
     <div class="card-body">
-        <form method="get" class="flex gap-3 items-end flex-wrap">
-            <div class="form-group">
-                <label class="form-label">Data Início</label>
-                <input type="date" name="data_inicio" class="form-control" 
-                       value="{{ data_inicio }}" required>
+        <form method="get" id="filtro-form">
+            <div class="filter-row">
+                <!-- Data Início -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                        </svg>
+                        Data Início
+                    </label>
+                    <input type="date" 
+                           name="data_inicio" 
+                           class="form-control" 
+                           value="{{ filtros.data_inicio }}" 
+                           required>
+                </div>
+
+                <!-- Data Fim -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                        </svg>
+                        Data Fim
+                    </label>
+                    <input type="date" 
+                           name="data_fim" 
+                           class="form-control" 
+                           value="{{ filtros.data_fim }}" 
+                           required>
+                </div>
+
+                <!-- Tipo de Refeição -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clip-rule="evenodd"/>
+                        </svg>
+                        Tipo de Refeição
+                    </label>
+                    <select name="tipo_refeicao" class="form-control">
+                        <option value="">Todas as refeições</option>
+                        {% for codigo, nome in tipos_refeicao %}
+                            <option value="{{ codigo }}" {% if filtros.tipo_refeicao == codigo %}selected{% endif %}>
+                                {{ nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Tipo de Pessoa -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                        </svg>
+                        Tipo de Pessoa
+                    </label>
+                    <select name="tipo_pessoa" class="form-control">
+                        <option value="todos" {% if filtros.tipo_pessoa == 'todos' %}selected{% endif %}>
+                            Todos (Estudantes + Servidores)
+                        </option>
+                        <option value="estudante" {% if filtros.tipo_pessoa == 'estudante' %}selected{% endif %}>
+                            Apenas Estudantes
+                        </option>
+                        <option value="servidor" {% if filtros.tipo_pessoa == 'servidor' %}selected{% endif %}>
+                            Apenas Servidores
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Turma -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z"/>
+                        </svg>
+                        Turma
+                    </label>
+                    <select name="turma" class="form-control">
+                        <option value="">Todas as turmas</option>
+                        {% for turma in turmas %}
+                            <option value="{{ turma.id }}" {% if filtros.turma == turma.id|stringformat:"s" %}selected{% endif %}>
+                                {{ turma.nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">Data Fim</label>
-                <input type="date" name="data_fim" class="form-control" 
-                       value="{{ data_fim }}" required>
+
+            <div class="flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-primary">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    Gerar Relatório
+                </button>
+                
+                {% if total %}
+                <button type="button" onclick="window.print()" class="btn btn-outline">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"/>
+                    </svg>
+                    Imprimir
+                </button>
+                
+                <button type="button" onclick="exportarCSV()" class="btn btn-outline">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                    Exportar CSV
+                </button>
+                
+                <a href="{% url 'refeitorio:relatorio' %}" class="btn btn-outline">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                    </svg>
+                    Limpar Filtros
+                </a>
+                {% endif %}
             </div>
-            <button type="submit" class="btn btn-primary">
-                <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-                </svg>
-                Gerar Relatório
-            </button>
         </form>
     </div>
 </div>
 
 {% if total %}
-<!-- Resultado -->
+<!-- Estatísticas Gerais -->
 <div class="stats-grid mb-5">
     <div class="stat-card">
-        <div class="stat-label">Total no Período</div>
+        <div class="stat-label">Total de Refeições</div>
         <div class="stat-value">{{ total }}</div>
+        <div class="stat-comparison">
+            <span class="stat-badge estudantes">
+                📚 {{ total_estudantes }} estudantes
+            </span>
+            <span class="stat-badge servidores">
+                👔 {{ total_servidores }} servidores
+            </span>
+        </div>
     </div>
+    
     <div class="stat-card" style="border-left-color: #3b82f6;">
-        <div class="stat-label">Média por Dia</div>
-        <div class="stat-value">{{ total|floatformat:0|div:por_dia|length|default:1 }}</div>
+        <div class="stat-label">Período Analisado</div>
+        <div class="stat-value">{{ num_dias }}</div>
+        <div class="stat-change">
+            {% if num_dias == 1 %}dia{% else %}dias{% endif %}
+        </div>
+    </div>
+    
+    <div class="stat-card" style="border-left-color: #8b5cf6;">
+        <div class="stat-label">Média Diária</div>
+        <div class="stat-value">{{ media_diaria }}</div>
+        <div class="stat-change">refeições/dia</div>
+    </div>
+    
+    <div class="stat-card" style="border-left-color: #10b981;">
+        <div class="stat-label">Percentual Estudantes</div>
+        <div class="stat-value">
+            {% widthratio total_estudantes total 100 %}%
+        </div>
+        <div class="stat-change">do total</div>
     </div>
 </div>
 
-<!-- Gráfico por Dia -->
-<div class="card mb-5">
-    <div class="card-header">
-        <h2 class="card-title">Evolução Diária</h2>
+<!-- Gráficos -->
+<div class="grid grid-2 mb-5">
+    <!-- Evolução Diária -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Evolução Diária</h2>
+            <p class="text-sm text-gray-600">Refeições servidas por dia</p>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="evolucaoChart"></canvas>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <canvas id="evolucaoChart" style="max-height: 300px;"></canvas>
+    
+    <!-- Por Tipo de Refeição -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Por Tipo de Refeição</h2>
+            <p class="text-sm text-gray-600">Distribuição no período</p>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="tipoChart"></canvas>
+            </div>
+        </div>
     </div>
+</div>
+
+<!-- Rankings e Distribuição por Turma -->
+<div class="grid {% if por_turma %}grid-3{% else %}grid-2{% endif %} mb-5">
+    <!-- Top Estudantes -->
+    {% if top_estudantes %}
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Top 10 Estudantes</h2>
+            <p class="text-sm text-gray-600">Mais frequentes no período</p>
+        </div>
+        <div class="card-body">
+            <div class="top-list">
+                {% for item in top_estudantes %}
+                <div class="top-item">
+                    <div class="info">
+                        <div class="font-semibold text-gray-900">
+                            {{ forloop.counter }}. {{ item.estudante__nome|truncatewords:3 }}
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            {{ item.estudante__matricula_sga }} • {{ item.estudante__turma__nome|default:"Sem turma" }}
+                        </div>
+                    </div>
+                    <div class="count">{{ item.total }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Top Servidores -->
+    {% if top_servidores %}
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Top 10 Servidores</h2>
+            <p class="text-sm text-gray-600">Mais frequentes no período</p>
+        </div>
+        <div class="card-body">
+            <div class="top-list">
+                {% for item in top_servidores %}
+                <div class="top-item">
+                    <div class="info">
+                        <div class="font-semibold text-gray-900">
+                            {{ forloop.counter }}. {{ item.servidor__nome|truncatewords:3 }}
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            SIAPE: {{ item.servidor__siape }}
+                        </div>
+                    </div>
+                    <div class="count">{{ item.total }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Por Turma -->
+    {% if por_turma %}
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Por Turma</h2>
+            <p class="text-sm text-gray-600">Top 10 turmas</p>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="turmaChart"></canvas>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Tabela Detalhada -->
 <div class="card">
-    <div class="card-header flex-between">
+    <div class="card-header">
         <h2 class="card-title">Registros Detalhados</h2>
-        <button onclick="window.print()" class="btn btn-outline btn-sm">
-            Imprimir
-        </button>
+        <p class="text-sm text-gray-600">
+            Mostrando primeiros 100 de {{ total_registros }} registros
+            {% if total_registros > 100 %}
+                <span class="text-orange-600">• Use filtros para refinar</span>
+            {% endif %}
+        </p>
     </div>
     <div class="table-container">
-        <table class="table">
+        <table class="table" id="tabela-registros">
             <thead>
                 <tr>
                     <th>Data/Hora</th>
                     <th>Nome</th>
-                    <th>Tipo Pessoa</th>
+                    <th>Tipo</th>
                     <th>Refeição</th>
-                    <th>Código</th>
+                    <th>Turma/Cargo</th>
+                    <th>Matrícula/SIAPE</th>
                 </tr>
             </thead>
             <tbody>
                 {% for reg in registros %}
                 <tr>
-                    <td>{{ reg.data_hora|date:"d/m/Y H:i" }}</td>
-                    <td>{{ reg.pessoa.nome }}</td>
+                    <td class="whitespace-nowrap">
+                        {{ reg.data_hora|date:"d/m/Y H:i" }}
+                    </td>
+                    <td class="font-medium">{{ reg.pessoa.nome|truncatewords:4 }}</td>
                     <td>
                         <span class="badge {% if reg.estudante %}badge-analise{% else %}badge-registrada{% endif %}">
                             {{ reg.tipo_pessoa }}
                         </span>
                     </td>
-                    <td>{{ reg.tipo_refeicao }}</td>
-                    <td class="text-sm text-gray-600">{{ reg.codigo_barras_usado }}</td>
+                    <td>
+                        <span class="badge badge-finalizada">
+                            {{ reg.get_tipo_refeicao_display|default:reg.tipo_refeicao }}
+                        </span>
+                    </td>
+                    <td class="text-sm text-gray-600">
+                        {% if reg.estudante %}
+                            {{ reg.estudante.turma.nome|default:"Sem turma" }}
+                        {% else %}
+                            Servidor
+                        {% endif %}
+                    </td>
+                    <td class="text-sm text-gray-600">
+                        {{ reg.codigo_barras_usado }}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -97,26 +439,198 @@
     </div>
 </div>
 
+{% else %}
+<!-- Estado Vazio -->
+<div class="card">
+    <div class="card-body">
+        <div class="empty-state">
+            <svg fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            <h3 class="text-xl font-semibold mb-2">Selecione um período</h3>
+            <p>Escolha as datas e filtros desejados para gerar o relatório</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if total %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-const ctx = document.getElementById('evolucaoChart');
-new Chart(ctx, {
+// Configuração de cores
+const colors = {
+    primary: 'rgb(0, 102, 51)',
+    primaryLight: 'rgba(0, 102, 51, 0.1)',
+    blue: 'rgb(59, 130, 246)',
+    blueLight: 'rgba(59, 130, 246, 0.1)',
+    purple: 'rgb(139, 92, 246)',
+    purpleLight: 'rgba(139, 92, 246, 0.1)',
+};
+
+// Gráfico de Evolução Diária
+const ctxEvolucao = document.getElementById('evolucaoChart');
+new Chart(ctxEvolucao, {
     type: 'line',
     data: {
-        labels: [{% for d in por_dia %}'{{ d.dia|date:"d/m" }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        labels: [
+            {% for d in por_dia %}
+                '{{ d.data_hora__date|date:"d/m" }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [
+            {
+                label: 'Total',
+                data: [{% for d in por_dia %}{{ d.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                borderColor: colors.primary,
+                backgroundColor: colors.primaryLight,
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Estudantes',
+                data: [{% for d in por_dia %}{{ d.estudantes }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                borderColor: colors.blue,
+                backgroundColor: colors.blueLight,
+                tension: 0.4,
+                fill: false
+            },
+            {
+                label: 'Servidores',
+                data: [{% for d in por_dia %}{{ d.servidores }}{% if not forloop.last %},{% endif %}{% endfor %}],
+                borderColor: colors.purple,
+                backgroundColor: colors.purpleLight,
+                tension: 0.4,
+                fill: false
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: true, position: 'bottom' },
+            tooltip: {
+                mode: 'index',
+                intersect: false
+            }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+// Gráfico por Tipo de Refeição
+const ctxTipo = document.getElementById('tipoChart');
+new Chart(ctxTipo, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            {% for item in por_tipo %}
+                '{{ item.tipo_refeicao }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
         datasets: [{
-            label: 'Refeições',
-            data: [{% for d in por_dia %}{{ d.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
-            borderColor: 'rgb(0, 102, 51)',
-            backgroundColor: 'rgba(0, 102, 51, 0.1)',
-            tension: 0.3
+            data: [
+                {% for item in por_tipo %}
+                    {{ item.total }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: [
+                'rgba(0, 102, 51, 0.8)',
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+            ]
         }]
     },
     options: {
         responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return `${label}: ${value} (${percentage}%)`;
+                    }
+                }
+            }
+        }
     }
 });
+
+{% if por_turma %}
+// Gráfico por Turma
+const ctxTurma = document.getElementById('turmaChart');
+new Chart(ctxTurma, {
+    type: 'bar',
+    data: {
+        labels: [
+            {% for item in por_turma %}
+                '{{ item.estudante__turma__nome|truncatewords:2 }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Refeições',
+            data: [
+                {% for item in por_turma %}
+                    {{ item.total }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: colors.primary,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            x: { beginAtZero: true }
+        }
+    }
+});
+{% endif %}
+
+// Função para exportar CSV
+function exportarCSV() {
+    const tabela = document.getElementById('tabela-registros');
+    let csv = [];
+    
+    // Cabeçalhos
+    const headers = [];
+    tabela.querySelectorAll('thead th').forEach(th => {
+        headers.push(th.textContent.trim());
+    });
+    csv.push(headers.join(','));
+    
+    // Dados
+    tabela.querySelectorAll('tbody tr').forEach(tr => {
+        const row = [];
+        tr.querySelectorAll('td').forEach(td => {
+            row.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+        });
+        csv.push(row.join(','));
+    });
+    
+    // Download
+    const csvContent = csv.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'relatorio_refeitorio_{{ filtros.data_inicio }}_{{ filtros.data_fim }}.csv';
+    link.click();
+}
 </script>
 {% endif %}
 {% endblock %}
