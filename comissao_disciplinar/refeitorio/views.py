@@ -21,18 +21,18 @@ def checkin_screen(request):
     """Tela do totem de check-in (sem autenticação)"""
     configs_ativas = ConfigRefeitorio.objects.filter(ativo=True)
     agora = timezone.now()
-    
+    agora = timezone.localtime(agora)
     # Detectar refeição atual
     config_atual = ConfigRefeitorio.objects.filter(
         ativo=True,
         horario_inicio__lte=agora.time(),
         horario_fim__gte=agora.time()
     ).first()
-    
+
     # Estatísticas da refeição atual
     total_refeicao_atual = 0
     ultimos_acessos = []
-    
+
     if config_atual:
         # Contar acessos da refeição atual (desde o início do horário hoje)
         inicio_refeicao = timezone.datetime.combine(
@@ -40,14 +40,14 @@ def checkin_screen(request):
             config_atual.horario_inicio
         )
         inicio_refeicao = timezone.make_aware(inicio_refeicao)
-        
+
         registros_refeicao = RegistroRefeicao.objects.filter(
             tipo_refeicao=config_atual.nome,
             data_hora__gte=inicio_refeicao
         )
-        
+
         total_refeicao_atual = registros_refeicao.count()
-        
+
         # Últimos 10 acessos
         ultimos_acessos = registros_refeicao.select_related(
             'estudante', 'servidor', 'estudante__turma'
@@ -91,9 +91,9 @@ def validar_checkin(request):
 
     servidor = Servidor.objects.filter(
         Q(siape=barcode) |
-        Q(siape=barcode_clean) |
-        Q(cpf=barcode) |
-        Q(cpf=barcode_clean)
+        Q(siape=barcode_clean) #|
+        #Q(cpf=barcode) |
+        #Q(cpf=barcode_clean)
     ).first()
 
     if not estudante and not servidor:
@@ -120,13 +120,13 @@ def validar_checkin(request):
             'iniciais': pessoa.get_iniciais() if estudante else None,
         })
 
-    # 3. Determinar tipo de refeição atual
     agora = timezone.now()
-    logger.info(f"Horário atual: {agora} | Timezone: {settings.TIME_ZONE}")
+    agora = timezone.localtime(agora)
+    agora_time = timezone.localtime(agora).time()
     config_atual = ConfigRefeitorio.objects.filter(
         ativo=True,
-        horario_inicio__lte=agora.time(),
-        horario_fim__gte=agora.time()
+        horario_inicio__lte=agora_time,
+        horario_fim__gte=agora_time
     ).first()
 
     if not config_atual:
@@ -236,18 +236,18 @@ def dashboard(request):
 def relatorio_periodo(request):
     """Relatório por período com filtros"""
     from core.models import Turma
-    
+
     # Capturar filtros
     data_inicio = request.GET.get('data_inicio')
     data_fim = request.GET.get('data_fim')
     tipo_refeicao = request.GET.get('tipo_refeicao')
     turma_id = request.GET.get('turma')
     tipo_pessoa = request.GET.get('tipo_pessoa')  # estudante, servidor, todos
-    
+
     # Opções para os filtros
     tipos_refeicao = ConfigRefeitorio.TIPO_REFEICAO_CHOICES
     turmas = Turma.objects.all().order_by('nome')
-    
+
     context = {
         'tipos_refeicao': tipos_refeicao,
         'turmas': turmas,
@@ -266,41 +266,41 @@ def relatorio_periodo(request):
             data_hora__date__gte=data_inicio,
             data_hora__date__lte=data_fim
         ).select_related('estudante', 'servidor', 'estudante__turma', 'estudante__turma__curso')
-        
+
         # Aplicar filtros adicionais
         if tipo_refeicao:
             registros = registros.filter(tipo_refeicao=tipo_refeicao)
-        
+
         if turma_id:
             registros = registros.filter(estudante__turma_id=turma_id)
-        
+
         if tipo_pessoa == 'estudante':
             registros = registros.filter(estudante__isnull=False)
         elif tipo_pessoa == 'servidor':
             registros = registros.filter(servidor__isnull=False)
-        
+
         # Ordenar
         registros = registros.order_by('-data_hora')
-        
+
         # Estatísticas gerais
         total = registros.count()
         total_estudantes = registros.filter(estudante__isnull=False).count()
         total_servidores = registros.filter(servidor__isnull=False).count()
-        
+
         # Por dia
         por_dia = registros.values('data_hora__date').annotate(
             total=Count('id'),
             estudantes=Count('id', filter=Q(estudante__isnull=False)),
             servidores=Count('id', filter=Q(servidor__isnull=False))
         ).order_by('data_hora__date')
-        
+
         # Por tipo de refeição
         por_tipo = registros.values('tipo_refeicao').annotate(
             total=Count('id'),
             estudantes=Count('id', filter=Q(estudante__isnull=False)),
             servidores=Count('id', filter=Q(servidor__isnull=False))
         ).order_by('-total')
-        
+
         # Por turma (se for filtro de estudantes)
         por_turma = None
         if tipo_pessoa != 'servidor':
@@ -311,18 +311,18 @@ def relatorio_periodo(request):
             ).annotate(
                 total=Count('id')
             ).order_by('-total')[:10]
-        
+
         # Top 10 usuários
         top_estudantes = registros.filter(
             estudante__isnull=False
         ).values(
-            'estudante__nome', 
+            'estudante__nome',
             'estudante__matricula_sga',
             'estudante__turma__nome'
         ).annotate(
             total=Count('id')
         ).order_by('-total')[:10]
-        
+
         top_servidores = registros.filter(
             servidor__isnull=False
         ).values(
@@ -331,12 +331,12 @@ def relatorio_periodo(request):
         ).annotate(
             total=Count('id')
         ).order_by('-total')[:10]
-        
+
         # Calcular média diária
-        num_dias = (datetime.strptime(data_fim, '%Y-%m-%d').date() - 
+        num_dias = (datetime.strptime(data_fim, '%Y-%m-%d').date() -
                    datetime.strptime(data_inicio, '%Y-%m-%d').date()).days + 1
         media_diaria = total / num_dias if num_dias > 0 else 0
-        
+
         context.update({
             'registros': registros[:100],  # Limitar para performance na tabela
             'total_registros': total,
@@ -390,40 +390,40 @@ def api_estatisticas_hoje(request):
 def api_ultimos_acessos_kiosk(request):
     """API pública para atualização dos últimos acessos no kiosk"""
     agora = timezone.now()
-    
+    agora = timezone.localtime(agora)
     # Detectar refeição atual
     config_atual = ConfigRefeitorio.objects.filter(
         ativo=True,
         horario_inicio__lte=agora.time(),
         horario_fim__gte=agora.time()
     ).first()
-    
+
     if not config_atual:
         return render(request, 'refeitorio/partials/ultimos_acessos.html', {
             'ultimos_acessos': [],
             'total_refeicao_atual': 0,
             'config_atual': None,
         })
-    
+
     # Contar acessos da refeição atual
     inicio_refeicao = timezone.datetime.combine(
         agora.date(),
         config_atual.horario_inicio
     )
     inicio_refeicao = timezone.make_aware(inicio_refeicao)
-    
+
     registros_refeicao = RegistroRefeicao.objects.filter(
         tipo_refeicao=config_atual.nome,
         data_hora__gte=inicio_refeicao
     )
-    
+
     total_refeicao_atual = registros_refeicao.count()
-    
+
     # Últimos 10 acessos
     ultimos_acessos = registros_refeicao.select_related(
         'estudante', 'servidor', 'estudante__turma'
     ).order_by('-data_hora')[:10]
-    
+
     return render(request, 'refeitorio/partials/ultimos_acessos.html', {
         'ultimos_acessos': ultimos_acessos,
         'total_refeicao_atual': total_refeicao_atual,

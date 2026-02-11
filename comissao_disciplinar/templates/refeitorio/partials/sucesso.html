@@ -138,3 +138,7 @@ if (typeof playSound === 'function') {
     playSound('success');
 }
 </script>
+<script>
+// Disparar atualização imediata do contador
+htmx.trigger('#estatisticas-refeicao', 'load');
+</script>

@@ -256,6 +256,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 2000);
 
+    // Adicionar após a inicialização do input do leitor
+        const barcodeInput = document.getElementById('barcode-input');
+        if (barcodeInput) {
+            barcodeInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('form-leitor').requestSubmit();
+                }
+            });
+        }
+
     // Máscara para CPF (opcional - formatação enquanto digita)
     const manualInput = document.getElementById('manual-input');
     manualInput.addEventListener('input', function(e) {
@@ -269,5 +280,6 @@ document.addEventListener('DOMContentLoaded', function() {
         e.target.value = value;
     });
 });
+
 </script>
 {% endblock %}
