@@ -10,21 +10,21 @@
         .page-header, .btn, nav { display: none !important; }
         .card { page-break-inside: avoid; }
     }
-    
+
     .filter-row {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1rem;
         margin-bottom: 1.5rem;
     }
-    
+
     .stat-comparison {
         display: flex;
         gap: 0.5rem;
         margin-top: 0.5rem;
         font-size: 0.875rem;
     }
-    
+
     .stat-badge {
         display: inline-flex;
         align-items: center;
@@ -32,42 +32,42 @@
         border-radius: 9999px;
         font-weight: 500;
     }
-    
+
     .stat-badge.estudantes {
         background-color: #dbeafe;
         color: #1e40af;
     }
-    
+
     .stat-badge.servidores {
         background-color: #ede9fe;
         color: #5b21b6;
     }
-    
+
     .chart-container {
         position: relative;
         height: 300px;
         margin: 1rem 0;
     }
-    
+
     .empty-state {
         text-align: center;
         padding: 3rem 1rem;
         color: #6b7280;
     }
-    
+
     .empty-state svg {
         width: 64px;
         height: 64px;
         margin: 0 auto 1rem;
         opacity: 0.3;
     }
-    
+
     .top-list {
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
     }
-    
+
     .top-item {
         display: flex;
         justify-content: space-between;
@@ -77,17 +77,17 @@
         border-radius: 0.5rem;
         border-left: 3px solid #10b981;
     }
-    
+
     .top-item .info {
         flex: 1;
     }
-    
+
     .top-item .count {
         font-size: 1.5rem;
         font-weight: 700;
         color: #059669;
     }
-    
+
     .active-filter {
         background-color: #10b981 !important;
         color: white !important;
@@ -126,10 +126,10 @@
                         </svg>
                         Data Início
                     </label>
-                    <input type="date" 
-                           name="data_inicio" 
-                           class="form-control" 
-                           value="{{ filtros.data_inicio }}" 
+                    <input type="date"
+                           name="data_inicio"
+                           class="form-control"
+                           value="{{ filtros.data_inicio }}"
                            required>
                 </div>
 
@@ -141,10 +141,10 @@
                         </svg>
                         Data Fim
                     </label>
-                    <input type="date" 
-                           name="data_fim" 
-                           class="form-control" 
-                           value="{{ filtros.data_fim }}" 
+                    <input type="date"
+                           name="data_fim"
+                           class="form-control"
+                           value="{{ filtros.data_fim }}"
                            required>
                 </div>
 
@@ -214,7 +214,7 @@
                     </svg>
                     Gerar Relatório
                 </button>
-                
+
                 {% if total %}
                 <button type="button" onclick="window.print()" class="btn btn-outline">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
@@ -222,14 +222,14 @@
                     </svg>
                     Imprimir
                 </button>
-                
+
                 <button type="button" onclick="exportarCSV()" class="btn btn-outline">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
                     </svg>
                     Exportar CSV
                 </button>
-                
+
                 <a href="{% url 'refeitorio:relatorio' %}" class="btn btn-outline">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
@@ -257,7 +257,7 @@
             </span>
         </div>
     </div>
-    
+
     <div class="stat-card" style="border-left-color: #3b82f6;">
         <div class="stat-label">Período Analisado</div>
         <div class="stat-value">{{ num_dias }}</div>
@@ -265,13 +265,13 @@
             {% if num_dias == 1 %}dia{% else %}dias{% endif %}
         </div>
     </div>
-    
+
     <div class="stat-card" style="border-left-color: #8b5cf6;">
         <div class="stat-label">Média Diária</div>
         <div class="stat-value">{{ media_diaria }}</div>
         <div class="stat-change">refeições/dia</div>
     </div>
-    
+
     <div class="stat-card" style="border-left-color: #10b981;">
         <div class="stat-label">Percentual Estudantes</div>
         <div class="stat-value">
@@ -295,7 +295,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Por Tipo de Refeição -->
     <div class="card">
         <div class="card-header">
@@ -338,7 +338,7 @@
         </div>
     </div>
     {% endif %}
-    
+
     <!-- Top Servidores -->
     {% if top_servidores %}
     <div class="card">
@@ -365,7 +365,7 @@
         </div>
     </div>
     {% endif %}
-    
+
     <!-- Por Turma -->
     {% if por_turma %}
     <div class="card">
@@ -604,32 +604,9 @@ new Chart(ctxTurma, {
 
 // Função para exportar CSV
 function exportarCSV() {
-    const tabela = document.getElementById('tabela-registros');
-    let csv = [];
-    
-    // Cabeçalhos
-    const headers = [];
-    tabela.querySelectorAll('thead th').forEach(th => {
-        headers.push(th.textContent.trim());
-    });
-    csv.push(headers.join(','));
-    
-    // Dados
-    tabela.querySelectorAll('tbody tr').forEach(tr => {
-        const row = [];
-        tr.querySelectorAll('td').forEach(td => {
-            row.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
-        });
-        csv.push(row.join(','));
-    });
-    
-    // Download
-    const csvContent = csv.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'relatorio_refeitorio_{{ filtros.data_inicio }}_{{ filtros.data_fim }}.csv';
-    link.click();
+    // Usar a mesma URL com os mesmos parâmetros
+    const params = new URLSearchParams(window.location.search);
+    window.location.href = '{% url "refeitorio:exportar_csv" %}?' + params.toString();
 }
 </script>
 {% endif %}

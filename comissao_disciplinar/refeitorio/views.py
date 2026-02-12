@@ -354,6 +354,60 @@ def relatorio_periodo(request):
 
     return render(request, 'refeitorio/relatorio.html', context)
 
+@login_required
+@user_passes_test(is_servidor)
+def exportar_csv(request):
+    """Exporta todos os registros filtrados para CSV"""
+    import csv
+    from django.http import HttpResponse
+
+    # Reaplicar mesmos filtros do relatório
+    data_inicio = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
+    tipo_refeicao = request.GET.get('tipo_refeicao')
+    turma_id = request.GET.get('turma')
+    tipo_pessoa = request.GET.get('tipo_pessoa', 'todos')
+
+    if not data_inicio or not data_fim:
+        return HttpResponse('Parâmetros inválidos', status=400)
+
+    # Mesma query do relatório, mas SEM [:100]
+    registros = RegistroRefeicao.objects.filter(
+        data_hora__date__gte=data_inicio,
+        data_hora__date__lte=data_fim
+    ).select_related('estudante', 'servidor', 'estudante__turma', 'estudante__turma__curso')
+
+    if tipo_refeicao:
+        registros = registros.filter(tipo_refeicao=tipo_refeicao)
+    if turma_id:
+        registros = registros.filter(estudante__turma_id=turma_id)
+    if tipo_pessoa == 'estudante':
+        registros = registros.filter(estudante__isnull=False)
+    elif tipo_pessoa == 'servidor':
+        registros = registros.filter(servidor__isnull=False)
+
+    registros = registros.order_by('-data_hora')
+
+    # Criar CSV
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="refeitorio_{data_inicio}_{data_fim}.csv"'
+    response.write('\ufeff')  # BOM para UTF-8
+
+    writer = csv.writer(response)
+    writer.writerow(['Data/Hora', 'Nome', 'Tipo', 'Refeição', 'Turma/Cargo', 'Matrícula/SIAPE'])
+
+    for reg in registros:
+        writer.writerow([
+            reg.data_hora.strftime('%d/%m/%Y %H:%M'),
+            reg.pessoa.nome,
+            reg.tipo_pessoa,
+            reg.get_tipo_refeicao_display() or reg.tipo_refeicao,
+            reg.estudante.turma.nome if reg.estudante and reg.estudante.turma else 'Servidor',
+            reg.codigo_barras_usado
+        ])
+
+    return response
+
 
 @login_required
 @user_passes_test(is_servidor)

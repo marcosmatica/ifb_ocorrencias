@@ -16,4 +16,7 @@ urlpatterns = [
     # API
     path('api/stats/', views.api_estatisticas_hoje, name='api_stats'),
     path('api/ultimos-acessos/', views.api_ultimos_acessos_kiosk, name='api_ultimos_acessos'),
+
+    #CSV
+    path('exportar-csv/', views.exportar_csv, name='exportar_csv'),
 ]
