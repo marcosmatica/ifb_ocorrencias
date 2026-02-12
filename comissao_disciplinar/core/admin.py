@@ -224,7 +224,7 @@ class ResponsavelAdmin(admin.ModelAdmin):
     list_display = ['nome', 'tipo_vinculo', 'email', 'celular', 'total_estudantes_display']
     list_filter = ['tipo_vinculo', 'preferencia_contato']
     search_fields = ['nome', 'email', 'celular']
-    filter_horizontal = ['estudantes']
+    #filter_horizontal = ['estudantes']
 
     readonly_fields = ['total_estudantes_display', 'estudantes_ativos_display', 'ultima_atualizacao']
 
