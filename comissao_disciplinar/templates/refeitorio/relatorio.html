@@ -92,6 +92,15 @@
         background-color: #10b981 !important;
         color: white !important;
     }
+
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .card-footer {
+        border-top: 1px solid #e5e7eb;
+    }
 </style>
 {% endblock %}
 
@@ -387,12 +396,54 @@
     <div class="card-header">
         <h2 class="card-title">Registros Detalhados</h2>
         <p class="text-sm text-gray-600">
+            Mostrando {{ registros.start_index }} a {{ registros.end_index }} de {{ total_registros }} registros
+        </p>
+    </div>
+    <div class="table-container">
+        <table class="table" id="tabela-registros">
+            <!-- ... tabela existente ... -->
+        </table>
+    </div>
+
+    <!-- ADICIONAR NAVEGAÇÃO DE PÁGINAS -->
+    {% if registros.has_other_pages %}
+    <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem;">
+        <div class="text-sm text-gray-600">
+            Página {{ registros.number }} de {{ registros.paginator.num_pages }}
+        </div>
+
+        <div class="flex gap-2">
+            {% if registros.has_previous %}
+                <a href="?{{ request.GET.urlencode }}&page=1" class="btn btn-outline btn-sm">« Primeira</a>
+                <a href="?{{ request.GET.urlencode }}&page={{ registros.previous_page_number }}" class="btn btn-outline btn-sm">‹ Anterior</a>
+            {% else %}
+                <button disabled class="btn btn-outline btn-sm opacity-50">« Primeira</button>
+                <button disabled class="btn btn-outline btn-sm opacity-50">‹ Anterior</button>
+            {% endif %}
+
+            {% if registros.has_next %}
+                <a href="?{{ request.GET.urlencode }}&page={{ registros.next_page_number }}" class="btn btn-outline btn-sm">Próxima ›</a>
+                <a href="?{{ request.GET.urlencode }}&page={{ registros.paginator.num_pages }}" class="btn btn-outline btn-sm">Última »</a>
+            {% else %}
+                <button disabled class="btn btn-outline btn-sm opacity-50">Próxima ›</button>
+                <button disabled class="btn btn-outline btn-sm opacity-50">Última »</button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Tabela Detalhada -->
+<div class="card">
+    <!--<div class="card-header">
+        <h2 class="card-title">Registros Detalhados</h2>
+        <p class="text-sm text-gray-600">
             Mostrando primeiros 100 de {{ total_registros }} registros
             {% if total_registros > 100 %}
                 <span class="text-orange-600">• Use filtros para refinar</span>
             {% endif %}
         </p>
-    </div>
+    </div> -->
     <div class="table-container">
         <table class="table" id="tabela-registros">
             <thead>
@@ -438,6 +489,8 @@
         </table>
     </div>
 </div>
+
+
 
 {% else %}
 <!-- Estado Vazio -->

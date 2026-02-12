@@ -9,6 +9,8 @@ from datetime import timedelta, datetime
 from .models import RegistroRefeicao, ConfigRefeitorio, BloqueioAcesso
 from core.models import Estudante, Servidor
 import logging
+import csv
+#from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -236,6 +238,7 @@ def dashboard(request):
 def relatorio_periodo(request):
     """Relatório por período com filtros"""
     from core.models import Turma
+    from django.core.paginator import Paginator
 
     # Capturar filtros
     data_inicio = request.GET.get('data_inicio')
@@ -281,6 +284,8 @@ def relatorio_periodo(request):
 
         # Ordenar
         registros = registros.order_by('-data_hora')
+
+        from django.core.paginator import Paginator
 
         # Estatísticas gerais
         total = registros.count()
@@ -337,8 +342,12 @@ def relatorio_periodo(request):
                    datetime.strptime(data_inicio, '%Y-%m-%d').date()).days + 1
         media_diaria = total / num_dias if num_dias > 0 else 0
 
+        paginator = Paginator(registros, 100)  # 100 por página
+        page_number = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+
         context.update({
-            'registros': registros[:100],  # Limitar para performance na tabela
+            'registros': page_obj,  # Limitar para performance na tabela
             'total_registros': total,
             'total': total,
             'total_estudantes': total_estudantes,
@@ -360,6 +369,7 @@ def exportar_csv(request):
     """Exporta todos os registros filtrados para CSV"""
     import csv
     from django.http import HttpResponse
+    TIPOS_MAP = dict(ConfigRefeitorio.TIPO_REFEICAO_CHOICES)
 
     # Reaplicar mesmos filtros do relatório
     data_inicio = request.GET.get('data_inicio')
@@ -401,7 +411,7 @@ def exportar_csv(request):
             reg.data_hora.strftime('%d/%m/%Y %H:%M'),
             reg.pessoa.nome,
             reg.tipo_pessoa,
-            reg.get_tipo_refeicao_display() or reg.tipo_refeicao,
+            TIPOS_MAP.get(reg.tipo_refeicao, reg.tipo_refeicao),  # ← Aqui
             reg.estudante.turma.nome if reg.estudante and reg.estudante.turma else 'Servidor',
             reg.codigo_barras_usado
         ])
