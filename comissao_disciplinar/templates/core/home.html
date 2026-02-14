@@ -50,6 +50,20 @@
                 </p>
             </a>
 
+            <!-- Refeitório -->
+            <a href="{% url 'refeitorio:dashboard' %}" class="home-card">
+                <div class="home-card-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <svg width="48" height="48" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <h3 class="home-card-title">Refeitório</h3>
+                <p class="home-card-description">
+                    Controle de acesso ao refeitório, gestão de refeições e relatórios de frequência alimentar.
+                </p>
+            </a>
+
             <!-- Atendimentos
             <a href="{% url 'atendimentos:atendimento_list' %}" class="home-card">
                 <div class="home-card-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);">
@@ -129,6 +143,13 @@
                         <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"/>
                     </svg>
                     Dashboard Rápidas
+                </a>
+                <a href="{% url 'refeitorio:dashboard' %}" class="btn btn-outline">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    Refeitório
                 </a>
                 <!--
                 <a href="{% url 'atendimentos:atendimento_create' %}" class="btn btn-outline">
