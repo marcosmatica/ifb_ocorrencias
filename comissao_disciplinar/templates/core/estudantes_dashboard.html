@@ -300,16 +300,16 @@
     .estudantes-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .stats-row {
         grid-template-columns: repeat(3, 1fr);
         gap: 0.5rem;
     }
-    
+
     .stat-box {
         padding: 0.5rem;
     }
-    
+
     .stat-numero {
         font-size: 1.25rem;
     }
@@ -327,7 +327,7 @@
         <select id="turma-select" class="turma-select" onchange="selecionarTurma(this.value)">
             <option value="">-- Selecione uma turma --</option>
             {% for turma in turmas %}
-            <option value="{{ turma.id }}" 
+            <option value="{{ turma.id }}"
                     {% if turma_selecionada and turma.id == turma_selecionada.id %}selected{% endif %}>
                 {{ turma.nome }} - {{ turma.curso.nome }} ({{ turma.estudantes.count }} estudantes)
             </option>
@@ -349,7 +349,7 @@
                         </p>
                     </div>
                     <div>
-                        <a href="{% url 'core:ocorrencia_create' %}?turma={{ turma_selecionada.id }}" 
+                        <a href="{% url 'core:ocorrencia_create' %}?turma={{ turma_selecionada.id }}"
                            class="btn btn-primary">
                             Nova Ocorrência
                         </a>
@@ -373,20 +373,23 @@
                         {% else %}
                             <span class="alerta-badge alerta-baixo">✓ OK</span>
                         {% endif %}
-                        
+
                         <!-- Foto -->
                         <div class="foto-container" data-iniciais="{{ estudante.get_iniciais }}">
-                            {% if estudante.get_foto_url_proxy %}
-                                <img src="{{ estudante.get_foto_url_proxy }}"
-                                     alt="{{ estudante.nome }}"
-                                     class="foto-estudante"
-                                     referrerpolicy="no-referrer"
-                                     loading="lazy"
-                                     onerror="mostrarIniciais(this)">
+                            {% if alerta.estudante.get_foto_url_safe %}
+                            <img src="{{ alerta.estudante.get_foto_url_safe }}"
+                                 alt="{{ alerta.estudante.nome }}"
+                                 class="rounded-circle"
+                                 width="40" height="40"
+                                 style="object-fit: cover;"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="avatar-circle bg-secondary text-white" style="display:none; width:40px; height:40px;">
+                                {{ alerta.estudante.get_iniciais }}
+                            </div>
                             {% else %}
-                                <div class="foto-placeholder">
-                                    {{ estudante.get_iniciais }}
-                                </div>
+                            <div class="avatar-circle bg-secondary text-white">
+                                {{ alerta.estudante.get_iniciais }}
+                            </div>
                             {% endif %}
                         </div>
 

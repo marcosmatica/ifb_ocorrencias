@@ -28,23 +28,27 @@
         </svg>
         Últimos Acessos
     </h3>
-    
+
     <div class="acessos-grid">
         {% for registro in ultimos_acessos %}
         <div class="acesso-item">
             <!-- Foto/Avatar -->
             <div class="acesso-avatar">
                 {% if registro.estudante %}
-                    {% if registro.estudante.get_foto_url_proxy %}
-                        <img src="{{ registro.estudante.get_foto_url_proxy }}" 
-                             alt="{{ registro.pessoa.nome }}"
-                             class="avatar-img"
-                             referrerpolicy="no-referrer"
-                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'avatar-placeholder\'>{{ registro.estudante.get_iniciais }}</div>';">
+                    {% if alerta.estudante.get_foto_url_safe %}
+                    <img src="{{ alerta.estudante.get_foto_url_safe }}"
+                         alt="{{ alerta.estudante.nome }}"
+                         class="rounded-circle"
+                         width="40" height="40"
+                         style="object-fit: cover;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="avatar-circle bg-secondary text-white" style="display:none; width:40px; height:40px;">
+                        {{ alerta.estudante.get_iniciais }}
+                    </div>
                     {% else %}
-                        <div class="avatar-placeholder">
-                            {{ registro.estudante.get_iniciais }}
-                        </div>
+                    <div class="avatar-circle bg-secondary text-white">
+                        {{ alerta.estudante.get_iniciais }}
+                    </div>
                     {% endif %}
                 {% else %}
                     <div class="avatar-placeholder avatar-servidor">
@@ -53,7 +57,7 @@
                         </svg>
                     </div>
                 {% endif %}
-                
+
                 <!-- Badge de tipo -->
                 <div class="acesso-tipo-badge">
                     {% if registro.estudante %}
@@ -63,7 +67,7 @@
                     {% endif %}
                 </div>
             </div>
-            
+
             <!-- Info -->
             <div class="acesso-info">
                 <div class="acesso-nome">{{ registro.pessoa.nome|truncatewords:3 }}</div>

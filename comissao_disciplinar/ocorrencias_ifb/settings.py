@@ -8,7 +8,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = False#config('DEBUG', default=True, cast=bool)
+DEBUG = True#config('DEBUG', default=True, cast=bool)
 #ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 ALLOWED_HOSTS = ['marcosmatica.pythonanywhere.com', 'localhost', '127.0.0.1']
 
@@ -88,6 +88,14 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/tmp/django_cache',
+        'TIMEOUT': 86400,  # 24h
+    }
+}
 
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Sao_Paulo'
@@ -178,7 +186,11 @@ SESSION_COOKIE_AGE = 60 * 5
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 
+# Timeout para requisições HTTP
+REQUESTS_TIMEOUT = 5
 
+# Desabilitar proxy para fotos se necessário
+USE_PHOTO_PROXY = True  # Mude para False se quiser desabilitar
 
 
 # ===== OUTRAS OPÇÕES DE SMS BRASILEIRAS =====

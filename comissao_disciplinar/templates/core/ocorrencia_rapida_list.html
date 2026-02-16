@@ -185,17 +185,20 @@
                                 {% for estudante in ocorrencia.estudantes.all %}
                                     <div class="student-list-item">
                                         <div class="foto-container-list" data-iniciais="{{ estudante.get_iniciais }}">
-                                            {% if estudante.get_foto_url_proxy %}
-                                                <img src="{{ estudante.get_foto_url_proxy }}"
-                                                     alt="{{ estudante.nome }}"
-                                                     class="foto-estudante-list"
-                                                     referrerpolicy="no-referrer"
-                                                     loading="lazy"
-                                                     onerror="mostrarIniciaisList(this)">
+                                            {% if alerta.estudante.get_foto_url_safe %}
+                                            <img src="{{ alerta.estudante.get_foto_url_safe }}"
+                                                 alt="{{ alerta.estudante.nome }}"
+                                                 class="rounded-circle"
+                                                 width="40" height="40"
+                                                 style="object-fit: cover;"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="avatar-circle bg-secondary text-white" style="display:none; width:40px; height:40px;">
+                                                {{ alerta.estudante.get_iniciais }}
+                                            </div>
                                             {% else %}
-                                                <div class="foto-placeholder-list">
-                                                    {{ estudante.get_iniciais }}
-                                                </div>
+                                            <div class="avatar-circle bg-secondary text-white">
+                                                {{ alerta.estudante.get_iniciais }}
+                                            </div>
                                             {% endif %}
                                         </div>
                                         <div class="student-list-info">

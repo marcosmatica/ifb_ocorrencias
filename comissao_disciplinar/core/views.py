@@ -11,6 +11,7 @@ from .utils import gerar_documento_pdf, enviar_notificacao_email
 from .services import ServicoNotificacao
 from django.core.mail import get_connection
 from django.core.mail import EmailMultiAlternatives
+from django.core.cache import cache
 from django.template import loader
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
@@ -1443,40 +1444,37 @@ def estudantes_dashboard(request):
 
 #@require_GET
 #@cache_page(60 * 60 * 24)  # Cache por 24 horas
+@login_required
 def proxy_imagem_google_drive(request):
-    """
-    Proxy para carregar imagens do Google Drive sem problemas de CORS
-    """
+    """Proxy com timeout e melhor tratamento de erros"""
     file_id = request.GET.get('id')
 
     if not file_id:
         return HttpResponse('ID não fornecido', status=400)
 
-    # URL do Google Drive
     url = f'https://drive.google.com/uc?export=view&id={file_id}'
 
     try:
-        # Fazer requisição para o Google Drive
-        response = requests.get(url, timeout=10, stream=True)
+        # TIMEOUT CRÍTICO - evita travamentos
+        response = requests.get(url, timeout=5, stream=True, allow_redirects=True)
 
         if response.status_code == 200:
-            # Retornar a imagem com headers corretos
             content_type = response.headers.get('Content-Type', 'image/jpeg')
 
             http_response = HttpResponse(
                 response.content,
                 content_type=content_type
             )
-
-            # Adicionar headers para cache
-            http_response['Cache-Control'] = 'public, max-age=86400'  # 24 horas
-
+            http_response['Cache-Control'] = 'public, max-age=86400'
             return http_response
         else:
-            return HttpResponse('Imagem não encontrada', status=404)
+            # Retorna placeholder ao invés de erro
+            return HttpResponse(status=404)
 
-    except requests.exceptions.RequestException as e:
-        return HttpResponse(f'Erro ao carregar imagem: {str(e)}', status=500)
+    except requests.exceptions.Timeout:
+        return HttpResponse('Timeout', status=504)
+    except requests.exceptions.RequestException:
+        return HttpResponse('Erro ao carregar', status=500)
 
 
 @login_required
@@ -1512,6 +1510,9 @@ def alertas_limites_dashboard(request):
         # Remover o parâmetro 'recalcular' para evitar loop
         if 'recalcular' in params:
             del params['recalcular']
+
+        if 'page' in params:
+            del params['page']  # Resetar paginação também
         # Redirecionar mantendo outros parâmetros
         return redirect(f"{request.path}?{params.urlencode()}")
 
@@ -1526,14 +1527,15 @@ def alertas_limites_dashboard(request):
         meses_disponiveis.append(data)
 
     # **OTIMIZAÇÃO**: Filtrar alertas do mês selecionado com prefetch
+    # PARA:
     alertas_mes = AlertaLimiteOcorrenciaRapida.objects.filter(
         mes_referencia=mes_referencia
     ).select_related(
-        'estudante',
-        'estudante__turma',
-        'estudante__curso',
+        'estudante__turma__curso',  # Adicionar curso
         'tipo_ocorrencia',
         'configuracao'
+    ).prefetch_related(
+        'estudante__responsaveis'  # Se usado no template
     ).order_by('-quantidade_ocorrencias', '-criado_em')
 
     # Configurações ativas

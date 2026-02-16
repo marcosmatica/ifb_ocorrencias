@@ -189,6 +189,22 @@ class Estudante(models.Model):
     def __str__(self):
         return f"{self.nome} ({self.matricula_sga})"
 
+    def get_foto_url_safe(self):
+        """Versão segura que retorna None em caso de erro"""
+        try:
+            if self.foto_url and 'drive.google.com' in self.foto_url:
+                from django.urls import reverse
+                import re
+                match = re.search(r'id=([^&]+)', self.foto_url)
+                if match:
+                    file_id = match.group(1)
+                    return reverse('core:proxy_google_drive_image') + f'?id={file_id}'
+            elif self.foto:
+                return self.foto.url
+        except Exception:
+            pass
+        return None
+
     def get_foto_url(self):
         """Retorna a URL da foto (prioriza foto_url, depois foto local)"""
         if self.foto_url:

@@ -13,16 +13,23 @@
             <div style="display: flex; align-items: center; gap: 1.5rem;">
                 <!-- Avatar/Foto -->
                 <div>
-                    {% if estudante.foto %}
-                        <img src="{{ estudante.foto.url }}" alt="{{ estudante.nome }}" 
-                             style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid var(--ifb-verde);">
+                    {% if alerta.estudante.get_foto_url_safe %}
+                    <img src="{{ alerta.estudante.get_foto_url_safe }}"
+                         alt="{{ alerta.estudante.nome }}"
+                         class="rounded-circle"
+                         width="40" height="40"
+                         style="object-fit: cover;"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="avatar-circle bg-secondary text-white" style="display:none; width:40px; height:40px;">
+                        {{ alerta.estudante.get_iniciais }}
+                    </div>
                     {% else %}
-                        <div style="width: 100px; height: 100px; border-radius: 50%; background: var(--ifb-verde); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700;">
-                            {{ estudante.nome|slice:":1" }}
-                        </div>
+                    <div class="avatar-circle bg-secondary text-white">
+                        {{ alerta.estudante.get_iniciais }}
+                    </div>
                     {% endif %}
                 </div>
-                
+
                 <!-- Informações -->
                 <div style="flex: 1;">
                     <h1 style="font-size: 1.875rem; font-weight: 700; margin-bottom: 0.5rem;">
@@ -39,7 +46,7 @@
                             <strong>Turma:</strong> {{ estudante.turma.nome }}
                         </div>
                         <div>
-                            <strong>Situação:</strong> 
+                            <strong>Situação:</strong>
                             <span class="badge badge-{% if estudante.situacao == 'ATIVO' %}finalizada{% else %}arquivada{% endif %}">
                                 {{ estudante.get_situacao_display }}
                             </span>
@@ -49,7 +56,7 @@
                         <strong style="color: var(--gray-600);">E-mail:</strong> {{ estudante.email }}
                     </div>
                 </div>
-                
+
                 <!-- Botões -->
                 <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                     <button class="btn btn-outline btn-sm" onclick="window.print()">
@@ -68,7 +75,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Estatísticas -->
     <div class="stats-grid mb-4">
         <div class="stat-card" style="border-color: #3b82f6;">
@@ -76,7 +83,7 @@
             <div class="stat-value">{{ total_ocorrencias }}</div>
             <div class="stat-change">Histórico completo</div>
         </div>
-        
+
         <div class="stat-card" style="border-color: #10b981;">
             <div class="stat-label">Leves</div>
             <div class="stat-value">
@@ -85,7 +92,7 @@
                 {% endfor %}
             </div>
         </div>
-        
+
         <div class="stat-card" style="border-color: #eab308;">
             <div class="stat-label">Médias/Graves</div>
             <div class="stat-value">
@@ -94,7 +101,7 @@
                 {% endfor %}
             </div>
         </div>
-        
+
         <div class="stat-card" style="border-color: #ef4444;">
             <div class="stat-label">Gravíssimas</div>
             <div class="stat-value">
@@ -104,7 +111,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Gráfico de Ocorrências por Gravidade -->
     <div class="card mb-4">
         <div class="card-header">
@@ -114,7 +121,7 @@
             <canvas id="gravidadeChart" style="max-height: 300px;"></canvas>
         </div>
     </div>
-    
+
     <!-- Histórico de Ocorrências -->
     <div class="card">
         <div class="card-header flex-between">
@@ -128,7 +135,7 @@
             <div class="timeline" style="padding: 2rem;">
                 {% for ocorrencia in ocorrencias %}
                 <div class="timeline-item">
-                    <div class="timeline-marker" style="background: 
+                    <div class="timeline-marker" style="background:
                         {% if ocorrencia.infracao.gravidade == 'LEVE' %}#10b981
                         {% elif ocorrencia.infracao.gravidade == 'MEDIA' %}#eab308
                         {% elif ocorrencia.infracao.gravidade == 'GRAVE' %}#f97316
@@ -147,11 +154,11 @@
                                 {% endif %}
                             </div>
                         </div>
-                        
+
                         <div style="margin-bottom: 0.5rem;">
                             <strong style="font-size: 1rem;">Ocorrência #{{ ocorrencia.id }}</strong>
                         </div>
-                        
+
                         {% if ocorrencia.infracao %}
                         <div style="margin-bottom: 0.75rem; padding: 0.75rem; background: var(--gray-50); border-radius: var(--radius-md);">
                             <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.25rem;">
@@ -162,11 +169,11 @@
                             </div>
                         </div>
                         {% endif %}
-                        
+
                         <div style="margin-bottom: 0.75rem; color: var(--gray-700);">
                             {{ ocorrencia.descricao|truncatewords:30 }}
                         </div>
-                        
+
                         <div style="display: flex; gap: 1rem; font-size: 0.875rem; color: var(--gray-600);">
                             <div>
                                 <strong>Turma:</strong> {{ ocorrencia.turma.nome }}
@@ -175,7 +182,7 @@
                                 <strong>Registrado por:</strong> {{ ocorrencia.responsavel_registro.nome }}
                             </div>
                         </div>
-                        
+
                         {% if ocorrencia.sancao %}
                         <div style="margin-top: 0.75rem; padding: 0.75rem; background: #fee2e2; border-radius: var(--radius-md); border-left: 4px solid #ef4444;">
                             <strong style="color: #991b1b;">Sanção Aplicada:</strong>
@@ -184,7 +191,7 @@
                             </div>
                         </div>
                         {% endif %}
-                        
+
                         <div style="margin-top: 0.75rem;">
                             <a href="{% url 'core:ocorrencia_detail' ocorrencia.pk %}" class="btn btn-outline btn-sm">
                                 Ver Detalhes Completos
@@ -207,7 +214,7 @@
             {% endif %}
         </div>
     </div>
-    
+
     <!-- Informações Adicionais -->
     {% if estudante.responsavel %}
     <div class="card mt-4">
