@@ -4,6 +4,9 @@ from auditlog.registry import auditlog
 from auditlog.models import AuditlogHistoryField
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from django.urls import reverse
+import re
+
 
 
 # ====================
@@ -173,7 +176,7 @@ class Estudante(models.Model):
     foto_url = models.URLField(
         blank=True,
         null=True,
-        help_text="Link direto da imagem no Google Drive. Use o formato: https://drive.google.com/uc?export=view&id=ID_DA_IMAGEM"
+        help_text="Link direto da imagem no Google Drive. Use o formato: https://drive.google.com/thumbnail?id=[FILE_ID]&sz=[SIZE]"
     )
 
     # Responsável
@@ -193,15 +196,14 @@ class Estudante(models.Model):
         """Versão segura que retorna None em caso de erro"""
         try:
             if self.foto_url and 'drive.google.com' in self.foto_url:
-                from django.urls import reverse
-                import re
-                match = re.search(r'id=([^&]+)', self.foto_url)
+                match = re.search(r'id=([a-zA-Z0-9_-]+)', self.foto_url)
                 if match:
                     file_id = match.group(1)
                     return reverse('core:proxy_google_drive_image') + f'?id={file_id}'
             elif self.foto:
                 return self.foto.url
         except Exception:
+            #console.log(self.foto_url)
             pass
         return None
 

@@ -59,7 +59,7 @@ def atualizar_fotos_sqlite(caminho_pasta_fotos, caminho_db='db.sqlite3'):
 
 
 # --- CONFIGURAÇÃO ---
-PASTA_DAS_IMAGENS = r'C:\Caminho\Para\Fotos\Otimizadas'
+PASTA_DAS_IMAGENS = r'/home/marcosmatica/ifb_ocorrencias/comissao_disciplinar/media/fotos'
 DB_PATH = 'db.sqlite3'
 
 atualizar_fotos_sqlite(PASTA_DAS_IMAGENS, DB_PATH)

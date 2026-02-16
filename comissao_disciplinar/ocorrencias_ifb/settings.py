@@ -187,7 +187,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 
 # Timeout para requisições HTTP
-REQUESTS_TIMEOUT = 5
+REQUESTS_TIMEOUT = 10
 
 # Desabilitar proxy para fotos se necessário
 USE_PHOTO_PROXY = True  # Mude para False se quiser desabilitar

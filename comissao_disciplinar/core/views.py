@@ -1452,11 +1452,11 @@ def proxy_imagem_google_drive(request):
     if not file_id:
         return HttpResponse('ID não fornecido', status=400)
 
-    url = f'https://drive.google.com/uc?export=view&id={file_id}'
+    url = f'https://drive.google.com/thumbnail?id={file_id}&sz=w300'
 
     try:
         # TIMEOUT CRÍTICO - evita travamentos
-        response = requests.get(url, timeout=5, stream=True, allow_redirects=True)
+        response = requests.get(url, timeout=10, stream=True, allow_redirects=True)
 
         if response.status_code == 200:
             content_type = response.headers.get('Content-Type', 'image/jpeg')
