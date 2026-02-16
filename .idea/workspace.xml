@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="afc4cd7b-133f-48fb-9bbc-32661177d98e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/ifb_ocorrencias.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ifb_ocorrencias.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb/urls.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,9 +19,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="HTML File" />
         <option value="JavaScript File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -60,6 +56,7 @@
     "Python.inserir_dados.executor": "Run",
     "Python.models.executor": "Run",
     "Python.settings.executor": "Run",
+    "Python.thumbnail.executor": "Run",
     "Python.views.executor": "Run",
     "RunOnceActivity.MCP Project settings loaded": "true",
     "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
@@ -90,6 +87,7 @@
       <recent name="C:\Users\marco\OneDrive\Documentos\GitHub\ifb_ocorrencias\comissao_disciplinar\staticfiles\css" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\matemarcos\Documents\GitHub\ifb_ocorrencias\comissao_disciplinar" />
       <recent name="C:\Users\marco\OneDrive\Documentos\GitHub\ifb_ocorrencias\comissao_disciplinar" />
     </key>
   </component>
@@ -162,6 +160,7 @@
       <workItem from="1763697905261" duration="721000" />
       <workItem from="1764118917465" duration="657000" />
       <workItem from="1770294627482" duration="3867000" />
+      <workItem from="1771231189591" duration="549000" />
     </task>
     <servers />
   </component>
@@ -169,13 +168,14 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/ifb_ocorrencias$importar_projetos.coverage" NAME="importar_projetos Coverage Results" MODIFIED="1762743573819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar" />
-    <SUITE FILE_PATH="coverage/ifb_ocorrencias$importar_atendimentos.coverage" NAME="importar_atendimentos Coverage Results" MODIFIED="1762746301464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar" />
-    <SUITE FILE_PATH="coverage/ifb_ocorrencias$models.coverage" NAME="models Coverage Results" MODIFIED="1762626299827" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar/atendimentos" />
+    <SUITE FILE_PATH="coverage/ifb_ocorrencias$importar_responsaveis.coverage" NAME="importar_responsaveis Coverage Results" MODIFIED="1763120502337" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar" />
     <SUITE FILE_PATH="coverage/ifb_ocorrencias$views.coverage" NAME="views Coverage Results" MODIFIED="1763119666485" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar/core" />
+    <SUITE FILE_PATH="coverage/ifb_ocorrencias$importar_projetos.coverage" NAME="importar_projetos Coverage Results" MODIFIED="1762743573819" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar" />
     <SUITE FILE_PATH="coverage/inserir_dados_py$inserir_dados.coverage" NAME="inserir_dados Coverage Results" MODIFIED="1761021797880" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar" />
+    <SUITE FILE_PATH="coverage/ifb_ocorrencias$importar_atendimentos.coverage" NAME="importar_atendimentos Coverage Results" MODIFIED="1762746301464" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar" />
     <SUITE FILE_PATH="coverage/inserir_dados_py$settings.coverage" NAME="settings Coverage Results" MODIFIED="1761021518573" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar/ocorrencias_ifb" />
     <SUITE FILE_PATH="coverage/ifb_ocorrencias$importar_disciplinas.coverage" NAME="importar_disciplinas Coverage Results" MODIFIED="1762783069998" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar/pedagogico/management/commands" />
-    <SUITE FILE_PATH="coverage/ifb_ocorrencias$importar_responsaveis.coverage" NAME="importar_responsaveis Coverage Results" MODIFIED="1763120502337" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar" />
+    <SUITE FILE_PATH="coverage/ifb_ocorrencias$models.coverage" NAME="models Coverage Results" MODIFIED="1762626299827" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar/atendimentos" />
+    <SUITE FILE_PATH="coverage/ifb_ocorrencias$thumbnail.coverage" NAME="thumbnail Coverage Results" MODIFIED="1771231671898" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/comissao_disciplinar" />
   </component>
 </project>
