@@ -169,14 +169,14 @@ class Estudante(models.Model):
     situacao = models.CharField(max_length=15, choices=SITUACAO_CHOICES, default='ATIVO')
     data_ingresso = models.DateField()
 
-    # Foto - MANTÉM O CAMPO ORIGINAL para upload local
+    # Foto - CAMPO ORIGINAL para upload local
     foto = models.ImageField(upload_to='estudantes/', blank=True, null=True)
 
-    # NOVO CAMPO - URL da foto do Google Drive
+    # CAMPO - URL da foto do Google Drive (FALLBACK)
     foto_url = models.URLField(
         blank=True,
         null=True,
-        help_text="Link direto da imagem no Google Drive. Use o formato: https://drive.google.com/thumbnail?id=[FILE_ID]&sz=[SIZE]"
+        help_text="Link direto da imagem no Google Drive. Usado apenas se não houver foto local."
     )
 
     # Responsável
@@ -193,42 +193,89 @@ class Estudante(models.Model):
         return f"{self.nome} ({self.matricula_sga})"
 
     def get_foto_url_safe(self):
-        """Versão segura que retorna None em caso de erro"""
+        """
+        Versão segura que retorna None em caso de erro
+        PRIORIZA: Arquivo local → Google Drive via proxy
+        """
         try:
+            # 1. PRIORIDADE: Verificar foto local
+            if self.foto:
+                import os
+                # Verificar se o arquivo existe fisicamente
+                try:
+                    if os.path.exists(self.foto.path):
+                        return self.foto.path
+                except (ValueError, AttributeError):
+                    # Se foto está definida mas não tem path válido, continua
+                    pass
+
+            # 2. FALLBACK: Foto do Google Drive via proxy
             if self.foto_url and 'drive.google.com' in self.foto_url:
+                import re
+                from django.urls import reverse
                 match = re.search(r'id=([a-zA-Z0-9_-]+)', self.foto_url)
                 if match:
                     file_id = match.group(1)
                     return reverse('core:proxy_google_drive_image') + f'?id={file_id}'
-            elif self.foto:
-                return self.foto.url
         except Exception:
-            #console.log(self.foto_url)
             pass
         return None
 
     def get_foto_url(self):
-        """Retorna a URL da foto (prioriza foto_url, depois foto local)"""
+        """
+        Retorna a URL da foto
+        PRIORIZA: Foto local → Foto do Google Drive
+        """
+        # 1. PRIORIDADE: Foto local
+        if self.foto:
+            try:
+                import os
+                # Verificar se arquivo existe fisicamente
+                if os.path.exists(self.foto.path):
+                    return self.foto.path
+            except (ValueError, AttributeError):
+                # Se houver erro ao acessar path, tenta retornar URL mesmo assim
+                try:
+                    return self.foto.url
+                except:
+                    pass
+
+        # 2. FALLBACK: Foto do Google Drive
         if self.foto_url:
             return self.foto_url
-        elif self.foto:
-            return self.foto.url
+
         return None
 
     def get_foto_url_proxy(self):
-        """Retorna a URL da foto usando proxy para Google Drive"""
+        """
+        Retorna a URL da foto
+        PRIORIZA: Local → Google Drive via proxy
+        """
         from django.urls import reverse
+        import os
 
+        # 1. PRIORIDADE: Foto local
+        if self.foto:
+            try:
+                # Verificar se arquivo existe
+                if os.path.exists(self.foto.path):
+                    return self.foto.url
+            except (ValueError, AttributeError):
+                # Tenta retornar URL mesmo sem verificar existência
+                try:
+                    return self.foto.url
+                except:
+                    pass
+
+        # 2. FALLBACK: Google Drive via proxy
         if self.foto_url and 'drive.google.com' in self.foto_url:
-            # Extrair ID do Google Drive
             import re
             match = re.search(r'id=([^&]+)', self.foto_url)
             if match:
                 file_id = match.group(1)
                 return reverse('core:proxy_google_drive_image') + f'?id={file_id}'
 
-        # Se for foto local ou não for Google Drive, retornar URL normal
-        return self.get_foto_url()
+        return None
 
     def get_iniciais(self):
         """Retorna as iniciais do nome para avatar"""
